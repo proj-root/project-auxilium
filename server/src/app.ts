@@ -4,6 +4,14 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors';
 
 import EventsRouter from '@/features/events/events.route';
+import {
+  getLoggerStartTime,
+  loggerMiddleware,
+} from '@/middleware/logger.middleware';
+import {
+  globalErrorHandler,
+  notFoundHandler,
+} from '@/middleware/errors.middleware';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -21,10 +29,11 @@ app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: false, limit: '10kb' }));
 
 // Configure logging middleware
-// TODO: Add logger stuff
+app.use(getLoggerStartTime);
+app.use(loggerMiddleware);
 
 // Routes
-app.use('/events', EventsRouter)
+app.use('/events', EventsRouter);
 
 // Health Check Route
 app.get('/health', (req, res) => {
@@ -35,7 +44,8 @@ app.get('/health', (req, res) => {
 });
 
 // Error Handling
-// TODO: Add error handling middleware
+app.use(notFoundHandler);
+app.use(globalErrorHandler);
 
 app.listen(PORT, () => {
   console.log(`🚀 Server is running on http://localhost:${PORT}!`);

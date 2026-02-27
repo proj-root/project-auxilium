@@ -18,7 +18,8 @@
   "homepage": "https://github.com/proj-root/project-auxilium#readme",
   "workspaces": [
     "client",
-    "server"
+    "server",
+    "packages/*"
   ],
   "devDependencies": {
     "@biomejs/biome": "^2.4.4",

@@ -1,7 +1,4 @@
 {
-  "files": [],
-  "references": [
-    { "path": "./client" },
-    { "path": "./server" }
-  ],
+  "include": ["**/*.ts", "**/*.tsx"],
+  "exclude": ["node_modules", "dist", "build", ".turbo", ".vite"]
 }
