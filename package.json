@@ -21,7 +21,9 @@
     "server"
   ],
   "devDependencies": {
+    "@biomejs/biome": "^2.4.4",
     "@types/node": "^25.3.2",
+    "prettier-plugin-tailwindcss": "^0.7.2",
     "typescript": "^5.9.3"
   }
 }

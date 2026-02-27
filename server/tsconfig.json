@@ -1,11 +1,17 @@
 {
-  "extends": "../../tsconfig.base.json",
+  "extends": "../tsconfig.base.json",
   "compilerOptions": {
     "lib": ["ES2023"],
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
+
     "outDir": "./dist",
     "rootDir": "./src",
+
+    "paths": {
+      "@/*": ["./src/*"],
+    },
+
     "noEmit": false,
     "declaration": true,
     "sourceMap": true,

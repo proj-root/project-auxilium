@@ -6,7 +6,8 @@
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "moduleDetection": "force",
-    "allowImportingTsExtensions": true,
+
+    // "allowImportingTsExtensions": true,
     "noEmit": true,
     "composite": false,
     "strict": true,
@@ -22,10 +23,10 @@
     "isolatedModules": true,
     "esModuleInterop": true,
     "resolveJsonModule": true,
-    "baseUrl": ".",
+    
     "paths": {
-      "@server/*": ["server/src/*"],
-      "@client/*": ["client/src/*"]
+      // "@server/*": ["server/src/*"],
+      // "@client/*": ["client/src/*"]
       // add shared/ if you create a shared package later
     }
   },
