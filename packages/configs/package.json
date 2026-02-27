@@ -1,0 +1,13 @@
+{
+  "name": "@auxilium/configs",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "clean": "rm -rf dist .tsbuildinfo"
+  },
+  "keywords": [],
+  "author": "",
+  "type": "module"
+}

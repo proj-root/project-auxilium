@@ -22,20 +22,25 @@
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/morgan": "^1.9.10",
+    "@types/pg": "^8.16.0",
+    "drizzle-kit": "^0.31.9",
     "tsx": "^4.21.0"
   },
   "dependencies": {
     "@auxilium/types": "*",
+    "@auxilium/configs": "*",
     "@googleapis/sheets": "^13.0.1",
     "bcrypt": "^6.0.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
     "dotenv": "^17.3.1",
+    "drizzle-orm": "^0.45.1",
     "express": "^4.22.1",
     "express-validator": "^7.3.1",
     "google-auth-library": "^10.6.1",
     "jsonwebtoken": "^9.0.3",
     "morgan": "^1.10.1",
+    "pg": "^8.19.0",
     "winston": "^3.19.0"
   }
 }

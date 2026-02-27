@@ -1,6 +1,7 @@
 import type { Request, Response } from 'express';
 import { accessSheets } from './lib/access-sheets';
 import { verifyParticipants } from './lib/verification-engine';
+import { BaseResponseDTO } from '@auxilium/types/response';
 
 export const generatePointsSheet = async (req: Request, res: Response) => {
   // Assume URL format is https://docs.google.com/spreadsheets/d/{spreadsheetId}/edit
@@ -41,11 +42,15 @@ export const generatePointsSheet = async (req: Request, res: Response) => {
     helperData,
   );
 
-  const turnupRate = ((verificationResult.participants.length / signupCount) * 100).toFixed(2);
+  const turnupRate = (
+    (verificationResult.participants.length / signupCount) *
+    100
+  ).toFixed(2);
 
-  res
-    .status(200)
-    .json({
+  res.status(200).json({
+    status: 'success',
+    message: 'Points sheet generated successfully',
+    data: {
       signupCount,
       feedbackCount,
       helperCount,
@@ -54,5 +59,6 @@ export const generatePointsSheet = async (req: Request, res: Response) => {
         turnupRate: parseFloat(turnupRate),
         ...verificationResult.stats,
       },
-    });
+    },
+  } as BaseResponseDTO);
 };
