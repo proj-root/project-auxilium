@@ -8,6 +8,7 @@
     "dev:clear": "tsx --watch --clear-screen src/app.ts",
     "dev:safe": "tsc --noEmit && tsx watch src/app.ts",
     "seed": "tsx src/db/seed.ts",
+    "seed:reset": "tsx src/db/seed.ts --reset",
     "biome:check": "biome check .",
     "biome:fix": "biome check --write .",
     "biome:format": "biome format --write .",

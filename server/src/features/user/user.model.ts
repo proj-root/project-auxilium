@@ -11,8 +11,9 @@ interface CreateUserProps {
   password: string;
   firstName: string;
   lastName: string;
-  gender: string;
-  dob: Date;
+  course: string;
+  ichat: string;
+  adminNumber: string;
 }
 
 export const createUser = async ({
@@ -20,8 +21,9 @@ export const createUser = async ({
   password,
   firstName,
   lastName,
-  gender,
-  dob,
+  course,
+  ichat,
+  adminNumber,
 }: CreateUserProps) => {
   const createdUser = await db.transaction(async (tx) => {
     // Generate user profile first
@@ -30,8 +32,9 @@ export const createUser = async ({
       .values({
         firstName,
         lastName,
-        gender,
-        dob: dob.toISOString(),
+        course,
+        ichat,
+        adminNumber,
       })
       .returning();
 

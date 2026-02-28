@@ -5,18 +5,111 @@ import { Roles } from '@auxilium/configs/roles';
 import { primaryKey } from 'drizzle-orm/pg-core';
 import { date } from 'drizzle-orm/pg-core';
 import { StatusConfig } from '@auxilium/configs/status';
+import { pgEnum } from 'drizzle-orm/pg-core';
+import { text } from 'drizzle-orm/pg-core';
+import { timestamp } from 'drizzle-orm/pg-core';
+import { boolean } from 'drizzle-orm/pg-core';
 
+export const eventRole = pgEnum('event_role', [
+  'ORGANIZER',
+  'HELPER',
+  'PARTICIPANT',
+]);
+
+// Status Table
 export const status = pgTable('status', {
-  statusId: integer('status_id').primaryKey(),
+  statusId: integer('status_id').primaryKey().unique(),
   name: varchar({ length: 50 }).notNull().unique(),
 });
 
+// Course Table
+export const course = pgTable('course', {
+  code: varchar({ length: 10 }).primaryKey().unique(),
+  name: varchar({ length: 100 }).notNull(),
+  ...timestamps,
+});
+
+// Event Type Table
+export const eventType = pgTable('event_type', {
+  eventTypeId: integer('event_type_id').primaryKey().unique(),
+  name: varchar({ length: 100 }).notNull().unique(),
+});
+
+// User Profile Table
 export const userProfile = pgTable('user_profile', {
   profileId: uuid('profile_id').primaryKey().defaultRandom(),
   firstName: varchar({ length: 100 }).notNull(),
   lastName: varchar({ length: 100 }).notNull(),
-  gender: varchar({ length: 20 }),
-  dob: date(),
+  course: varchar({ length: 10 }).references(() => course.code, {
+    onDelete: 'set null',
+    onUpdate: 'cascade',
+  }),
+  ichat: varchar({ length: 100 }).notNull().unique(),
+  adminNumber: varchar('admin_number', { length: 7 }).notNull().unique(),
+  ...timestamps,
+});
+
+// Event Table
+export const event = pgTable('event', {
+  eventId: uuid('event_id').primaryKey().defaultRandom(),
+  name: varchar({ length: 100 }).notNull(),
+  eventTypeId: integer('event_type_id').references(
+    () => eventType.eventTypeId,
+    {
+      onDelete: 'set null',
+      onUpdate: 'cascade',
+    },
+  ),
+  description: text(),
+  startDate: timestamp('start_date', { withTimezone: true, mode: 'date' }),
+  endDate: timestamp('end_date', { withTimezone: true, mode: 'date' }),
+  platform: varchar({ length: 20 }),
+  signupUrl: varchar({ length: 255 }),
+  feedbackUrl: varchar({ length: 255 }),
+  helpersUrl: varchar({ length: 255 }),
+  createdBy: uuid('created_by').references(() => user.userId, {
+    onDelete: 'set null',
+    onUpdate: 'cascade',
+  }),
+  ...timestamps,
+});
+
+// Event Participation Table
+export const eventParticipation = pgTable('event_participation', {
+  participationId: uuid('participation_id').primaryKey().defaultRandom(),
+  profileId: uuid('profile_id')
+    .notNull()
+    .references(() => userProfile.profileId, {
+      onDelete: 'cascade',
+      onUpdate: 'cascade',
+    }),
+  eventId: uuid('event_id')
+    .notNull()
+    .references(() => event.eventId, {
+      onDelete: 'cascade',
+      onUpdate: 'cascade',
+    }),
+  attended: boolean().default(false),
+  eventRole: eventRole('event_role').default('PARTICIPANT'),
+  pointsAwarded: integer('points_awarded').default(0),
+  ...timestamps,
+});
+
+// Event Points Report Table
+export const eventReport = pgTable('event_report', {
+  eventReportId: uuid('event_report_id').primaryKey().defaultRandom(),
+  eventId: uuid('event_id')
+    .notNull()
+    .references(() => event.eventId, {
+      onDelete: 'cascade',
+      onUpdate: 'cascade',
+    }),
+  signupCount: integer('signup_count'),
+  feedbackCount: integer('feedback_count'),
+  createdBy: uuid('created_by').references(() => user.userId, {
+    onDelete: 'set null',
+    onUpdate: 'cascade',
+  }),
   ...timestamps,
 });
 
@@ -41,7 +134,7 @@ export const user = pgTable('user', {
 });
 
 export const role = pgTable('role', {
-  roleId: integer('role_id').primaryKey(),
+  roleId: integer('role_id').primaryKey().unique(),
   name: varchar({ length: 50 }).notNull().unique(),
   ...timestamps,
 });
