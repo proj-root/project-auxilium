@@ -12,6 +12,7 @@ import {
   globalErrorHandler,
   notFoundHandler,
 } from '@/middleware/errors.middleware';
+import AuthRouter from '@/features/auth/auth.route';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -33,6 +34,7 @@ app.use(getLoggerStartTime);
 app.use(loggerMiddleware);
 
 // Routes
+app.use('/auth', AuthRouter);
 app.use('/events', EventsRouter);
 
 // Health Check Route

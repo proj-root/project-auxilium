@@ -4,6 +4,21 @@ import { integer, pgTable, varchar } from 'drizzle-orm/pg-core';
 import { Roles } from '@auxilium/configs/roles';
 import { primaryKey } from 'drizzle-orm/pg-core';
 import { date } from 'drizzle-orm/pg-core';
+import { StatusConfig } from '@auxilium/configs/status';
+
+export const status = pgTable('status', {
+  statusId: integer('status_id').primaryKey(),
+  name: varchar({ length: 50 }).notNull().unique(),
+});
+
+export const userProfile = pgTable('user_profile', {
+  profileId: uuid('profile_id').primaryKey().defaultRandom(),
+  firstName: varchar({ length: 100 }).notNull(),
+  lastName: varchar({ length: 100 }).notNull(),
+  gender: varchar({ length: 20 }),
+  dob: date(),
+  ...timestamps,
+});
 
 export const user = pgTable('user', {
   userId: uuid('user_id').primaryKey().defaultRandom(),
@@ -15,6 +30,13 @@ export const user = pgTable('user', {
     }),
   email: varchar({ length: 255 }).notNull().unique(),
   password: varchar({ length: 100 }).notNull(),
+  statusId: integer('status_id')
+    .notNull()
+    .default(StatusConfig.ACTIVE)
+    .references(() => status.statusId, {
+      onDelete: 'cascade',
+      onUpdate: 'cascade',
+    }),
   ...timestamps,
 });
 
@@ -48,12 +70,3 @@ export const userRole = pgTable(
     }),
   ],
 );
-
-export const userProfile = pgTable('user_profile', {
-  profileId: uuid('profile_id').primaryKey().defaultRandom(),
-  firstName: varchar({ length: 100 }).notNull(),
-  lastName: varchar({ length: 100 }).notNull(),
-  gender: varchar({ length: 20 }),
-  dob: date(),
-  ...timestamps,
-});
