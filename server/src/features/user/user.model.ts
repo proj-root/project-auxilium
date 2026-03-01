@@ -6,7 +6,7 @@ import { APIError } from '@auxilium/types/errors';
 import { eq } from 'drizzle-orm';
 import { AuthConfig } from '@/config/auth.config';
 
-interface CreateUserProps {
+interface CreateUserArgs {
   email: string;
   password: string;
   firstName: string;
@@ -24,7 +24,7 @@ export const createUser = async ({
   course,
   ichat,
   adminNumber,
-}: CreateUserProps) => {
+}: CreateUserArgs) => {
   const createdUser = await db.transaction(async (tx) => {
     // Generate user profile first
     const [newProfile] = await tx

@@ -25,6 +25,10 @@ export const verifyJWT = catchAsync(
         )}`,
       );
 
+      // Check if user exists in the database
+      const user = await UserModel.getUserById({ userId: payload.userId });
+      if (!user) throw new Error('User not found.');
+
       // Pass on payload data to next function
       res.locals.user = {
         userId: payload.userId,
@@ -83,9 +87,9 @@ export const verifyRefreshJWT = catchAsync(
   },
 );
 
-export const verifyIsRole = (requiredRoleId: number) =>
+export const verifyIsRole = (requiredRoleIds: number[]) =>
   catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-    if (res.locals.user.roleId !== requiredRoleId) {
+    if (!requiredRoleIds.includes(res.locals.user.roleId)) {
       throw new APIError(`User does not have required authority.`, 403);
     }
     return next();

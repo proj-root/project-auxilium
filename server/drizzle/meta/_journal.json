@@ -15,6 +15,27 @@
       "when": 1772303639042,
       "tag": "0001_young_titania",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1772318549720,
+      "tag": "0002_fast_champions",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1772321739951,
+      "tag": "0003_silky_dracula",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1772332130225,
+      "tag": "0004_flaky_the_liberteens",
+      "breakpoints": true
     }
   ]
 }

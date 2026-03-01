@@ -3,7 +3,6 @@ import { timestamps } from './column.helpers';
 import { integer, pgTable, varchar } from 'drizzle-orm/pg-core';
 import { Roles } from '@auxilium/configs/roles';
 import { primaryKey } from 'drizzle-orm/pg-core';
-import { date } from 'drizzle-orm/pg-core';
 import { StatusConfig } from '@auxilium/configs/status';
 import { pgEnum } from 'drizzle-orm/pg-core';
 import { text } from 'drizzle-orm/pg-core';
@@ -51,9 +50,9 @@ export const userProfile = pgTable('user_profile', {
 
 // Event Table
 export const event = pgTable('event', {
-  eventId: uuid('event_id').primaryKey().defaultRandom(),
+  eventId: uuid('event_id').primaryKey().defaultRandom().unique(),
   name: varchar({ length: 100 }).notNull(),
-  eventTypeId: integer('event_type_id').references(
+  eventTypeId: integer('event_type_id').notNull().references(
     () => eventType.eventTypeId,
     {
       onDelete: 'set null',
@@ -64,13 +63,20 @@ export const event = pgTable('event', {
   startDate: timestamp('start_date', { withTimezone: true, mode: 'date' }),
   endDate: timestamp('end_date', { withTimezone: true, mode: 'date' }),
   platform: varchar({ length: 20 }),
-  signupUrl: varchar({ length: 255 }),
-  feedbackUrl: varchar({ length: 255 }),
-  helpersUrl: varchar({ length: 255 }),
+  signupUrl: varchar('signup_url', { length: 255 }),
+  feedbackUrl: varchar('feedback_url', { length: 255 }),
+  helpersUrl: varchar('helpers_url', { length: 255 }),
   createdBy: uuid('created_by').references(() => user.userId, {
     onDelete: 'set null',
     onUpdate: 'cascade',
   }),
+  statusId: integer('status_id')
+    .notNull()
+    .default(StatusConfig.ACTIVE)
+    .references(() => status.statusId, {
+      onDelete: 'cascade',
+      onUpdate: 'cascade',
+    }),
   ...timestamps,
 });
 

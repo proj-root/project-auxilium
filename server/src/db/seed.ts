@@ -26,68 +26,73 @@ async function main() {
 
   // Seed Roles
   console.log('Seeding roles...');
-  await seed(db, { role: schema.role }).refine((f) => ({
-    role: {
-      count: testRoles.length,
-      columns: {
-        roleId: f.valuesFromArray({
-          values: testRoles.map((role) => role.roleId),
-        }),
-        name: f.valuesFromArray({
-          values: testRoles.map((role) => role.name),
-        }),
-      },
-    },
-  }));
+  // await seed(db, { role: schema.role }).refine((f) => ({
+  //   role: {
+  //     count: testRoles.length,
+  //     columns: {
+  //       roleId: f.valuesFromArray({
+  //         values: testRoles.map((role) => role.roleId),
+  //       }),
+  //       name: f.valuesFromArray({
+  //         values: testRoles.map((role) => role.name),
+  //       }),
+  //     },
+  //   },
+  // }));
+  for (const role of testRoles) {
+    await db
+      .insert(schema.role)
+      .values(role)
+      .onConflictDoUpdate({
+        target: schema.role.roleId,
+        set: {
+          ...role,
+        },
+      });
+  }
   console.log('✅ Seeded roles successfully!');
 
   // Seed Statuses
   console.log('Seeding statuses...');
-  await seed(db, { status: schema.status }).refine((f) => ({
-    status: {
-      count: testStatuses.length,
-      columns: {
-        statusId: f.valuesFromArray({
-          values: testStatuses.map((status) => status.statusId),
-        }),
-        name: f.valuesFromArray({
-          values: testStatuses.map((status) => status.name),
-        }),
-      },
-    },
-  }));
+  for (const status of testStatuses) {
+    await db
+      .insert(schema.status)
+      .values(status)
+      .onConflictDoUpdate({
+        target: schema.status.statusId,
+        set: {
+          ...status,
+        },
+      });
+  }
   console.log('✅ Seeded statuses successfully!');
 
   console.log('Seeding courses...');
-  await seed(db, { course: schema.course }).refine((f) => ({
-    course: {
-      count: testCourses.length,
-      columns: {
-        code: f.valuesFromArray({
-          values: testCourses.map((course) => course.code),
-        }),
-        name: f.valuesFromArray({
-          values: testCourses.map((course) => course.name),
-        }),
-      },
-    },
-  }));
+  for (const course of testCourses) {
+    await db
+      .insert(schema.course)
+      .values(course)
+      .onConflictDoUpdate({
+        target: schema.course.code,
+        set: {
+          ...course,
+        },
+      });
+  }
   console.log('✅ Seeded courses successfully!');
 
   console.log('Seeding event types...');
-  await seed(db, { eventType: schema.eventType }).refine((f) => ({
-    eventType: {
-      count: testEventTypes.length,
-      columns: {
-        eventTypeId: f.valuesFromArray({
-          values: testEventTypes.map((event) => event.eventTypeId),
-        }),
-        name: f.valuesFromArray({
-          values: testEventTypes.map((event) => event.name),
-        }),
-      },
-    },
-  }));
+  for (const eventType of testEventTypes) {
+    await db
+      .insert(schema.eventType)
+      .values(eventType)
+      .onConflictDoUpdate({
+        target: schema.eventType.eventTypeId,
+        set: {
+          ...eventType,
+        },
+      });
+  }
   console.log('✅ Seeded event types successfully!');
 
   // Seed Users

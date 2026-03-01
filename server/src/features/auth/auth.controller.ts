@@ -9,7 +9,6 @@ import {
   generateAccessToken,
   generateRefreshToken,
 } from './lib/generate-tokens';
-import { logger } from '@/lib/logger';
 
 export const login = catchAsync(async (req: Request, res: Response) => {
   const { email, password } = req.body;
