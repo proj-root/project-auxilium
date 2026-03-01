@@ -1,6 +1,12 @@
 import db from '@/db';
-import { event as eventTable } from '@/db/schema';
+import {
+  eventReport as eventReportTable,
+  eventRole,
+  eventParticipation as eventParticipationTable,
+  event as eventTable,
+} from '@/db/schema';
 import { StatusConfig } from '@auxilium/configs/status';
+import { APIError } from '@auxilium/types/errors';
 import { eq } from 'drizzle-orm';
 
 interface CreateEventArgs {
@@ -33,6 +39,7 @@ export const getEventById = async ({ eventId }: { eventId: string }) => {
     with: {
       eventType: true,
       creator: true,
+      eventReports: true,
     },
   });
 
@@ -107,4 +114,73 @@ export const hardDeleteEventById = async ({ eventId }: { eventId: string }) => {
     .returning();
 
   return deletedEvent;
+};
+
+// Event Reports
+interface CreateEventReportArgs {
+  eventId: string;
+  signupCount: number;
+  feedbackCount: number;
+  createdBy: string;
+}
+
+// TODO: Store more statistical data here
+export const createEventReport = async (args: CreateEventReportArgs) => {
+  const [eventReport] = await db
+    .insert(eventReportTable)
+    .values({
+      ...args,
+    })
+    .returning();
+
+  if (!eventReport) {
+    throw new APIError('Failed to create event report', 500);
+  }
+
+  return eventReport;
+};
+
+// Get all generated reports under an event
+export const getEventReportsByEventId = async ({ eventId }: { eventId: string }) => {
+  const eventReports = await db.query.eventReport.findMany({
+    where: eq(eventReportTable.eventId, eventId),
+  });
+
+  return eventReports;
+};
+
+// Get a single generated report by its ID
+export const getEventReportById = async ({
+  eventReportId,
+}: {
+  eventReportId: string;
+}) => {
+  const eventReport = await db.query.eventReport.findFirst({
+    where: eq(eventReportTable.eventReportId, eventReportId),
+    with: {
+      eventParticipations: true,
+      creator: true,
+    }
+  });
+
+  return eventReport;
+};
+
+interface CreateEventParticipationRecordArgs {
+  profileId: string;
+  eventReportId: string;
+  attended?: boolean;
+  eventRole?: (typeof eventRole.enumValues)[number];
+  pointsAwarded?: number;
+}
+
+export const createEventParticipationRecord = async (
+  args: CreateEventParticipationRecordArgs,
+) => {
+  const [participationRecord] = await db
+    .insert(eventParticipationTable)
+    .values({
+      ...args,
+    })
+    .returning();
 };

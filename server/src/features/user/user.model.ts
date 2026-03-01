@@ -104,3 +104,34 @@ export const getUserById = async ({ userId }: { userId: string }) => {
     roleId: result.user_role.roleId,
   };
 };
+
+interface CreateUserProfileArgs {
+  firstName: string;
+  lastName: string;
+  course: string;
+  ichat: string;
+  adminNumber: string;
+}
+
+export const createUserProfile = async (args: CreateUserProfileArgs) => {
+  const [newProfile] = await db
+    .insert(userProfile)
+    .values({
+      ...args,
+    })
+    .returning();
+  
+  if (!newProfile) {
+    throw new APIError('Failed to create user profile', 500);
+  }
+
+  return newProfile;
+};
+
+export const getProfileByAdminNo = async ({ adminNumber }: { adminNumber: string }) => {
+  const profile = await db.query.userProfile.findFirst({
+    where: eq(userProfile.adminNumber, adminNumber),
+  });
+  
+  return profile;
+};

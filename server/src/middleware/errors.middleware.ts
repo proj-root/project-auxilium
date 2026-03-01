@@ -44,8 +44,7 @@ export const globalErrorHandler = (err: APIError, req: Request, res: Response, n
   // console.error(`[${new Date().toISOString()}]`, err);
 
   if (err.status != 500) {
-    logger.error(err.message);
-    console.error(err);
+    logger.error(err);
   } else {
     logger.error('Server error', {
       message: err.message,

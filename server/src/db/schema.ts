@@ -8,6 +8,7 @@ import { pgEnum } from 'drizzle-orm/pg-core';
 import { text } from 'drizzle-orm/pg-core';
 import { timestamp } from 'drizzle-orm/pg-core';
 import { boolean } from 'drizzle-orm/pg-core';
+import { foreignKey } from 'drizzle-orm/pg-core';
 
 export const eventRole = pgEnum('event_role', [
   'ORGANIZER',
@@ -52,13 +53,12 @@ export const userProfile = pgTable('user_profile', {
 export const event = pgTable('event', {
   eventId: uuid('event_id').primaryKey().defaultRandom().unique(),
   name: varchar({ length: 100 }).notNull(),
-  eventTypeId: integer('event_type_id').notNull().references(
-    () => eventType.eventTypeId,
-    {
+  eventTypeId: integer('event_type_id')
+    .notNull()
+    .references(() => eventType.eventTypeId, {
       onDelete: 'set null',
       onUpdate: 'cascade',
-    },
-  ),
+    }),
   description: text(),
   startDate: timestamp('start_date', { withTimezone: true, mode: 'date' }),
   endDate: timestamp('end_date', { withTimezone: true, mode: 'date' }),
@@ -89,9 +89,9 @@ export const eventParticipation = pgTable('event_participation', {
       onDelete: 'cascade',
       onUpdate: 'cascade',
     }),
-  eventId: uuid('event_id')
+  eventReportId: uuid('event_report_id')
     .notNull()
-    .references(() => event.eventId, {
+    .references(() => eventReport.eventReportId, {
       onDelete: 'cascade',
       onUpdate: 'cascade',
     }),

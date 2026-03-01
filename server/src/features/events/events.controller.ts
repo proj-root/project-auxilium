@@ -5,6 +5,7 @@ import { BaseResponseDTO } from '@auxilium/types/response';
 import { catchAsync } from '@/lib/catch-async';
 import * as EventModel from './events.model';
 import { APIError } from '@auxilium/types/errors';
+import { logger } from '@/lib/logger';
 
 export const createEvent = catchAsync(async (req: Request, res: Response) => {
   let {
@@ -124,72 +125,85 @@ export const deleteEvent = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-export const hardDeleteEvent = catchAsync(async (req: Request, res: Response) => {
-  const { eventId } = req.params;
-  await EventModel.hardDeleteEventById({ eventId: eventId as string });
+export const hardDeleteEvent = catchAsync(
+  async (req: Request, res: Response) => {
+    const { eventId } = req.params;
+    await EventModel.hardDeleteEventById({ eventId: eventId as string });
 
-  res.status(200).json({
-    status: 'success',
-    message: 'Event permanently deleted successfully',
-  });
-});
+    res.status(200).json({
+      status: 'success',
+      message: 'Event permanently deleted successfully',
+    });
+  },
+);
 
 export const generatePointsSheet = async (req: Request, res: Response) => {
+  const { eventId } = req.params;
+
   // Assume URL format is https://docs.google.com/spreadsheets/d/{spreadsheetId}/edit
-  const { signupUrl, feedbackUrl, helperUrl, eventName } = req.body;
+  const event = await EventModel.getEventById({ eventId: eventId as string });
+  if (!event) {
+    throw new APIError('Event not found', 404);
+  }
 
-  // TODO: add url validation and error handling
-
-  // Get responses from each form (including questions headers)
-  // TODO: in the future, make a UI for user to select which columns is for what
-  // For now assume general structure.
-  const signupData = await accessSheets({
-    spreadsheetId: signupUrl.split('/')[5],
-  });
-  const feedbackData = await accessSheets({
-    spreadsheetId: feedbackUrl.split('/')[5],
-  });
-
-  // TODO: Optimise next time
-  const helperData = (
-    await accessSheets({
-      spreadsheetId: helperUrl.split('/')[5],
-    })
-  ).filter((row) => row[6] === eventName);
-
-  console.log('Signup Data Sample:', signupData[1]);
-  console.log('Feedback Data Sample:', feedbackData[1]);
-  console.log('Helper Data Sample:', helperData[1]);
-
-  // Exclude header row
-  const signupCount = signupData.length - 1;
-  const feedbackCount = feedbackData.length - 1;
-  const helperCount = helperData.length;
+  const { signupUrl, feedbackUrl, helpersUrl } = event;
+  if (!signupUrl || !feedbackUrl || !helpersUrl) {
+    throw new APIError(
+      'Missing form URLs. Please ensure signupUrl, feedbackUrl, and helpersUrl are all updated and try again.',
+      400,
+    );
+  }
 
   // TODO: add explicit types here to translate from raw sheet data to more structured data, based on column headers
-  const verificationResult = await verifyParticipants(
-    signupData,
-    feedbackData,
-    helperData,
-  );
-
-  const turnupRate = (
-    (verificationResult.participants.length / signupCount) *
-    100
-  ).toFixed(2);
+  const verificationResult = await verifyParticipants({
+    eventId: event.eventId,
+    userId: res.locals.user.userId,
+    signupUrl,
+    feedbackUrl,
+    helpersUrl,
+  });
 
   res.status(200).json({
     status: 'success',
     message: 'Points sheet generated successfully',
     data: {
-      signupCount,
-      feedbackCount,
-      helperCount,
-      participants: verificationResult.participants,
-      stats: {
-        turnupRate: parseFloat(turnupRate),
-        ...verificationResult.stats,
-      },
+      ...verificationResult,
     },
   } as BaseResponseDTO);
 };
+
+export const getEventReportById = catchAsync(
+  async (req: Request, res: Response) => {
+    const { eventReportId } = req.params;
+    const eventReport = await EventModel.getEventReportById({
+      eventReportId: eventReportId as string,
+    });
+
+    if (!eventReport) {
+      throw new APIError('Event report not found', 404);
+    }
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Event report retrieved successfully',
+      data: {
+        ...eventReport,
+      },
+    });
+  },
+);
+
+export const getEventReportsByEventId = catchAsync(
+  async (req: Request, res: Response) => {
+    const { eventId } = req.params;
+    const eventReports = await EventModel.getEventReportsByEventId({
+      eventId: eventId as string,
+    });
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Event reports retrieved successfully',
+      data: eventReports,
+    });
+  },
+);
