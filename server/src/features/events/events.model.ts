@@ -4,6 +4,7 @@ import {
   eventRole,
   eventParticipation as eventParticipationTable,
   event as eventTable,
+  eventPointsType,
 } from '@/db/schema';
 import { StatusConfig } from '@auxilium/configs/status';
 import { APIError } from '@auxilium/types/errors';
@@ -171,6 +172,7 @@ interface CreateEventParticipationRecordArgs {
   eventReportId: string;
   attended?: boolean;
   eventRole?: (typeof eventRole.enumValues)[number];
+  pointsType?: (typeof eventPointsType.enumValues)[number];
   pointsAwarded?: number;
 }
 
@@ -183,4 +185,10 @@ export const createEventParticipationRecord = async (
       ...args,
     })
     .returning();
+
+  if (!participationRecord) {
+    throw new APIError('Failed to insert event participation record', 500);
+  }
+
+  return participationRecord;
 };

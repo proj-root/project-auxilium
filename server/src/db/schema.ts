@@ -16,6 +16,13 @@ export const eventRole = pgEnum('event_role', [
   'PARTICIPANT',
 ]);
 
+export const eventPointsType = pgEnum('event_points_type', [
+  'LEADERSHIP',
+  'PARTICIPATION',
+  'SERVICE',
+  'COMMUNITY SERVICE',
+]);
+
 // Status Table
 export const status = pgTable('status', {
   statusId: integer('status_id').primaryKey().unique(),
@@ -97,6 +104,8 @@ export const eventParticipation = pgTable('event_participation', {
     }),
   attended: boolean().default(false),
   eventRole: eventRole('event_role').default('PARTICIPANT'),
+  pointsType:
+    eventPointsType('points_type').default('PARTICIPATION'),
   pointsAwarded: integer('points_awarded').default(0),
   ...timestamps,
 });

@@ -39,11 +39,8 @@ export async function verifyParticipants(args: VerifyParticipantsArgs) {
   });
 
   logger.debug(
-    '🛠️ Preparing to generate points sheet with the following data samples:',
+    '🛠️ Data loaded from spreadsheets. Preparing to generate points sheet...',
   );
-  logger.debug('Signup Data Sample:', signupData[1]);
-  logger.debug('Feedback Data Sample:', feedbackData[1]);
-  logger.debug('Helper Data Sample:', helperData[1]);
 
   // Exclude header row
   const signupCount = signupData.length - 1;
@@ -143,10 +140,44 @@ export async function verifyParticipants(args: VerifyParticipantsArgs) {
       eventReportId: eventReport.eventReportId,
       attended: true,
       eventRole: 'PARTICIPANT',
-      pointsAwarded: 1, // TODO: Change to Participation, Leadership, etc.
+      pointsAwarded: 1,
     });
 
     participantArray.push(student);
+  }
+
+  // Do the same for helpers
+  for (const helper of helperData.slice(1)) {
+    const helperAdminNum = helper[4];
+
+    const eventRole = helper[7].toLowerCase().includes('[Event IC]') ? 'ORGANIZER' : 'HELPER';
+    const points = eventRole === 'ORGANIZER' ? 2 : 1;
+
+    let existingProfile = await UserModel.getProfileByAdminNo({
+      adminNumber: helperAdminNum,
+    });
+
+    if (!existingProfile) {
+      logger.debug(
+        `No user profile found for helper with admin number: ${helperAdminNum}. Creating new profile.`,
+      );
+      existingProfile = await UserModel.createUserProfile({
+        ...nameSplitter(helper[1]),
+        course: helper[2].split('/')[0].trim(),
+        ichat: helper[3],
+        adminNumber: helperAdminNum,
+      });
+    }
+
+    // Record helper participation
+    await EventModel.createEventParticipationRecord({
+      profileId: existingProfile.profileId,
+      eventReportId: eventReport.eventReportId,
+      attended: true,
+      eventRole: eventRole,
+      pointsType: 'LEADERSHIP',
+      pointsAwarded: points,
+    });
   }
 
   const overallTurnupRate = (

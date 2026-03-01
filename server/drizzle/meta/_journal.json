@@ -43,6 +43,13 @@
       "when": 1772379339043,
       "tag": "0005_lethal_lightspeed",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1772380840047,
+      "tag": "0006_early_gertrude_yorkes",
+      "breakpoints": true
     }
   ]
 }
