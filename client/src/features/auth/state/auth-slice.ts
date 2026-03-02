@@ -12,7 +12,7 @@ const initialState: AuthState = {
   accessToken: null,
   userId: null,
   roleId: null,
-  loading: false,
+  loading: true,
 };
 
 const authSlice = createSlice({
