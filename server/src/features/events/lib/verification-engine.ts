@@ -134,7 +134,6 @@ export async function verifyParticipants(args: VerifyParticipantsArgs) {
       courseTurnup[studentCourse] = (courseTurnup[studentCourse] || 0) + 1;
 
     // Record the participation in the database
-
     await EventModel.createEventParticipationRecord({
       profileId: existingProfile.profileId,
       eventReportId: eventReport.eventReportId,

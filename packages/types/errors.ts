@@ -12,3 +12,16 @@ export class APIError extends Error {
     // Error.captureStackTrace(this, this.constructor);
   }
 }
+
+export class UnauthorisedError extends APIError {
+  constructor(message: string = 'User is not authorised to access this page.') {
+    super(message, 401);
+    this.name = 'UnauthorisedError';
+  }
+}
+
+export type RTKApiError = {
+  status: number | string;
+  data: any;
+  error?: string;
+};

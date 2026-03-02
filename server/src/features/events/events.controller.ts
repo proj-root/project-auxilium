@@ -1,11 +1,8 @@
 import type { Request, Response } from 'express';
-import { accessSheets } from './lib/access-sheets';
 import { verifyParticipants } from './lib/verification-engine';
-import { BaseResponseDTO } from '@auxilium/types/response';
 import { catchAsync } from '@/lib/catch-async';
 import * as EventModel from './events.model';
 import { APIError } from '@auxilium/types/errors';
-import { logger } from '@/lib/logger';
 
 export const createEvent = catchAsync(async (req: Request, res: Response) => {
   let {
@@ -169,7 +166,7 @@ export const generatePointsSheet = async (req: Request, res: Response) => {
     data: {
       ...verificationResult,
     },
-  } as BaseResponseDTO);
+  });
 };
 
 export const getEventReportById = catchAsync(

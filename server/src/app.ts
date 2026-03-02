@@ -13,6 +13,7 @@ import {
   notFoundHandler,
 } from '@/middleware/errors.middleware';
 import AuthRouter from '@/features/auth/auth.route';
+import { SystemConfig } from './config/system.config';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -20,7 +21,7 @@ const PORT = process.env.PORT || 3000;
 app.use(cookieParser());
 app.use(
   cors({
-    origin: process.env.CLIENT_URL,
+    origin: SystemConfig.clientUrl,
     credentials: true,
   }),
 );
