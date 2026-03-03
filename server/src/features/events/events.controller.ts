@@ -68,15 +68,14 @@ export const getEventById = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+// TODO: Implement pagination to this
 export const getAllEvents = catchAsync(async (req: Request, res: Response) => {
   const events = await EventModel.getAllEvents();
 
   res.status(200).json({
     status: 'success',
     message: 'Events retrieved successfully',
-    data: {
-      events,
-    },
+    data: events,
   });
 });
 
@@ -212,6 +211,18 @@ export const getEventReportsByEventId = catchAsync(
       status: 'success',
       message: 'Event reports retrieved successfully',
       data: eventReports,
+    });
+  },
+);
+
+export const getAllEventTypes = catchAsync(
+  async (req: Request, res: Response) => {
+    const eventTypes = await EventModel.getAllEventTypes();
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Event types retrieved successfully',
+      data: eventTypes,
     });
   },
 );

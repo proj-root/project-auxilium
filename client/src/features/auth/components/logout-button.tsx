@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { LogOut } from 'lucide-react';
 
 export function LogoutButton() {
-  const [logoutApi, { isError }] = useLogoutMutation();
+  const [logoutApi] = useLogoutMutation();
 
   const dispatch = useAppDispatch();
 

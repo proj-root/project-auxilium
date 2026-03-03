@@ -14,7 +14,13 @@ export default [
   ]),
 
   ...prefix('admin', [
-    layout('routes/admin/layout.tsx', [index('routes/admin/index.tsx')]),
+    layout('routes/admin/layout.tsx', [
+      index('routes/admin/index.tsx'),
+      ...prefix('events', [
+        //
+        route('/create', 'routes/admin/events/create.tsx'),
+      ]),
+    ]),
   ]),
 
   ...prefix('auth', [

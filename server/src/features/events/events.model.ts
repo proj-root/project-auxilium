@@ -39,7 +39,11 @@ export const getEventById = async ({ eventId }: { eventId: string }) => {
     where: eq(eventTable.eventId, eventId),
     with: {
       eventType: true,
-      creator: true,
+      creator: {
+        columns: {
+          password: false,
+        }
+      },
       eventReports: true,
     },
   });
@@ -192,3 +196,8 @@ export const createEventParticipationRecord = async (
 
   return participationRecord;
 };
+
+export const getAllEventTypes = async () => {
+  const eventTypes = await db.query.eventType.findMany();
+  return eventTypes;
+}

@@ -55,7 +55,7 @@ export function NavGroup({
               tooltip={'Create Event'}
               className='bg-primary text-primary-foreground hover:bg-primary/85 hover:text-primary-foreground'
             >
-              <Link to={'/'}>
+              <Link to={'/admin/events/create'}>
                 <Plus />
                 Create Event
               </Link>

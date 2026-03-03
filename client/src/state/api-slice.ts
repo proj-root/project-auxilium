@@ -124,5 +124,5 @@ export const apiSlice = createApi({
   baseQuery: axiosBaseQuery({ baseUrl: '' }),
   endpoints: () => ({}),
   // Edit tags here as needed
-  tagTypes: ['User'],
+  tagTypes: ['User', 'Events'],
 });

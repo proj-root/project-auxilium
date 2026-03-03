@@ -17,6 +17,8 @@ EventsRouter.post('/:eventId/generate', EventsController.generatePointsSheet);
 
 // GET /events - Get all events
 EventsRouter.get('/', EventsController.getAllEvents);
+// GET /events/types - Get all event types
+EventsRouter.get('/types', EventsController.getAllEventTypes);
 // GET /events/reports/:eventReportId - Get event report details by report ID
 EventsRouter.get('/reports/:eventReportId', EventsController.getEventReportById);
 // GET /events/:eventId - Get event details by ID

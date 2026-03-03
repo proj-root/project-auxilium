@@ -31,6 +31,7 @@ import * as schema from './schema';
 
 export const statusRelations = relations(schema.status, ({ many }) => ({
   users: many(schema.user),
+  events: many(schema.event),
 }));
 
 export const userRelations = relations(schema.user, ({ one }) => ({
@@ -89,6 +90,10 @@ export const eventRelations = relations(schema.event, ({ one, many }) => ({
   creator: one(schema.user, {
     fields: [schema.event.createdBy],
     references: [schema.user.userId],
+  }),
+  status: one(schema.status, {
+    fields: [schema.event.statusId],
+    references: [schema.status.statusId],
   }),
 }));
 
