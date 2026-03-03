@@ -9,6 +9,7 @@ export const testUsers = [
     lastName: 'Blue',
     course: 'DIT',
     ichat: 'wolfyre@ichat.sp.edu.sg',
+    studentClass: 'DIT/FT/2B/01',
     adminNumber: '2429634',
     role: Roles.SUPERADMIN,
   },
@@ -19,6 +20,7 @@ export const testUsers = [
     lastName: 'Doe',
     course: 'DAAA',
     ichat: 'johndoe@ichat.sp.edu.sg',
+    studentClass: 'DAAA/FT/2B/02',
     adminNumber: '2429635',
     role: Roles.ADMIN,
   },
@@ -29,6 +31,7 @@ export const testUsers = [
     lastName: 'User',
     course: 'DCDF',
     ichat: 'regularuser@ichat.sp.edu.sg',
+    studentClass: 'DCDF/FT/2B/03',
     adminNumber: '2429636',
     role: Roles.USER,
   },
@@ -48,6 +51,7 @@ export const testRoles = Object.keys(Roles).map((key) => ({
 
 export const testCourses = [
   { code: 'DIT', name: 'Diploma in Information Technology' },
+  { code: 'DISM', name: 'Diploma in Information Security Management' },
   { code: 'DCS', name: 'Diploma in Computer Science' },
   { code: 'DAAA', name: 'Diploma in Applied Artificial Intelligence' },
   { code: 'DCDF', name: 'Diploma in Cybersecurity & Digital Forensics' },

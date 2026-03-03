@@ -1,0 +1,1 @@
+ALTER TABLE "user_profile" RENAME COLUMN "class" TO "student_class";

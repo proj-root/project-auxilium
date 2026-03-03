@@ -1,7 +1,8 @@
 import { logger } from '@/lib/logger';
-import { accessSheets } from './access-sheets';
+import { accessSheets, insertIntoSheet } from './access-sheets';
 import * as EventModel from '../events.model';
 import * as UserModel from '@/features/user/user.model';
+import { capitalizeFirst } from '@/lib/formatters';
 
 // A temporary function to split full name into first and last name, for better profile creation.
 // This is a naive implmentation and DOES NOT cover all edge cases
@@ -12,6 +13,8 @@ function nameSplitter(fullName: string) {
 
   return { firstName, lastName };
 }
+
+// TODO Add a class comparer to check for invalid class regressions
 
 interface VerifyParticipantsArgs {
   eventId: string;
@@ -61,7 +64,8 @@ export async function verifyParticipants(args: VerifyParticipantsArgs) {
   // --- --- ---
 
   logger.debug(`🧮 Calculating participant validity and stats...`);
-  const participantArray: string[][] = [];
+  const pointsRecordsArray: string[][] = [];
+  let serialCount = 1; // For generating serial numbers in points sheet
   let invalidCount = 0;
   let courseTurnup: Record<string, number> = {};
 
@@ -70,6 +74,7 @@ export async function verifyParticipants(args: VerifyParticipantsArgs) {
     // We are assuming fixed form positions here for simplicity
     /**
      * Signup form columns:
+     * 0: Timestamp
      * 1: Full Name
      * 2: Admin Number
      * 3: iChat
@@ -80,12 +85,13 @@ export async function verifyParticipants(args: VerifyParticipantsArgs) {
     const studentAdminNum = student[2];
     // TODO: TEMPORARY FIX - some ppl put DISM/DCDF in the forms
     const studentCourse = student[5].split('/')[0].trim();
+    const studentClass = student[4];
 
     // Check if the student already has a registered profile
     let existingProfile = await UserModel.getProfileByAdminNo({
       adminNumber: studentAdminNum,
     });
-
+    // Use admin number as unique identifier to create profile if not exist, and update class if mismatch
     if (!existingProfile) {
       logger.debug(
         `No user profile found for admin number: ${studentAdminNum}. Creating new profile.`,
@@ -95,7 +101,21 @@ export async function verifyParticipants(args: VerifyParticipantsArgs) {
         ...nameSplitter(student[1]),
         course: studentCourse,
         ichat: student[3],
+        studentClass,
         adminNumber: studentAdminNum,
+      });
+    } else if (
+      existingProfile &&
+      existingProfile.studentClass !== studentClass
+    ) {
+      logger.warn(
+        `Student class mismatch for admin number: ${studentAdminNum}. Expected: ${existingProfile.studentClass}, Got: ${studentClass}`,
+      );
+      // For now, we will update the class to the latest one from the form
+      // Optimisitically assume user entered correct class
+      await UserModel.updateUserProfile({
+        profileId: existingProfile.profileId,
+        studentClass,
       });
     }
 
@@ -120,6 +140,7 @@ export async function verifyParticipants(args: VerifyParticipantsArgs) {
         eventReportId: eventReport.eventReportId,
       });
 
+      // Skip to next participant without awarding points or counting towards turnup stats
       continue;
     } else if (helperEntry) {
       logger.debug(
@@ -134,24 +155,45 @@ export async function verifyParticipants(args: VerifyParticipantsArgs) {
       courseTurnup[studentCourse] = (courseTurnup[studentCourse] || 0) + 1;
 
     // Record the participation in the database
-    await EventModel.createEventParticipationRecord({
-      profileId: existingProfile.profileId,
-      eventReportId: eventReport.eventReportId,
-      attended: true,
-      eventRole: 'PARTICIPANT',
-      pointsAwarded: 1,
-    });
+    const participationRecord = await EventModel.createEventParticipationRecord(
+      {
+        profileId: existingProfile.profileId,
+        eventReportId: eventReport.eventReportId,
+        attended: true,
+        eventRole: 'PARTICIPANT',
+        pointsAwarded: 1,
+      },
+    );
 
-    participantArray.push(student);
+    // Translate data into sheet format
+    pointsRecordsArray.push([
+      serialCount.toString(),
+      existingProfile.firstName + ' ' + existingProfile.lastName,
+      existingProfile.adminNumber,
+      existingProfile.studentClass,
+      capitalizeFirst(participationRecord.pointsType || '') +
+        `(${participationRecord.pointsType?.charAt(0)})`,
+      // This is the duration of service
+      // TODO: MMake this easily customisable
+      participationRecord.pointsType === 'LEADERSHIP' ? 'one week' : 'half day',
+      participationRecord.pointsType === 'LEADERSHIP'
+        ? 'Organising Committee'
+        : 'Participants',
+    ]);
+
+    serialCount++;
   }
 
   // Do the same for helpers
   for (const helper of helperData.slice(1)) {
     const helperAdminNum = helper[4];
 
-    const eventRole = helper[7].toLowerCase().includes('[Event IC]') ? 'ORGANIZER' : 'HELPER';
+    const eventRole = helper[7].toLowerCase().includes('[Event IC]')
+      ? 'ORGANIZER'
+      : 'HELPER';
     const points = eventRole === 'ORGANIZER' ? 2 : 1;
 
+    // TODO: Abstract this into a function to avoid repetition
     let existingProfile = await UserModel.getProfileByAdminNo({
       adminNumber: helperAdminNum,
     });
@@ -164,28 +206,57 @@ export async function verifyParticipants(args: VerifyParticipantsArgs) {
         ...nameSplitter(helper[1]),
         course: helper[2].split('/')[0].trim(),
         ichat: helper[3],
+        studentClass: helper[5],
         adminNumber: helperAdminNum,
+      });
+    } else if (existingProfile && existingProfile.studentClass !== helper[5]) {
+      logger.warn(
+        `Student class mismatch for admin number: ${helperAdminNum}. Expected: ${existingProfile.studentClass}, Got: ${helper[5]}`,
+      );
+      await UserModel.updateUserProfile({
+        profileId: existingProfile.profileId,
+        studentClass: helper[5],
       });
     }
 
     // Record helper participation
-    await EventModel.createEventParticipationRecord({
-      profileId: existingProfile.profileId,
-      eventReportId: eventReport.eventReportId,
-      attended: true,
-      eventRole: eventRole,
-      pointsType: 'LEADERSHIP',
-      pointsAwarded: points,
-    });
+    const participationRecord = await EventModel.createEventParticipationRecord(
+      {
+        profileId: existingProfile.profileId,
+        eventReportId: eventReport.eventReportId,
+        attended: true,
+        eventRole: eventRole,
+        pointsType: 'LEADERSHIP',
+        pointsAwarded: points,
+      },
+    );
+
+    // Translate data into sheet format
+    pointsRecordsArray.push([
+      serialCount.toString(),
+      existingProfile.firstName + ' ' + existingProfile.lastName,
+      existingProfile.adminNumber,
+      existingProfile.studentClass,
+      capitalizeFirst(participationRecord.pointsType || '') +
+        `(${participationRecord.pointsType?.charAt(0)})`,
+      // This is the duration of service
+      // TODO: MMake this easily customisable
+      participationRecord.pointsType === 'LEADERSHIP' ? 'one week' : 'half day',
+      participationRecord.pointsType === 'LEADERSHIP'
+        ? 'Organising Committee'
+        : 'Participants',
+    ]);
+
+    serialCount++;
   }
 
   const overallTurnupRate = (
-    (participantArray.length / signupCount) *
+    (pointsRecordsArray.length / signupCount) *
     100
   ).toFixed(2);
 
   return {
-    participants: participantArray,
+    participants: pointsRecordsArray,
     stats: {
       signupCount,
       feedbackCount,
@@ -196,3 +267,8 @@ export async function verifyParticipants(args: VerifyParticipantsArgs) {
     },
   };
 }
+
+// Note: For now, we will temporarily write to a google sheet first
+// export async function generatePointsSheet() {
+
+// }

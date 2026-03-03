@@ -1,0 +1,1 @@
+ALTER TABLE "user_profile" ADD COLUMN "class" varchar(20) NOT NULL;

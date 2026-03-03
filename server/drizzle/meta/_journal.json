@@ -50,6 +50,20 @@
       "when": 1772380840047,
       "tag": "0006_early_gertrude_yorkes",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1772528603557,
+      "tag": "0007_daffy_triton",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1772528952156,
+      "tag": "0008_colossal_thunderbolt",
+      "breakpoints": true
     }
   ]
 }

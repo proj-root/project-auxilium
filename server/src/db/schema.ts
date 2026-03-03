@@ -8,7 +8,6 @@ import { pgEnum } from 'drizzle-orm/pg-core';
 import { text } from 'drizzle-orm/pg-core';
 import { timestamp } from 'drizzle-orm/pg-core';
 import { boolean } from 'drizzle-orm/pg-core';
-import { foreignKey } from 'drizzle-orm/pg-core';
 
 export const eventRole = pgEnum('event_role', [
   'ORGANIZER',
@@ -52,6 +51,7 @@ export const userProfile = pgTable('user_profile', {
     onUpdate: 'cascade',
   }),
   ichat: varchar({ length: 100 }).notNull().unique(),
+  studentClass: varchar('student_class', { length: 20 }).notNull(),
   adminNumber: varchar('admin_number', { length: 7 }).notNull().unique(),
   ...timestamps,
 });
@@ -104,8 +104,7 @@ export const eventParticipation = pgTable('event_participation', {
     }),
   attended: boolean().default(false),
   eventRole: eventRole('event_role').default('PARTICIPANT'),
-  pointsType:
-    eventPointsType('points_type').default('PARTICIPATION'),
+  pointsType: eventPointsType('points_type').default('PARTICIPATION'),
   pointsAwarded: integer('points_awarded').default(0),
   ...timestamps,
 });

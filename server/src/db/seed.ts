@@ -112,6 +112,7 @@ async function main() {
           lastName: user.lastName,
           course: user.course,
           ichat: user.ichat,
+          studentClass: user.studentClass,
           adminNumber: user.adminNumber,
         })
         .onConflictDoUpdate({

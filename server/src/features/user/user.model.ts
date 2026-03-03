@@ -13,6 +13,7 @@ interface CreateUserArgs {
   lastName: string;
   course: string;
   ichat: string;
+  studentClass: string;
   adminNumber: string;
 }
 
@@ -23,6 +24,7 @@ export const createUser = async ({
   lastName,
   course,
   ichat,
+  studentClass,
   adminNumber,
 }: CreateUserArgs) => {
   const createdUser = await db.transaction(async (tx) => {
@@ -34,6 +36,7 @@ export const createUser = async ({
         lastName,
         course,
         ichat,
+        studentClass,
         adminNumber,
       })
       .returning();
@@ -110,6 +113,7 @@ interface CreateUserProfileArgs {
   lastName: string;
   course: string;
   ichat: string;
+  studentClass: string;
   adminNumber: string;
 }
 
@@ -134,4 +138,29 @@ export const getProfileByAdminNo = async ({ adminNumber }: { adminNumber: string
   });
   
   return profile;
+};
+
+interface UpdateUserProfileArgs {
+  profileId: string;
+  firstName?: string;
+  lastName?: string;
+  course?: string;
+  ichat?: string;
+  studentClass?: string;
+  adminNumber?: string;
+}
+
+export const updateUserProfile = async ({ profileId, ...args }: UpdateUserProfileArgs) => {
+  const [updatedProfile] = await db.update(userProfile)
+    .set({
+      ...args,
+    })
+    .where(eq(userProfile.profileId, profileId))
+    .returning();
+
+  if (!updatedProfile) {
+    throw new APIError('Failed to update user profile', 500);
+  }
+
+  return updatedProfile;
 };

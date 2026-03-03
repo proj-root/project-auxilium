@@ -3,6 +3,7 @@ import { verifyParticipants } from './lib/verification-engine';
 import { catchAsync } from '@/lib/catch-async';
 import * as EventModel from './events.model';
 import { APIError } from '@auxilium/types/errors';
+import { insertIntoSheet } from './lib/access-sheets';
 
 export const createEvent = catchAsync(async (req: Request, res: Response) => {
   let {
@@ -134,40 +135,50 @@ export const hardDeleteEvent = catchAsync(
   },
 );
 
-export const generatePointsSheet = async (req: Request, res: Response) => {
-  const { eventId } = req.params;
+export const generatePointsSheet = catchAsync(
+  async (req: Request, res: Response) => {
+    const { eventId } = req.params;
 
-  // Assume URL format is https://docs.google.com/spreadsheets/d/{spreadsheetId}/edit
-  const event = await EventModel.getEventById({ eventId: eventId as string });
-  if (!event) {
-    throw new APIError('Event not found', 404);
-  }
+    // Assume URL format is https://docs.google.com/spreadsheets/d/{spreadsheetId}/edit
+    const event = await EventModel.getEventById({ eventId: eventId as string });
+    if (!event) {
+      throw new APIError('Event not found', 404);
+    }
 
-  const { signupUrl, feedbackUrl, helpersUrl } = event;
-  if (!signupUrl || !feedbackUrl || !helpersUrl) {
-    throw new APIError(
-      'Missing form URLs. Please ensure signupUrl, feedbackUrl, and helpersUrl are all updated and try again.',
-      400,
-    );
-  }
+    const { signupUrl, feedbackUrl, helpersUrl } = event;
+    if (!signupUrl || !feedbackUrl || !helpersUrl) {
+      throw new APIError(
+        'Missing form URLs. Please ensure signupUrl, feedbackUrl, and helpersUrl are all updated and try again.',
+        400,
+      );
+    }
 
-  // TODO: add explicit types here to translate from raw sheet data to more structured data, based on column headers
-  const verificationResult = await verifyParticipants({
-    eventId: event.eventId,
-    userId: res.locals.user.userId,
-    signupUrl,
-    feedbackUrl,
-    helpersUrl,
-  });
+    // TODO: add explicit types here to translate from raw sheet data to more structured data, based on column headers
+    const verificationResult = await verifyParticipants({
+      eventId: event.eventId,
+      userId: res.locals.user.userId,
+      signupUrl,
+      feedbackUrl,
+      helpersUrl,
+    });
 
-  res.status(200).json({
-    status: 'success',
-    message: 'Points sheet generated successfully',
-    data: {
-      ...verificationResult,
-    },
-  });
-};
+    // TODO: This should be exporting to excel instead
+    // Write to the temporary sheet
+    await insertIntoSheet({
+      spreadsheetId: process.env.TEMP_SHEET_ID as string,
+      range: 'A2:G',
+      values: verificationResult.participants,
+    });
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Points sheet generated successfully',
+      data: {
+        ...verificationResult,
+      },
+    });
+  },
+);
 
 export const getEventReportById = catchAsync(
   async (req: Request, res: Response) => {

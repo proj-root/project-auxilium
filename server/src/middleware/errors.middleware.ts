@@ -45,6 +45,7 @@ export const globalErrorHandler = (err: APIError, req: Request, res: Response, n
 
   if (err.status != 500) {
     logger.error(err);
+    console.error(err)
   } else {
     logger.error('Server error', {
       message: err.message,
