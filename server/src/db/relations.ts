@@ -29,6 +29,10 @@ import * as schema from './schema';
 //   }
 // }));
 
+export const statusRelations = relations(schema.status, ({ many }) => ({
+  users: many(schema.user),
+}));
+
 export const userRelations = relations(schema.user, ({ one }) => ({
   userProfile: one(schema.userProfile, {
     fields: [schema.user.profileId],
@@ -37,6 +41,10 @@ export const userRelations = relations(schema.user, ({ one }) => ({
   userRole: one(schema.userRole, {
     fields: [schema.user.userId],
     references: [schema.userRole.userId],
+  }),
+  status: one(schema.status, {
+    fields: [schema.user.statusId],
+    references: [schema.status.statusId],
   }),
 }));
 

@@ -1,8 +1,7 @@
-// import { UserProfileDropdown } from '@/features/user/components/profile-dropdown';
+import { UserProfileDropdown } from '@/features/user/components/profile-dropdown';
 import { Separator } from '@/components/ui/separator';
 import { ThemeToggler } from '@/components/misc/theme-toggler';
-import { Avatar, AvatarBadge, AvatarFallback, AvatarImage } from '../ui/avatar';
-// import { SearchMenu } from './search-menu';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 
 export function SiteHeader() {
   return (
@@ -20,13 +19,7 @@ export function SiteHeader() {
             className='border-muted border-l-[0.5px] data-[orientation=vertical]:h-8'
           />
           <div className='flex flex-row items-center gap-4'>
-            {/* <UserProfileDropdown /> */}
-            {/* User Profile Placeholder */}
-            <Avatar className='overflow-visible'>
-              <AvatarImage src='/logo.png' />
-              <AvatarFallback>SE</AvatarFallback>
-              {/* <AvatarBadge className="bg-red-400" /> */}
-            </Avatar>
+            <UserProfileDropdown />
           </div>
         </div>
       </nav>

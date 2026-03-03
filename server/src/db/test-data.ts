@@ -6,7 +6,7 @@ export const testUsers = [
     email: 'admin@gmail.com',
     password: 'Admin@123',
     firstName: 'Wolfyre',
-    lastName: 'Blue',
+    lastName: 'Blueflare',
     course: 'DIT',
     ichat: 'wolfyre@ichat.sp.edu.sg',
     studentClass: 'DIT/FT/2B/01',

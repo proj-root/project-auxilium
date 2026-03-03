@@ -108,6 +108,36 @@ export const getUserById = async ({ userId }: { userId: string }) => {
   };
 };
 
+export const getUserWithDetailsById = async ({
+  userId,
+}: {
+  userId: string;
+}) => {
+  const user = await db.query.user.findFirst({
+    where: eq(userTable.userId, userId),
+    with: {
+      userProfile: true,
+      userRole: {
+        with: {
+          role: true,
+        },
+      },
+      status: true,
+    },
+  });
+
+  // Clear sensitive data and format data
+  return {
+    ...user,
+    password: undefined,
+    userRole: undefined,
+    role: {
+      roleId: user?.userRole?.roleId,
+      name: user?.userRole?.role.name,
+    },
+  };
+};
+
 interface CreateUserProfileArgs {
   firstName: string;
   lastName: string;
@@ -124,7 +154,7 @@ export const createUserProfile = async (args: CreateUserProfileArgs) => {
       ...args,
     })
     .returning();
-  
+
   if (!newProfile) {
     throw new APIError('Failed to create user profile', 500);
   }
@@ -132,11 +162,15 @@ export const createUserProfile = async (args: CreateUserProfileArgs) => {
   return newProfile;
 };
 
-export const getProfileByAdminNo = async ({ adminNumber }: { adminNumber: string }) => {
+export const getProfileByAdminNo = async ({
+  adminNumber,
+}: {
+  adminNumber: string;
+}) => {
   const profile = await db.query.userProfile.findFirst({
     where: eq(userProfile.adminNumber, adminNumber),
   });
-  
+
   return profile;
 };
 
@@ -150,10 +184,15 @@ interface UpdateUserProfileArgs {
   adminNumber?: string;
 }
 
-export const updateUserProfile = async ({ profileId, ...args }: UpdateUserProfileArgs) => {
-  const [updatedProfile] = await db.update(userProfile)
+export const updateUserProfile = async ({
+  profileId,
+  ...args
+}: UpdateUserProfileArgs) => {
+  const [updatedProfile] = await db
+    .update(userProfile)
     .set({
       ...args,
+      updatedAt: new Date(Date.now()),
     })
     .where(eq(userProfile.profileId, profileId))
     .returning();

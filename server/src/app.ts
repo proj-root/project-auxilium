@@ -14,6 +14,7 @@ import {
 } from '@/middleware/errors.middleware';
 import AuthRouter from '@/features/auth/auth.route';
 import { SystemConfig } from './config/system.config';
+import UserRouter from './features/user/user.route';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -36,6 +37,7 @@ app.use(loggerMiddleware);
 
 // Routes
 app.use('/auth', AuthRouter);
+app.use('/user', UserRouter);
 app.use('/events', EventsRouter);
 
 // Health Check Route
