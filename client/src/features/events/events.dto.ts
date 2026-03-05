@@ -1,4 +1,5 @@
 import type { BaseResponseDTO } from '@/types/dto.types';
+import type { PaginationOptions } from '@auxilium/types/pagination';
 
 interface EventReport {
   eventReportId: string;
@@ -14,7 +15,7 @@ interface EventType {
   name: string;
 }
 
-interface Event {
+export interface Event {
   eventId: string;
   name: string;
   description: string;
@@ -51,6 +52,12 @@ export type CreateEventRequest = {
 export type CreateEventResponse = BaseResponseDTO<void>;
 
 export type GetEventByIdResponse = BaseResponseDTO<Event>;
+
+export interface GetAllEventsRequest extends PaginationOptions {
+  sortBy?: 'name' | 'startDate' | 'endDate' | 'createdAt';
+  eventTypeId?: number;
+  statusId?: number;
+}
 
 export type GetAllEventsResponse = BaseResponseDTO<
   Omit<Event, 'eventReports'>[]

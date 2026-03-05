@@ -19,10 +19,8 @@ export default function DashboardLayout() {
         <AppSidebar />
         <SidebarInset>
           <SiteHeader />
-          <div className='flex h-full flex-1 flex-col'>
-            <div className='@container/main flex h-full flex-1 flex-col gap-2 p-4'>
-              <Outlet />
-            </div>
+          <div className='flex h-full flex-col gap-2 p-4'>
+            <Outlet />
           </div>
         </SidebarInset>
       </SidebarProvider>

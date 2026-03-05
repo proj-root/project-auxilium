@@ -121,7 +121,10 @@ export function CreateEventForm({ className }: { className?: string }) {
   return (
     <form
       onSubmit={form.handleSubmit(onSubmit)}
-      className={cn('grid w-full grid-cols-2 grid-rows-2 gap-4', className)}
+      className={cn(
+        'flex grid h-fit w-full grid-cols-2 grid-rows-1 gap-4',
+        className,
+      )}
     >
       <div className='col-span-1 flex w-full flex-col gap-4'>
         {/* Event Name */}
@@ -472,7 +475,7 @@ export function CreateEventForm({ className }: { className?: string }) {
         />
       </div>
 
-      <div className='row-span-2'>
+      <div className='flex flex-col'>
         <Button
           type='submit'
           size={'sm'}

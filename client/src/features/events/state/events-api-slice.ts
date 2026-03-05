@@ -2,6 +2,7 @@ import { apiSlice } from '@/state/api-slice';
 import type {
   CreateEventRequest,
   CreateEventResponse,
+  GetAllEventsRequest,
   GetAllEventsResponse,
   GetAllEventTypesResponse,
   GetEventByIdResponse,
@@ -24,10 +25,11 @@ export const eventsApiSlice = apiSlice.injectEndpoints({
       }),
       providesTags: ['Events'],
     }),
-    getAllEvents: builder.query<GetAllEventsResponse, void>({
-      query: () => ({
+    getAllEvents: builder.query<GetAllEventsResponse, GetAllEventsRequest>({
+      query: (params) => ({
         url: '/events',
         method: 'GET',
+        params,
       }),
       providesTags: ['Events'],
     }),

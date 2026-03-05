@@ -7,8 +7,9 @@ import {
   eventPointsType,
 } from '@/db/schema';
 import { StatusConfig } from '@auxilium/configs/status';
+import type { PaginationOptions } from '@auxilium/types/pagination';
 import { APIError } from '@auxilium/types/errors';
-import { eq } from 'drizzle-orm';
+import { eq, ilike, or } from 'drizzle-orm';
 
 interface CreateEventArgs {
   name: string;
@@ -51,13 +52,44 @@ export const getEventById = async ({ eventId }: { eventId: string }) => {
   return event;
 };
 
-// TODO: Add pagination and filtering
-export const getAllEvents = async () => {
+interface GetPaginatedEventsArgs extends PaginationOptions {
+  sortBy?: 'name' | 'startDate' | 'endDate' | 'createdAt';
+  eventTypeId?: number;
+  statusId?: number;
+}
+
+export const getAllEvents = async ({
+  page = 1,
+  pageSize = 10,
+  sortBy = 'createdAt',
+  sortOrder = 'desc',
+  search,
+  eventTypeId = undefined,
+  statusId = StatusConfig.ACTIVE,
+}: GetPaginatedEventsArgs) => {
   const events = await db.query.event.findMany({
+    where: or(
+      search && search.trim() !== '' ? ilike(eventTable.name, `%${search.trim()}%`) : undefined,
+      eventTypeId ? eq(eventTable.eventTypeId, eventTypeId) : undefined,
+      statusId ? eq(eventTable.statusId, statusId) : undefined,
+    ),
     with: {
       eventType: true,
       creator: true,
     },
+    limit: pageSize,
+    offset: (page - 1) * pageSize,
+    orderBy: (events, { desc, asc }) => {
+      if (sortBy === 'name') {
+        return sortOrder === 'asc' ? asc(events.name) : desc(events.name);
+      } else if (sortBy === 'startDate') {
+        return sortOrder === 'asc' ? asc(events.startDate) : desc(events.startDate);
+      } else if (sortBy === 'endDate') {
+        return sortOrder === 'asc' ? asc(events.endDate) : desc(events.endDate);
+      } else {
+        return sortOrder === 'asc' ? asc(events.createdAt) : desc(events.createdAt);
+      }
+    }
   });
 
   return events;

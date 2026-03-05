@@ -17,7 +17,7 @@ export default [
     layout('routes/admin/layout.tsx', [
       index('routes/admin/index.tsx'),
       ...prefix('events', [
-        //
+        index('routes/admin/events/index.tsx'),
         route('/create', 'routes/admin/events/create.tsx'),
       ]),
     ]),

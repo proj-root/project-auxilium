@@ -70,7 +70,18 @@ export const getEventById = catchAsync(async (req: Request, res: Response) => {
 
 // TODO: Implement pagination to this
 export const getAllEvents = catchAsync(async (req: Request, res: Response) => {
-  const events = await EventModel.getAllEvents();
+  const { page, pageSize, sortBy, sortOrder, search, eventTypeId, statusId } =
+    req.query;
+
+  const events = await EventModel.getAllEvents({
+    page: Number(page),
+    pageSize: Number(pageSize),
+    sortBy: sortBy as 'name' | 'startDate' | 'endDate' | 'createdAt' || 'createdAt',
+    sortOrder: sortOrder as 'asc' | 'desc',
+    search: search as string,
+    eventTypeId: eventTypeId ? Number(eventTypeId) : undefined,
+    statusId: statusId ? Number(statusId) : undefined,
+  });
 
   res.status(200).json({
     status: 'success',
