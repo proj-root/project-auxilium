@@ -6,10 +6,11 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from '@/components/ui/empty';
+import { cn } from '@/lib/utils';
 
-export function ComingSoonEmpty({ children }: { children?: React.ReactNode }) {
+export function ComingSoonEmpty({ children, className }: { children?: React.ReactNode; className?: string }) {
   return (
-    <div className='flex h-fit w-md flex-col'>
+    <div className={cn('flex h-fit w-md flex-col', className)}>
       <Empty>
         <EmptyHeader>
           <EmptyMedia variant='default'>

@@ -35,6 +35,9 @@ export interface Event {
   };
 
   eventReports: EventReport[];
+
+  createdAt: string;
+  updatedAt: string;
 }
 
 export type CreateEventRequest = {
