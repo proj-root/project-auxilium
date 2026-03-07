@@ -1,5 +1,5 @@
 import { useAppDispatch, useAppSelector } from '@/hooks/redux-hooks';
-import type { EventReport } from '../events.dto';
+import type { Event, EventReport } from '../events.dto';
 import {
   useGetEventByIdQuery,
   useGetEventReportByIdQuery,
@@ -10,6 +10,8 @@ import {
 } from '../state/event-report-pagination-slice';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
+import { FileWarning } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 
 function EventReportItem({ report }: { report: EventReport }) {
   const paginationState = useAppSelector(selectEventReportPaginationState);
@@ -47,7 +49,21 @@ export function EventReportsList({ eventId }: { eventId: string }) {
   if (!data?.data) return <div>Event data not found.</div>;
 
   return (
-    <div className='flex max-h-full flex-col gap-2 overflow-y-scroll'>
+    <div className='scrollbar-none flex h-full max-h-full flex-col gap-2 overflow-y-scroll'>
+      {data.data.eventReports.length === 0 && (
+        <div className='text-muted-foreground flex h-full flex-col items-center justify-center gap-2 rounded-md border border-dashed p-5 text-center'>
+          <FileWarning className='size-5' />
+          <h1 className='font-medium'>No event reports found.</h1>
+          <p className='text-xs'>
+            Please generate a report first to view participation data.
+          </p>
+          <div className='flex flex-col gap-2 w-full mt-8'>
+            {Array.from({ length: 3 }).map((v, i) => (
+              <Skeleton className='h-12 w-full' key={i} />
+            ))}
+          </div>
+        </div>
+      )}
       {data?.data.eventReports.length > 0 &&
         data.data.eventReports.map((report) => (
           <EventReportItem report={report} />
@@ -56,21 +72,30 @@ export function EventReportsList({ eventId }: { eventId: string }) {
   );
 }
 
-export function EventReportDataTable({ eventId }: { eventId: string }) {
+export function EventReportDataTable({ event }: { event: Event }) {
   const paginationState = useAppSelector(selectEventReportPaginationState);
   const { data, isLoading } = useGetEventReportByIdQuery({
-    eventReportId: paginationState.eventReportId ?? '',
+    eventReportId:
+      paginationState.eventReportId ??
+      event.eventReports[0]?.eventReportId ??
+      '',
   });
 
   return (
-    <div className='flex max-h-full flex-row gap-4'>
+    <div className='flex h-full flex-row gap-4'>
       <div className='flex w-1/5 flex-row'>
-        {/* <h1 className='text-2xl font-semibold'>Reports</h1> */}
-        <EventReportsList eventId={eventId} />
+        <EventReportsList eventId={event.eventId} />
       </div>
       {/* TODO: Will tidy up again */}
-      <div className='flex w-full flex-col gap-2 h-[400px] overflow-y-scroll'>
+      <div className='flex w-full flex-col gap-2 overflow-y-scroll'>
         {isLoading && <div>Loading...</div>}
+        {!isLoading && !data?.data && (
+          <div className='flex h-full w-full items-center justify-center'>
+            <h1 className='text-muted-foreground rounded-md border border-dashed p-6 font-medium'>
+              Select a report to view it's data.
+            </h1>
+          </div>
+        )}
         {!isLoading &&
           data?.data &&
           data.data.eventParticipations.map((participation) => (

@@ -21,7 +21,7 @@ export default function SingleEventDetailsPage() {
     );
 
   return (
-    <div className='flex flex-col gap-2'>
+    <div className='flex h-full w-full flex-col gap-2'>
       <BackButton />
       <div className='flex flex-row items-start justify-between'>
         <div>
@@ -35,11 +35,8 @@ export default function SingleEventDetailsPage() {
         className='w-full md:w-1/2 2xl:w-1/4'
       />
       {/* TODO: Convert into reusable component */}
-      <div className='w-full'>
-        <Tabs
-          defaultValue={'reports'}
-          className='flex flex-col gap-4'
-        >
+      <div className='flex h-full w-full flex-col'>
+        <Tabs defaultValue={'reports'} className='flex flex-col gap-4'>
           <div className='w-full border-b bg-transparent'>
             <TabsList className='inline-flex flex-row justify-start gap-2 rounded-none border-0 bg-transparent p-0'>
               <TabsTrigger
@@ -62,19 +59,20 @@ export default function SingleEventDetailsPage() {
               </TabsTrigger>
             </TabsList>
           </div>
-
-          <TabsContent
-            value={'reports'}
-            className='flex flex-col'
-          >
-            <EventReportDataTable eventId={data.data.eventId} />
+          {/* Reports */}
+          <TabsContent value={'reports'}>
+            <div className='flex h-[calc(70vh-120px)] w-full flex-col'>
+              <EventReportDataTable event={data.data} />
+            </div>
           </TabsContent>
+
           <TabsContent
             value={'progress'}
             className='flex flex-col items-center justify-center'
           >
             <ComingSoonEmpty />
           </TabsContent>
+
           <TabsContent
             value={'resources'}
             className='flex flex-col items-center justify-center'
