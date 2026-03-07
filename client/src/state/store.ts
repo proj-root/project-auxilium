@@ -6,11 +6,13 @@ import {
 import { listenerMiddleware } from './listener-middleware';
 import { apiSlice } from './api-slice';
 import authSlice from '@/features/auth/state/auth-slice';
+import eventReportPaginationSlice from '@/features/events/state/event-report-pagination-slice';
 
 export const makeStore = () => {
   return configureStore({
     reducer: {
       authSlice,
+      eventReportPaginationSlice,
       [apiSlice.reducerPath]: apiSlice.reducer,
     },
     middleware: (getDefaultMiddleware) =>

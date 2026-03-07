@@ -43,9 +43,12 @@ export const getEventById = async ({ eventId }: { eventId: string }) => {
       creator: {
         columns: {
           password: false,
-        }
+        },
       },
-      eventReports: true,
+      eventReports: {
+        orderBy: (eventReports, { desc }) => desc(eventReports.createdAt),
+        limit: 25,
+      },
     },
   });
 
@@ -69,13 +72,19 @@ export const getAllEvents = async ({
 }: GetPaginatedEventsArgs) => {
   const events = await db.query.event.findMany({
     where: or(
-      search && search.trim() !== '' ? ilike(eventTable.name, `%${search.trim()}%`) : undefined,
+      search && search.trim() !== ''
+        ? ilike(eventTable.name, `%${search.trim()}%`)
+        : undefined,
       eventTypeId ? eq(eventTable.eventTypeId, eventTypeId) : undefined,
       statusId ? eq(eventTable.statusId, statusId) : undefined,
     ),
     with: {
       eventType: true,
-      creator: true,
+      creator: {
+        columns: {
+          password: false,
+        },
+      },
     },
     limit: pageSize,
     offset: (page - 1) * pageSize,
@@ -83,13 +92,17 @@ export const getAllEvents = async ({
       if (sortBy === 'name') {
         return sortOrder === 'asc' ? asc(events.name) : desc(events.name);
       } else if (sortBy === 'startDate') {
-        return sortOrder === 'asc' ? asc(events.startDate) : desc(events.startDate);
+        return sortOrder === 'asc'
+          ? asc(events.startDate)
+          : desc(events.startDate);
       } else if (sortBy === 'endDate') {
         return sortOrder === 'asc' ? asc(events.endDate) : desc(events.endDate);
       } else {
-        return sortOrder === 'asc' ? asc(events.createdAt) : desc(events.createdAt);
+        return sortOrder === 'asc'
+          ? asc(events.createdAt)
+          : desc(events.createdAt);
       }
-    }
+    },
   });
 
   return events;
@@ -178,7 +191,11 @@ export const createEventReport = async (args: CreateEventReportArgs) => {
 };
 
 // Get all generated reports under an event
-export const getEventReportsByEventId = async ({ eventId }: { eventId: string }) => {
+export const getEventReportsByEventId = async ({
+  eventId,
+}: {
+  eventId: string;
+}) => {
   const eventReports = await db.query.eventReport.findMany({
     where: eq(eventReportTable.eventId, eventId),
   });
@@ -195,9 +212,17 @@ export const getEventReportById = async ({
   const eventReport = await db.query.eventReport.findFirst({
     where: eq(eventReportTable.eventReportId, eventReportId),
     with: {
-      eventParticipations: true,
-      creator: true,
-    }
+      eventParticipations: {
+        with: {
+          userProfile: true,
+        },
+      },
+      creator: {
+        columns: {
+          password: false,
+        }
+      },
+    },
   });
 
   return eventReport;
@@ -232,4 +257,4 @@ export const createEventParticipationRecord = async (
 export const getAllEventTypes = async () => {
   const eventTypes = await db.query.eventType.findMany();
   return eventTypes;
-}
+};

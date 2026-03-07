@@ -19,6 +19,7 @@ export default [
       ...prefix('events', [
         index('routes/admin/events/index.tsx'),
         route('/create', 'routes/admin/events/create.tsx'),
+        route('/:eventId', 'routes/admin/events/single-event.tsx'),
       ]),
     ]),
   ]),

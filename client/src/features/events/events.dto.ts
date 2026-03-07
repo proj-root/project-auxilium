@@ -1,7 +1,8 @@
 import type { BaseResponseDTO } from '@/types/dto.types';
 import type { PaginationOptions } from '@auxilium/types/pagination';
+import type { UserDTO, UserProfileDTO } from '../user/user.dto';
 
-interface EventReport {
+export interface EventReport {
   eventReportId: string;
   signupCount: number;
   feedbackCount: number;
@@ -10,7 +11,7 @@ interface EventReport {
   updatedAt: Date;
 }
 
-interface EventType {
+export interface EventType {
   eventTypeId: number;
   name: string;
 }
@@ -35,6 +36,21 @@ export interface Event {
   };
 
   eventReports: EventReport[];
+
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface EventParticipation {
+  participationId: string;
+  eventReportId: string;
+  profileId: string;
+  attended: boolean;
+  eventRole: string;
+  pointsType: string;
+  pointsAwarded: number;
+
+  userProfile: UserProfileDTO;
 
   createdAt: string;
   updatedAt: string;
@@ -67,3 +83,13 @@ export type GetAllEventsResponse = BaseResponseDTO<
 >;
 
 export type GetAllEventTypesResponse = BaseResponseDTO<EventType[]>;
+
+export type GenerateEventReportResponse = BaseResponseDTO<void>;
+
+export type GetEventReportByIdResponse = BaseResponseDTO<
+  {
+    eventId: string;
+    eventParticipations: EventParticipation[];
+    creator: Omit<UserDTO, 'userProfile'>;
+  } & EventReport
+>;

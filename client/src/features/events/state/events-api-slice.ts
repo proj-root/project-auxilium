@@ -2,10 +2,12 @@ import { apiSlice } from '@/state/api-slice';
 import type {
   CreateEventRequest,
   CreateEventResponse,
+  GenerateEventReportResponse,
   GetAllEventsRequest,
   GetAllEventsResponse,
   GetAllEventTypesResponse,
   GetEventByIdResponse,
+  GetEventReportByIdResponse,
 } from '../events.dto';
 
 export const eventsApiSlice = apiSlice.injectEndpoints({
@@ -40,6 +42,20 @@ export const eventsApiSlice = apiSlice.injectEndpoints({
       }),
       providesTags: ['Events'],
     }),
+    generateEventReport: builder.mutation<GenerateEventReportResponse, { eventId: string }>({
+      query: (params) => ({
+        url: `/events/${params.eventId}/generate`,
+        method: 'POST',
+      }),
+      invalidatesTags: ['EventReports'],
+    }),
+    getEventReportById: builder.query<GetEventReportByIdResponse, { eventReportId: string }>({
+      query: (params) => ({
+        url: `/events/reports/${params.eventReportId}`,
+        method: 'GET',
+      }),
+      providesTags: ['EventReports'],
+    }),
   }),
 });
 
@@ -48,4 +64,6 @@ export const {
   useGetEventByIdQuery,
   useGetAllEventsQuery,
   useGetAllEventTypesQuery,
+  useGenerateEventReportMutation,
+  useGetEventReportByIdQuery,
 } = eventsApiSlice;
