@@ -76,7 +76,8 @@ export const getAllEvents = catchAsync(async (req: Request, res: Response) => {
   const events = await EventModel.getAllEvents({
     page: Number(page),
     pageSize: Number(pageSize),
-    sortBy: sortBy as 'name' | 'startDate' | 'endDate' | 'createdAt' || 'createdAt',
+    sortBy:
+      (sortBy as 'name' | 'startDate' | 'endDate' | 'createdAt') || 'createdAt',
     sortOrder: sortOrder as 'asc' | 'desc',
     search: search as string,
     eventTypeId: eventTypeId ? Number(eventTypeId) : undefined,
@@ -234,6 +235,29 @@ export const getAllEventTypes = catchAsync(
       status: 'success',
       message: 'Event types retrieved successfully',
       data: eventTypes,
+    });
+  },
+);
+
+export const getAllParticipationByReportId = catchAsync(
+  async (req: Request, res: Response) => {
+    const { eventReportId } = req.params;
+    const { page, pageSize, sortBy, sortOrder, search, statusId } = req.query;
+
+    const result = await EventModel.getParticipationRecordsByReportId({
+      eventReportId: eventReportId as string,
+      page: Number(page),
+      pageSize: Number(pageSize),
+      sortBy: sortBy as 'name' | 'createdAt',
+      sortOrder: sortOrder as 'asc' | 'desc',
+      search: search as string,
+      statusId: statusId ? Number(statusId) : undefined,
+    });
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Participations retrieved successfully',
+      data: result,
     });
   },
 );

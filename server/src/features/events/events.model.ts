@@ -220,7 +220,7 @@ export const getEventReportById = async ({
       creator: {
         columns: {
           password: false,
-        }
+        },
       },
     },
   });
@@ -252,6 +252,53 @@ export const createEventParticipationRecord = async (
   }
 
   return participationRecord;
+};
+
+interface GetParticipationRecordsByReportIdArgs extends PaginationOptions {
+  eventReportId: string;
+  sortBy?: 'name' | 'createdAt';
+  statusId?: number;
+}
+
+export const getParticipationRecordsByReportId = async ({
+  page = 1,
+  pageSize = 10,
+  sortBy = 'createdAt',
+  sortOrder = 'desc',
+  search,
+  eventReportId,
+  statusId = StatusConfig.ACTIVE,
+}: GetParticipationRecordsByReportIdArgs) => {
+  const count = await db.$count(
+    eventParticipationTable,
+    eq(eventParticipationTable.eventReportId, eventReportId),
+  );
+
+  const participations = await db.query.eventParticipation.findMany({
+    where: eq(eventParticipationTable.eventReportId, eventReportId),
+    with: {
+      userProfile: true,
+    },
+    limit: pageSize,
+    offset: (page - 1) * pageSize,
+    orderBy: (events, { desc, asc }) => {
+      // TODO: Temporary; to add search filter for name
+      if (sortBy === 'createdAt') {
+        return sortOrder === 'asc'
+          ? asc(events.createdAt)
+          : desc(events.createdAt);
+      } else {
+        return sortOrder === 'asc'
+          ? asc(events.createdAt)
+          : desc(events.createdAt);
+      }
+    },
+  });
+
+  return {
+    pageCount: Math.ceil(count / pageSize),
+    participations,
+  };
 };
 
 export const getAllEventTypes = async () => {

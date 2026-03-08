@@ -21,6 +21,8 @@ EventsRouter.get('/', EventsController.getAllEvents);
 EventsRouter.get('/types', EventsController.getAllEventTypes);
 // GET /events/reports/:eventReportId - Get event report details by report ID
 EventsRouter.get('/reports/:eventReportId', EventsController.getEventReportById);
+// GET /events/reports/:eventReportId/participations - Get event participation records by report ID
+EventsRouter.get('/reports/:eventReportId/participations', EventsController.getAllParticipationByReportId);
 // GET /events/:eventId - Get event details by ID
 EventsRouter.get('/:eventId', EventsController.getEventById);
 // GET /events/:eventId/report - Get event reports by event ID

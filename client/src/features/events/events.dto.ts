@@ -93,3 +93,12 @@ export type GetEventReportByIdResponse = BaseResponseDTO<
     creator: Omit<UserDTO, 'userProfile'>;
   } & EventReport
 >;
+
+export interface GetParticipationsByReportIdRequest extends PaginationOptions {
+  eventReportId: string;
+}
+
+export type GetParticipationsByReportIdResponse = BaseResponseDTO<{
+  pageCount: number;
+  participations: EventParticipation[];
+}>;

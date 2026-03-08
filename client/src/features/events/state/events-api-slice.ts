@@ -8,6 +8,8 @@ import type {
   GetAllEventTypesResponse,
   GetEventByIdResponse,
   GetEventReportByIdResponse,
+  GetParticipationsByReportIdRequest,
+  GetParticipationsByReportIdResponse,
 } from '../events.dto';
 
 export const eventsApiSlice = apiSlice.injectEndpoints({
@@ -42,17 +44,37 @@ export const eventsApiSlice = apiSlice.injectEndpoints({
       }),
       providesTags: ['Events'],
     }),
-    generateEventReport: builder.mutation<GenerateEventReportResponse, { eventId: string }>({
+    generateEventReport: builder.mutation<
+      GenerateEventReportResponse,
+      { eventId: string }
+    >({
       query: (params) => ({
         url: `/events/${params.eventId}/generate`,
         method: 'POST',
       }),
       invalidatesTags: ['EventReports'],
     }),
-    getEventReportById: builder.query<GetEventReportByIdResponse, { eventReportId: string }>({
+    getEventReportById: builder.query<
+      GetEventReportByIdResponse,
+      { eventReportId: string }
+    >({
       query: (params) => ({
         url: `/events/reports/${params.eventReportId}`,
         method: 'GET',
+      }),
+      providesTags: ['EventReports'],
+    }),
+    getParticipationsByReportId: builder.query<
+      GetParticipationsByReportIdResponse,
+      GetParticipationsByReportIdRequest
+    >({
+      query: (params) => ({
+        url: `/events/reports/${params.eventReportId}/participations`,
+        method: 'GET',
+        params: {
+          ...params,
+          eventReportId: undefined,
+        },
       }),
       providesTags: ['EventReports'],
     }),
@@ -66,4 +88,5 @@ export const {
   useGetAllEventTypesQuery,
   useGenerateEventReportMutation,
   useGetEventReportByIdQuery,
+  useGetParticipationsByReportIdQuery,
 } = eventsApiSlice;
