@@ -8,7 +8,7 @@
 All features and packages must be developed as independently testable modules within the monorepo. Shared code is published as internal packages. No feature may introduce hidden dependencies or break encapsulation.
 
 ### II. Type Safety & Modern Tooling
-TypeScript is mandatory for all code. All modules must pass strict type checks. Use modern tooling (e.g., Biome, Prettier, ESLint, Drizzle ORM) to enforce code quality and consistency.
+TypeScript is mandatory for all code. All modules must pass strict type checks. Use modern tooling (e.g., Prettier, ESLint, Drizzle ORM) to enforce code quality and consistency.
 
 ### III. Test-First Development (NON-NEGOTIABLE)
 All new features and bug fixes require tests before implementation. Red-Green-Refactor cycle is enforced. No code is merged without passing tests and review.

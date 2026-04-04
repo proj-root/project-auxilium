@@ -52,7 +52,7 @@ export const eventsApiSlice = apiSlice.injectEndpoints({
         url: `/events/${params.eventId}/generate`,
         method: 'POST',
       }),
-      invalidatesTags: ['EventReports'],
+      invalidatesTags: ['Events'],
     }),
     getEventReportById: builder.query<
       GetEventReportByIdResponse,
@@ -62,7 +62,7 @@ export const eventsApiSlice = apiSlice.injectEndpoints({
         url: `/events/reports/${params.eventReportId}`,
         method: 'GET',
       }),
-      providesTags: ['EventReports'],
+      providesTags: ['Events'],
     }),
     getParticipationsByReportId: builder.query<
       GetParticipationsByReportIdResponse,
@@ -76,7 +76,7 @@ export const eventsApiSlice = apiSlice.injectEndpoints({
           eventReportId: undefined,
         },
       }),
-      providesTags: ['EventReports'],
+      providesTags: ['Events'],
     }),
   }),
 });
