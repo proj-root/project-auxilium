@@ -3,8 +3,8 @@ import * as UserModel from './user.model';
 import { APIError } from '@auxilium/types/errors';
 
 export const readPersonalDetailsById = async (req: Request, res: Response) => {
-  const { userId } = res.locals.user;
-  const user = await UserModel.getUserWithDetailsById({ userId });
+  const { id } = res.locals.user;
+  const user = await UserModel.getUserWithDetailsById({ userId: id });
 
   if (!user) throw new APIError('User not found', 400);
 

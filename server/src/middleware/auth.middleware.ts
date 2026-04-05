@@ -1,96 +1,38 @@
-import jwt, { JwtPayload } from 'jsonwebtoken';
-import { formatDistanceToNowStrict } from 'date-fns';
+import db from '@/db';
+import { auth } from '@/lib/auth';
 import { catchAsync } from '@/lib/catch-async';
 import { APIError } from '@auxilium/types/errors';
-import { Request, Response, NextFunction } from 'express';
-import { AuthConfig } from '@/config/auth.config';
-import { logger } from '@/lib/logger';
-import * as UserModel from '@/features/user/user.model';
+import { fromNodeHeaders } from 'better-auth/node';
+import { NextFunction, Request, Response } from 'express';
 
-export const verifyJWT = catchAsync(
+export const verifySession = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const token = req.headers.authorization?.split(' ')[1];
-    if (!token) {
-      throw new APIError('Unauthorized', 401);
-    }
+    const session = await auth.api.getSession({
+      headers: fromNodeHeaders(req.headers),
+    });
 
-    try {
-      const payload = jwt.verify(token, AuthConfig.jwtSecret) as JwtPayload;
-      if (!payload.exp)
-        throw new Error('Invalid token payload; missing expiry.');
+    // Verify session exists and is valid
+    if (!session) throw new APIError('Unauthorized', 401);
 
-      logger.debug(
-        `🕐 Access token expires in ${formatDistanceToNowStrict(
-          new Date(payload.exp * 1000),
-        )}`,
-      );
+    const role = await db.query.userRole.findFirst({
+      where: { userId: session.user.id },
+    });
 
-      // Check if user exists in the database
-      const user = await UserModel.getUserById({ userId: payload.userId });
-      if (!user) throw new Error('User not found.');
+    if (!role) throw new APIError('User role not found', 403);
 
-      // Pass on payload data to next function
-      res.locals.user = {
-        userId: payload.userId,
-        roleId: payload.roleId,
-      };
+    res.locals.user = session.user;
+    res.locals.user.roleId = role?.roleId || null;
+    res.locals.session = session;
 
-      logger.debug(
-        `✅ Access token successfully verified for userId: ${res.locals.user.userId}`,
-      );
-
-      return next();
-    } catch (error) {
-      logger.error('JWT verification failed\n' + error);
-      throw new APIError('Invalid or expired token', 401);
-    }
+    return next();
   },
 );
 
-export const verifyRefreshJWT = catchAsync(
-  async (req: Request, res: Response, next: NextFunction) => {
-    const token = req.cookies.refreshToken;
-    if (!token) {
-      throw new APIError('Unauthorized', 401);
-    }
-
-    try {
-      const payload = jwt.verify(
-        token,
-        AuthConfig.jwtRefreshSecret,
-      ) as JwtPayload;
-      if (!payload.exp)
-        throw new Error('Invalid token payload; missing expiry.');
-
-      logger.debug(
-        `🕐 Refresh token expires in ${formatDistanceToNowStrict(
-          new Date(payload.exp * 1000),
-        )}`,
-      );
-
-      // Check if user exists in the database
-      const user = await UserModel.getUserById({ userId: payload.userId });
-      if (!user) throw new Error('User not found.');
-
-      res.locals.user = {
-        userId: payload.userId,
-        roleId: user.roleId,
-      };
-
-      logger.debug(`✅ Refresh token successfully verified`);
-
-      return next();
-    } catch (error) {
-      logger.error('JWT verification failed\n' + error);
-      throw new APIError('Invalid or expired token', 401);
-    }
-  },
-);
-
-export const verifyIsRole = (requiredRoleIds: number[]) =>
+export const verifyIsRole = (allowedRoles: number[]) =>
   catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-    if (!requiredRoleIds.includes(res.locals.user.roleId)) {
-      throw new APIError(`User does not have required authority.`, 403);
+    const userRole = res.locals.user.roleId;
+    if (!allowedRoles.includes(userRole)) {
+      throw new APIError('Forbidden: insufficient permissions', 403);
     }
     return next();
   });

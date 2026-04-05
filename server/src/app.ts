@@ -15,6 +15,8 @@ import {
 import AuthRouter from '@/features/auth/auth.route';
 import { SystemConfig } from './config/system.config';
 import UserRouter from './features/user/user.route';
+import { auth } from './lib/auth';
+import { toNodeHandler } from 'better-auth/node';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -27,6 +29,9 @@ app.use(
   }),
 );
 
+// Mount Auth handler first
+app.all("/api/auth/*", toNodeHandler(auth));
+
 // Configure global data acceptance rules
 app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: false, limit: '10kb' }));
@@ -36,9 +41,9 @@ app.use(getLoggerStartTime);
 app.use(loggerMiddleware);
 
 // Routes
-app.use('/auth', AuthRouter);
-app.use('/user', UserRouter);
-app.use('/events', EventsRouter);
+// app.use('/auth', AuthRouter);
+app.use('/api/user', UserRouter);
+app.use('/api/events', EventsRouter);
 
 // Health Check Route
 app.get('/health', (req, res) => {
