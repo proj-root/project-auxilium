@@ -1,4 +1,4 @@
-# Project Auxilium - GitHub Copilot Instructions
+﻿# Project Auxilium - GitHub Copilot Instructions
 
 ## Project Overview
 

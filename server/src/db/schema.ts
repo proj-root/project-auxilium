@@ -41,9 +41,16 @@ export const eventType = pgTable('event_type', {
   name: varchar({ length: 100 }).notNull().unique(),
 });
 
-// User Profile Table
+// User Profile Table - linked to Better Auth user via userId
 export const userProfile = pgTable('user_profile', {
   profileId: uuid('profile_id').primaryKey().defaultRandom(),
+  userId: uuid('user_id')
+    .notNull()
+    .unique()
+    .references(() => user.id, {
+      onDelete: 'cascade',
+      onUpdate: 'cascade',
+    }),
   firstName: varchar({ length: 100 }).notNull(),
   lastName: varchar({ length: 100 }).notNull(),
   course: varchar({ length: 10 }).references(() => course.code, {
@@ -53,7 +60,8 @@ export const userProfile = pgTable('user_profile', {
   ichat: varchar({ length: 100 }).notNull().unique(),
   studentClass: varchar('student_class', { length: 20 }).notNull(),
   adminNumber: varchar('admin_number', { length: 7 }).notNull().unique(),
-  ...timestamps,
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
 });
 
 // Event Table
@@ -128,23 +136,57 @@ export const eventReport = pgTable('event_report', {
 });
 
 export const user = pgTable('user', {
-  userId: uuid('user_id').primaryKey().defaultRandom(),
-  profileId: uuid('profile_id')
-    .notNull()
-    .references(() => userProfile.profileId, {
-      onDelete: 'cascade',
-      onUpdate: 'cascade',
-    }),
+  id: uuid('id').primaryKey().defaultRandom(),
   email: varchar({ length: 255 }).notNull().unique(),
-  password: varchar({ length: 100 }).notNull(),
+  emailVerified: boolean('email_verified').default(false),
+  name: varchar({ length: 255 }),
+  image: varchar({ length: 255 }),
+  profileId: uuid('profile_id').references(() => userProfile.profileId, {
+    onDelete: 'cascade',
+    onUpdate: 'cascade',
+  }),
   statusId: integer('status_id')
-    .notNull()
     .default(StatusConfig.ACTIVE)
     .references(() => status.statusId, {
       onDelete: 'cascade',
       onUpdate: 'cascade',
     }),
-  ...timestamps,
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
+});
+
+// Better Auth account table (OAuth linking)
+export const account = pgTable('account', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id')
+    .notNull()
+    .references(() => user.id, {
+      onDelete: 'cascade',
+      onUpdate: 'cascade',
+    }),
+  provider: varchar({ length: 50 }).notNull(),
+  providerAccountId: varchar('provider_account_id', { length: 255 }).notNull(),
+  name: varchar({ length: 255 }),
+  email: varchar({ length: 255 }),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
+});
+
+// Better Auth session table with device tracking
+export const session = pgTable('session', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id')
+    .notNull()
+    .references(() => user.id, {
+      onDelete: 'cascade',
+      onUpdate: 'cascade',
+    }),
+  sessionToken: varchar('session_token', { length: 255 }).notNull().unique(),
+  expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+  ipAddress: varchar('ip_address', { length: 45 }),
+  deviceFingerprint: varchar('device_fingerprint', { length: 255 }),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
 });
 
 export const role = pgTable('role', {
@@ -158,7 +200,7 @@ export const userRole = pgTable(
   {
     userId: uuid('user_id')
       .notNull()
-      .references(() => user.userId, {
+      .references(() => user.id, {
         onDelete: 'cascade',
         onUpdate: 'cascade',
       }),
@@ -169,7 +211,8 @@ export const userRole = pgTable(
         onDelete: 'cascade',
         onUpdate: 'cascade',
       }),
-    ...timestamps,
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
   },
   (table) => [
     primaryKey({

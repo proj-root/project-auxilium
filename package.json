@@ -26,5 +26,8 @@
     "@types/node": "^25.3.2",
     "prettier-plugin-tailwindcss": "^0.7.2",
     "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "better-auth": "^1.5.6"
   }
 }
