@@ -1,2 +1,0 @@
-ALTER TABLE "event" ADD COLUMN "status_id" integer DEFAULT 1 NOT NULL;--> statement-breakpoint
-ALTER TABLE "event" ADD CONSTRAINT "event_status_id_status_status_id_fk" FOREIGN KEY ("status_id") REFERENCES "public"."status"("status_id") ON DELETE cascade ON UPDATE cascade;

@@ -26,9 +26,9 @@
 **Effort**: ~4 hours  
 **Blocking**: All subsequent phases
 
-- [ ] T001 Verify npm dependencies: install `better-auth`, `@better-auth/drizzle`, `@better-auth/react` in root package.json and build workspaces
-- [ ] T002 Create `.env.example` in server/ with BETTER_AUTH_SECRET, GOOGLE_OAUTH_ID, GOOGLE_OAUTH_SECRET, GITHUB_OAUTH_ID, GITHUB_OAUTH_SECRET placeholders
-- [ ] T003 [P] Initialize Drizzle migration generation with `npx drizzle-kit generate:pg` (empty migration files created but not run)
+- [x] T001 Verify npm dependencies: install `better-auth`, `@better-auth/drizzle`, `@better-auth/react` in root package.json and build workspaces
+- [x] T002 Create `.env.example` in server/ with BETTER_AUTH_SECRET, GOOGLE_OAUTH_ID, GOOGLE_OAUTH_SECRET, GITHUB_OAUTH_ID, GITHUB_OAUTH_SECRET placeholders
+- [x] T003 [P] Initialize Drizzle migration generation with `npx drizzle-kit generate:pg` (empty migration files created but not run)
 
 ---
 
@@ -41,9 +41,9 @@
 
 ### Database Schema & Migrations
 
-- [ ] T004 Update `server/src/db/schema.ts`: Add Better Auth core tables (user, account, session) with full column definitions and indexes per data-model.md
-- [ ] T005 [P] Update `server/src/db/schema.ts`: Add custom tables (userProfile with userId FK, update userRole type to match user.id UUID type)
-- [ ] T006 [P] Update `server/src/db/relations.ts`: Define relationships (user ↔ userProfile one-to-one, user ↔ account one-to-many, user ↔ session one-to-many, user ↔ userRole many-to-many)
+- [x] T004 Update `server/src/db/schema.ts`: Add Better Auth core tables (user, account, session) with full column definitions and indexes per data-model.md
+- [x] T005 [P] Update `server/src/db/schema.ts`: Add custom tables (userProfile with userId FK, update userRole type to match user.id UUID type)
+- [x] T006 [P] Update `server/src/db/relations.ts`: Define relationships (user ↔ userProfile one-to-one, user ↔ account one-to-many, user ↔ session one-to-many, user ↔ userRole many-to-many)
 - [ ] T007 Generate Drizzle migrations for schema changes: `npx drizzle-kit generate:pg` creates migration files in `server/drizzle/`
 - [ ] T008 Run migration in development: `npx drizzle-kit push:pg` applies schema to PostgreSQL database
 - [ ] T009 [P] Create `server/src/db/seed-auth.ts`: Add seed data (test user with profile, test roles) for development/testing

@@ -1,4 +1,4 @@
-import { uuid } from 'drizzle-orm/pg-core';
+import { index, uuid } from 'drizzle-orm/pg-core';
 import { timestamps } from './column.helpers';
 import { integer, pgTable, varchar } from 'drizzle-orm/pg-core';
 import { Roles } from '@auxilium/configs/roles';
@@ -8,6 +8,7 @@ import { pgEnum } from 'drizzle-orm/pg-core';
 import { text } from 'drizzle-orm/pg-core';
 import { timestamp } from 'drizzle-orm/pg-core';
 import { boolean } from 'drizzle-orm/pg-core';
+import type { AnyPgColumn } from 'drizzle-orm/pg-core';
 
 export const eventRole = pgEnum('event_role', [
   'ORGANIZER',
@@ -41,14 +42,21 @@ export const eventType = pgTable('event_type', {
   name: varchar({ length: 100 }).notNull().unique(),
 });
 
-// User Profile Table - linked to Better Auth user via userId
+export const user = pgTable("user", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  name: text("name").notNull(),
+  email: text("email").notNull().unique(),
+  emailVerified: boolean("email_verified").default(false).notNull(),
+  image: text("image"),
+  ...timestamps,
+});
+
 export const userProfile = pgTable('user_profile', {
   profileId: uuid('profile_id').primaryKey().defaultRandom(),
   userId: uuid('user_id')
-    .notNull()
     .unique()
-    .references(() => user.id, {
-      onDelete: 'cascade',
+    .references((): AnyPgColumn => user.id, {
+      onDelete: 'set null',
       onUpdate: 'cascade',
     }),
   firstName: varchar({ length: 100 }).notNull(),
@@ -60,8 +68,7 @@ export const userProfile = pgTable('user_profile', {
   ichat: varchar({ length: 100 }).notNull().unique(),
   studentClass: varchar('student_class', { length: 20 }).notNull(),
   adminNumber: varchar('admin_number', { length: 7 }).notNull().unique(),
-  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
-  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
+  ...timestamps,
 });
 
 // Event Table
@@ -81,7 +88,7 @@ export const event = pgTable('event', {
   signupUrl: varchar('signup_url', { length: 255 }),
   feedbackUrl: varchar('feedback_url', { length: 255 }),
   helpersUrl: varchar('helpers_url', { length: 255 }),
-  createdBy: uuid('created_by').references(() => user.userId, {
+  createdBy: uuid('created_by').references(() => user.id, {
     onDelete: 'set null',
     onUpdate: 'cascade',
   }),
@@ -128,66 +135,61 @@ export const eventReport = pgTable('event_report', {
     }),
   signupCount: integer('signup_count'),
   feedbackCount: integer('feedback_count'),
-  createdBy: uuid('created_by').references(() => user.userId, {
+  createdBy: uuid('created_by').references(() => user.id, {
     onDelete: 'set null',
     onUpdate: 'cascade',
   }),
   ...timestamps,
 });
 
-export const user = pgTable('user', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  email: varchar({ length: 255 }).notNull().unique(),
-  emailVerified: boolean('email_verified').default(false),
-  name: varchar({ length: 255 }),
-  image: varchar({ length: 255 }),
-  profileId: uuid('profile_id').references(() => userProfile.profileId, {
-    onDelete: 'cascade',
-    onUpdate: 'cascade',
-  }),
-  statusId: integer('status_id')
-    .default(StatusConfig.ACTIVE)
-    .references(() => status.statusId, {
-      onDelete: 'cascade',
-      onUpdate: 'cascade',
-    }),
-  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
-  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
-});
+export const session = pgTable(
+  'session',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    expiresAt: timestamp('expires_at').notNull(),
+    token: text('token').notNull().unique(),
+    ipAddress: text('ip_address'),
+    userAgent: text('user_agent'),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    ...timestamps,
+  },
+  (table) => [index('session_userId_idx').on(table.userId)],
+);
 
-// Better Auth account table (OAuth linking)
-export const account = pgTable('account', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  userId: uuid('user_id')
-    .notNull()
-    .references(() => user.id, {
-      onDelete: 'cascade',
-      onUpdate: 'cascade',
-    }),
-  provider: varchar({ length: 50 }).notNull(),
-  providerAccountId: varchar('provider_account_id', { length: 255 }).notNull(),
-  name: varchar({ length: 255 }),
-  email: varchar({ length: 255 }),
-  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
-  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
-});
+export const account = pgTable(
+  'account',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    accountId: text('account_id').notNull(),
+    providerId: text('provider_id').notNull(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    accessToken: text('access_token'),
+    refreshToken: text('refresh_token'),
+    idToken: text('id_token'),
+    accessTokenExpiresAt: timestamp('access_token_expires_at'),
+    refreshTokenExpiresAt: timestamp('refresh_token_expires_at'),
+    scope: text('scope'),
+    password: text('password'),
+    ...timestamps,
+  },
+  (table) => [index('account_userId_idx').on(table.userId)],
+);
 
-// Better Auth session table with device tracking
-export const session = pgTable('session', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  userId: uuid('user_id')
-    .notNull()
-    .references(() => user.id, {
-      onDelete: 'cascade',
-      onUpdate: 'cascade',
-    }),
-  sessionToken: varchar('session_token', { length: 255 }).notNull().unique(),
-  expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
-  ipAddress: varchar('ip_address', { length: 45 }),
-  deviceFingerprint: varchar('device_fingerprint', { length: 255 }),
-  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
-  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
-});
+export const verification = pgTable(
+  'verification',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    identifier: text('identifier').notNull(),
+    value: text('value').notNull(),
+    expiresAt: timestamp('expires_at').notNull(),
+    ...timestamps,
+  },
+  (table) => [index('verification_identifier_idx').on(table.identifier)],
+);
 
 export const role = pgTable('role', {
   roleId: integer('role_id').primaryKey().unique(),
