@@ -23,5 +23,4 @@
     "esModuleInterop": true,
     "resolveJsonModule": true,
   },
-  "exclude": ["./specs"]
 }

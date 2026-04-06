@@ -9,6 +9,10 @@ export const relations = defineRelations(schema, (r) => ({
       from: r.user.id,
       to: r.userProfile.userId,
     }),
+    userRole: r.one.userRole({
+      from: r.user.id,
+      to: r.userRole.userId,
+    }),
     events: r.many.event(),
     sessions: r.many.session(),
     accounts: r.many.account(),
@@ -84,4 +88,7 @@ export const relations = defineRelations(schema, (r) => ({
   course: {
     userProfiles: r.many.userProfile(),
   },
+  status: {
+    users: r.many.user(),
+  }
 }));

@@ -1,4 +1,4 @@
 {
   "include": ["**/*.ts", "**/*.tsx"],
-  "exclude": ["node_modules", "dist", "build", ".turbo", ".vite"]
+  "exclude": ["node_modules", "dist", "build", "coverage", "logs", ".turbo", ".vite", "specs"]
 }

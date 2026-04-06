@@ -1,6 +1,8 @@
-import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import db from '@/db';
+import { createAuthMiddleware } from "better-auth/api";
+import { setupUserDetails } from "@/features/auth/lib/auth-hooks";
+import { betterAuth } from "better-auth";
 
 const isDevEnv = process.env.NODE_ENV === 'development';
 const port = process.env.PORT || 3000;
@@ -19,6 +21,14 @@ export const auth = betterAuth({
       clientId: process.env.GITHUB_CLIENT_ID as string,
       clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
     }
+  },
+
+  hooks: {
+    after: createAuthMiddleware(async (ctx) => {
+      if (ctx.path.startsWith("/sign-up")) {
+        await setupUserDetails(ctx);
+      }
+    }),
   },
 
   advanced: {

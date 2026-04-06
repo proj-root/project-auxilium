@@ -17,94 +17,120 @@ interface CreateUserArgs {
   adminNumber: string;
 }
 
-export const createUser = async ({
-  email,
-  password,
-  firstName,
-  lastName,
-  course,
-  ichat,
-  studentClass,
-  adminNumber,
-}: CreateUserArgs) => {
-  const createdUser = await db.transaction(async (tx) => {
-    // Generate user profile first
-    const [newProfile] = await tx
-      .insert(userProfile)
-      .values({
-        firstName,
-        lastName,
-        course,
-        ichat,
-        studentClass,
-        adminNumber,
-      })
-      .returning();
+// export const createUser = async ({
+//   email,
+//   password,
+//   firstName,
+//   lastName,
+//   course,
+//   ichat,
+//   studentClass,
+//   adminNumber,
+// }: CreateUserArgs) => {
+//   const createdUser = await db.transaction(async (tx) => {
+//     // Generate user profile first
+//     const [newProfile] = await tx
+//       .insert(userProfile)
+//       .values({
+//         firstName,
+//         lastName,
+//         course,
+//         ichat,
+//         studentClass,
+//         adminNumber,
+//       })
+//       .returning();
 
-    if (!newProfile) {
-      tx.rollback();
-      throw new APIError('Failed to create user profile', 500);
-    }
+//     if (!newProfile) {
+//       tx.rollback();
+//       throw new APIError('Failed to create user profile', 500);
+//     }
 
-    // Create the user with the profileId
-    const hashedPassword = bcrypt.hashSync(password, AuthConfig.saltRounds);
-    const [newUser] = await tx
-      .insert(userTable)
-      .values({
-        email,
-        password: hashedPassword,
-        profileId: newProfile.profileId,
-      })
-      .returning();
+//     // Create the user with the profileId
+//     const hashedPassword = bcrypt.hashSync(password, AuthConfig.saltRounds);
+//     const [newUser] = await tx
+//       .insert(userTable)
+//       .values({
+//         email,
+//         password: hashedPassword,
+//         profileId: newProfile.profileId,
+//       })
+//       .returning();
 
-    if (!newUser) {
-      tx.rollback();
-      throw new APIError('Failed to create user', 500);
-    }
+//     if (!newUser) {
+//       tx.rollback();
+//       throw new APIError('Failed to create user', 500);
+//     }
 
-    // Assign the user role
-    await tx.insert(userRole).values({
-      userId: newUser.userId,
-      roleId: Roles.USER,
-    });
+//     // Assign the user role
+//     await tx.insert(userRole).values({
+//       userId: newUser.id,
+//       roleId: Roles.USER,
+//     });
 
-    return newUser;
-  });
+//     return newUser;
+//   });
 
-  if (!createdUser) throw new APIError('Failed to create user', 500);
+//   if (!createdUser) throw new APIError('Failed to create user', 500);
 
-  return createdUser;
-};
+//   return createdUser;
+// };
 
 export const getUserByEmail = async ({ email }: { email: string }) => {
-  const [result] = await db
-    .selectDistinct()
-    .from(userTable)
-    .leftJoin(userRole, eq(userRole.userId, userTable.userId))
-    .where(eq(userTable.email, email))
-    .limit(1);
+  // const [result] = await db
+  //   .selectDistinct()
+  //   .from(userTable)
+  //   .leftJoin(userRole, eq(userRole.userId, userTable.id))
+  //   .where(eq(userTable.email, email))
+  //   .limit(1);
 
-  if (!result || !result.user || !result.user_role) return null;
+  const result = await db.query.user.findFirst({
+    where: {
+      email,
+    },
+    with: {
+      userRole: {
+        with: {
+          role: true,
+        },
+      },
+    },
+  });
+
+  if (!result || !result.userRole) return null;
 
   return {
-    ...result.user,
-    roleId: result.user_role.roleId,
+    ...result,
+    roleId: result.userRole.roleId,
   };
 };
 
 export const getUserById = async ({ userId }: { userId: string }) => {
-  const [result] = await db
-    .selectDistinct()
-    .from(userTable)
-    .leftJoin(userRole, eq(userRole.userId, userTable.userId))
-    .where(eq(userTable.userId, userId))
-    .limit(1);
+  // const [result] = await db
+  //   .selectDistinct()
+  //   .from(userTable)
+  //   .leftJoin(userRole, eq(userRole.userId, userTable.id))
+  //   .where(eq(userTable.id, userId))
+  //   .limit(1);
 
-  if (!result || !result.user || !result.user_role) return null;
+  const result = await db.query.user.findFirst({
+    where: {
+      id: userId,
+    },
+    with: {
+      userRole: {
+        with: {
+          role: true,
+        },
+      },
+    },
+  });
+
+  if (!result || !result.userRole) return null;
 
   return {
-    ...result.user,
-    roleId: result.user_role.roleId,
+    ...result,
+    roleId: result.userRole.roleId,
   };
 };
 
@@ -114,7 +140,9 @@ export const getUserWithDetailsById = async ({
   userId: string;
 }) => {
   const user = await db.query.user.findFirst({
-    where: eq(userTable.userId, userId),
+    where: {
+      id: userId,
+    },
     with: {
       userProfile: true,
       userRole: {
@@ -122,7 +150,6 @@ export const getUserWithDetailsById = async ({
           role: true,
         },
       },
-      status: true,
     },
   });
 
@@ -133,7 +160,7 @@ export const getUserWithDetailsById = async ({
     userRole: undefined,
     role: {
       roleId: user?.userRole?.roleId,
-      name: user?.userRole?.role.name,
+      name: user?.userRole?.role?.name,
     },
   };
 };
@@ -168,7 +195,9 @@ export const getProfileByAdminNo = async ({
   adminNumber: string;
 }) => {
   const profile = await db.query.userProfile.findFirst({
-    where: eq(userProfile.adminNumber, adminNumber),
+    where: {
+      adminNumber,
+    },
   });
 
   return profile;
@@ -192,7 +221,7 @@ export const updateUserProfile = async ({
     .update(userProfile)
     .set({
       ...args,
-      updatedAt: new Date(Date.now()),
+      updatedAt: new Date(Date.now()).toISOString(),
     })
     .where(eq(userProfile.profileId, profileId))
     .returning();
