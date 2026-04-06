@@ -77,13 +77,6 @@ interface CreateUserArgs {
 // };
 
 export const getUserByEmail = async ({ email }: { email: string }) => {
-  // const [result] = await db
-  //   .selectDistinct()
-  //   .from(userTable)
-  //   .leftJoin(userRole, eq(userRole.userId, userTable.id))
-  //   .where(eq(userTable.email, email))
-  //   .limit(1);
-
   const result = await db.query.user.findFirst({
     where: {
       email,
@@ -106,13 +99,6 @@ export const getUserByEmail = async ({ email }: { email: string }) => {
 };
 
 export const getUserById = async ({ userId }: { userId: string }) => {
-  // const [result] = await db
-  //   .selectDistinct()
-  //   .from(userTable)
-  //   .leftJoin(userRole, eq(userRole.userId, userTable.id))
-  //   .where(eq(userTable.id, userId))
-  //   .limit(1);
-
   const result = await db.query.user.findFirst({
     where: {
       id: userId,

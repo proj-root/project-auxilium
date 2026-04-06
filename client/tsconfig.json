@@ -21,6 +21,7 @@
       "@/*": ["./src/*"]
     },
 
+    "incremental": true,
     "esModuleInterop": true,
     "noEmit": true,
     "verbatimModuleSyntax": true,

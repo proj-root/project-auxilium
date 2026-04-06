@@ -12,6 +12,7 @@
       "@/*": ["./src/*"],
     },
 
+    "incremental": true,
     "noEmit": false,
     "declaration": true,
     "sourceMap": true,
