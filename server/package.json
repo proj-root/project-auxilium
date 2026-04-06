@@ -37,7 +37,7 @@
     "date-fns": "^4.1.0",
     "dotenv": "^17.3.1",
     "drizzle-orm": "^1.0.0-beta.20",
-    "drizzle-seed": "^0.3.1",
+    "drizzle-seed": "^1.0.0-beta.20",
     "express": "^4.22.1",
     "express-validator": "^7.3.1",
     "google-auth-library": "^10.6.1",

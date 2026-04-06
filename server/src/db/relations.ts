@@ -88,7 +88,4 @@ export const relations = defineRelations(schema, (r) => ({
   course: {
     userProfiles: r.many.userProfile(),
   },
-  status: {
-    users: r.many.user(),
-  }
 }));

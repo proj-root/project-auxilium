@@ -3,13 +3,17 @@
 import db from '@/db';
 import * as schema from '@/db/schema';
 import { catchAsync } from '@/lib/catch-async';
+import { logger } from '@/lib/logger';
 import { Roles } from '@auxilium/configs/roles';
 import { APIError } from '@auxilium/types/errors';
 import { MiddlewareContext, MiddlewareOptions } from 'better-auth';
 
 // TODO: Devise better user registration flow
-export const setupUserDetails = catchAsync(
-  async (ctx: MiddlewareContext<MiddlewareOptions, object>) => {
+export const setupUserDetails = async (
+  ctx: MiddlewareContext<MiddlewareOptions, object>,
+) =>
+  catchAsync(async () => {
+    logger.debug('Auth Body:', ctx.body);
     const newSession = ctx.context.newSession;
 
     if (!newSession) throw new APIError('No session found after sign-up', 500);
@@ -24,8 +28,7 @@ export const setupUserDetails = catchAsync(
 
       await tx.insert(schema.userRole).values({
         userId: newUserId,
-        roleId: Roles.USER,
+        roleId: Roles.USER, // Default user
       });
     });
-  },
-);
+  });
