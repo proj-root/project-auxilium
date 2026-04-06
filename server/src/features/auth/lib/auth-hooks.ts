@@ -1,5 +1,4 @@
 // This file contains hooks for BetterAuth
-
 import db from '@/db';
 import * as schema from '@/db/schema';
 import { catchAsync } from '@/lib/catch-async';
@@ -7,6 +6,7 @@ import { logger } from '@/lib/logger';
 import { Roles } from '@auxilium/configs/roles';
 import { APIError } from '@auxilium/types/errors';
 import { MiddlewareContext, MiddlewareOptions } from 'better-auth';
+import { eq } from 'drizzle-orm';
 
 // TODO: Devise better user registration flow
 export const setupUserDetails = async (
@@ -32,3 +32,21 @@ export const setupUserDetails = async (
       });
     });
   });
+
+// Enrich session user details with profile and roles
+export const enrichSessionUserDetails = async (userId: string) => {
+  // Fetch user role(s)
+  const userRole = await db.query.userRole.findFirst({
+    where: {
+      userId
+    },
+    with: {
+      role: true
+    }
+  });
+    
+  return {
+    roleId: userRole?.roleId,
+    role: userRole?.role?.name
+  };
+};

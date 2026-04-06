@@ -39,21 +39,19 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </head>
       <body>
         <StoreProvider>
-          <AuthInit>
-            <ThemeProvider
-              attribute='class'
-              defaultTheme='dark'
-              enableSystem
-              enableColorScheme
-            >
-              <main className='bg-background flex min-h-screen max-w-screen flex-col items-center justify-center'>
-                {children}
-                <ScrollRestoration />
-              </main>
-              <Scripts />
-              <Toaster theme='system' richColors closeButton expand={true} />
-            </ThemeProvider>
-          </AuthInit>
+          <ThemeProvider
+            attribute='class'
+            defaultTheme='dark'
+            enableSystem
+            enableColorScheme
+          >
+            <main className='bg-background flex min-h-screen max-w-screen flex-col items-center justify-center'>
+              {children}
+              <ScrollRestoration />
+            </main>
+            <Scripts />
+            <Toaster theme='system' richColors closeButton expand={true} />
+          </ThemeProvider>
         </StoreProvider>
       </body>
     </html>

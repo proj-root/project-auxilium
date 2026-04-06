@@ -74,8 +74,8 @@ export const getAllEvents = catchAsync(async (req: Request, res: Response) => {
     req.query;
 
   const events = await EventModel.getAllEvents({
-    page: Number(page),
-    pageSize: Number(pageSize),
+    page: Number(page || 0),
+    pageSize: Number(pageSize || 0),
     sortBy:
       (sortBy as 'name' | 'startDate' | 'endDate' | 'createdAt') || 'createdAt',
     sortOrder: sortOrder as 'asc' | 'desc',

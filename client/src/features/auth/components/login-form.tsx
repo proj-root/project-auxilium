@@ -4,19 +4,12 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Field, FieldLabel, FieldError } from '@/components/ui/field';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useLoginMutation } from '../state/auth-api-slice';
-import { useAppDispatch } from '@/hooks/redux-hooks';
-import {
-  setAccessToken,
-  setAuthLoading,
-  setRoleId,
-  setUserId,
-} from '../state/auth-slice';
-import { jwtDecode } from 'jwt-decode';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import { Link, useNavigate } from 'react-router';
+import { Link } from 'react-router';
 import { Loader2 } from 'lucide-react';
+import { useState } from 'react';
+import { authClient } from '@/lib/auth-client';
 
 const formSchema = z.object({
   email: z.email({ message: 'Invalid email address' }),
@@ -26,9 +19,8 @@ const formSchema = z.object({
 type LoginFormValues = z.infer<typeof formSchema>;
 
 export function LoginForm({ className }: { className?: string }) {
-  const [login, { isLoading }] = useLoginMutation();
-  const dispatch = useAppDispatch();
-  const navigate = useNavigate();
+  // const [login, { isLoading }] = useLoginMutation();
+  const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(formSchema),
@@ -39,28 +31,49 @@ export function LoginForm({ className }: { className?: string }) {
     mode: 'all',
   });
 
-  const onSubmit = async (data: LoginFormValues) => {
-    // console.log('LoginForm:onSubmit - starting login with email=', data.email);
-    try {
-      const responseData = await login(data).unwrap();
-      const accessToken = responseData.data.accessToken ?? null;
+  // const onSubmit = async (data: LoginFormValues) => {
+  //   // console.log('LoginForm:onSubmit - starting login with email=', data.email);
+  //   try {
+  //     const responseData = await login(data).unwrap();
+  //     const accessToken = responseData.data.accessToken ?? null;
       
-      dispatch(setAuthLoading(true));
-      dispatch(setAccessToken(accessToken));
+  //     dispatch(setAuthLoading(true));
+  //     dispatch(setAccessToken(accessToken));
   
-      const payload: { userId: string; roleId: number } =
-        await jwtDecode(accessToken);
+  //     const payload: { userId: string; roleId: number } =
+  //       await jwtDecode(accessToken);
   
-      dispatch(setRoleId(payload.roleId));
-      dispatch(setUserId(payload.userId));
+  //     dispatch(setRoleId(payload.roleId));
+  //     dispatch(setUserId(payload.userId));
 
-      navigate('/admin', { flushSync: true });
+  //     navigate('/admin', { flushSync: true });
+  //   } catch (error) {
+  //     console.error('LoginForm Error:', error);
+  //     toast.error('Invalid login credentials');
+  //   } finally {
+  //     dispatch(setAuthLoading(false));
+  //     return;
+  //   }
+  // };
+
+  const onSubmit = async (data: LoginFormValues) => {
+    setIsLoading(true);
+    try {
+      const { error } = await authClient.signIn.email({
+        email: data.email,
+        password: data.password,
+        callbackURL: "/admin",
+        rememberMe: true,
+      });
+
+      if (error) {
+        toast.error(error.message)
+        console.error("CredentialLoginError:", error);
+      }
     } catch (error) {
-      console.error('LoginForm Error:', error);
-      toast.error('Invalid login credentials');
+      console.error("CredentialLoginError:", error);
     } finally {
-      dispatch(setAuthLoading(false));
-      return;
+      setIsLoading(false);
     }
   };
 

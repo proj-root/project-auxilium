@@ -2,31 +2,32 @@ import type { BaseResponseDTO } from '@/types/dto.types';
 
 export interface UserProfileDTO {
   profileId: string;
+  userId: string;
   firstName: string;
   lastName: string;
   course: string;
   ichat: string;
   studentClass: string;
   adminNumber: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface RoleDTO {
+  roleId: string;
+  name: string;
 }
 
 export interface UserDTO {
-  userId: string;
-  statusId: string;
+  id: string;
+  name: string;
   email: string;
+  emailVerified: string;
+  image: string;
   userProfile: UserProfileDTO;
-  status: {
-    statusId: string;
-    name: string;
-  };
-  role: {
-    roleId: string;
-    name: string;
-  };
-  createdAt: Date;
-  updatedAt: Date;
+  role: RoleDTO;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export type GetPersonalDetailsResponse = BaseResponseDTO<UserDTO>;
