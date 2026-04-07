@@ -6,7 +6,7 @@ import { APIError } from '@auxilium/types/errors';
 import { insertIntoSheet } from './lib/access-sheets';
 
 export const createEvent = catchAsync(async (req: Request, res: Response) => {
-  let {
+  const {
     name,
     eventTypeId,
     description,
@@ -18,7 +18,7 @@ export const createEvent = catchAsync(async (req: Request, res: Response) => {
     helpersUrl,
   } = req.body;
 
-  const createdBy = res.locals.user.userId;
+  const createdBy = res.locals.user.id;
   if (!name || !eventTypeId || !description) {
     throw new APIError(
       'Missing required fields: name, eventTypeId, description',
@@ -74,8 +74,8 @@ export const getAllEvents = catchAsync(async (req: Request, res: Response) => {
     req.query;
 
   const events = await EventModel.getAllEvents({
-    page: Number(page || 0),
-    pageSize: Number(pageSize || 0),
+    page: Number(page || 1),
+    pageSize: Number(pageSize || 10),
     sortBy:
       (sortBy as 'name' | 'startDate' | 'endDate' | 'createdAt') || 'createdAt',
     sortOrder: sortOrder as 'asc' | 'desc',
@@ -167,7 +167,7 @@ export const generatePointsSheet = catchAsync(
     // TODO: add explicit types here to translate from raw sheet data to more structured data, based on column headers
     const verificationResult = await verifyParticipants({
       eventId: event.eventId,
-      userId: res.locals.user.userId,
+      userId: res.locals.user.id,
       signupUrl,
       feedbackUrl,
       helpersUrl,
@@ -246,8 +246,8 @@ export const getAllParticipationByReportId = catchAsync(
 
     const result = await EventModel.getParticipationRecordsByReportId({
       eventReportId: eventReportId as string,
-      page: Number(page),
-      pageSize: Number(pageSize),
+      page: Number(page || 1),
+      pageSize: Number(pageSize || 10),
       sortBy: sortBy as 'name' | 'createdAt',
       sortOrder: sortOrder as 'asc' | 'desc',
       search: search as string,

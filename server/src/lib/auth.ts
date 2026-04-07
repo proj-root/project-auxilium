@@ -43,6 +43,7 @@ export const auth = betterAuth({
     after: createAuthMiddleware(async (ctx) => {
       if (ctx.path.startsWith('/sign-up')) {
         await setupUserDetails(ctx);
+        return null;
       }
       if (ctx.path.startsWith('/get-session') && ctx.context.session?.user) {
         const userId = ctx.context.session.user.id;

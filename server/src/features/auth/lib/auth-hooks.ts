@@ -9,7 +9,7 @@ import { MiddlewareContext, MiddlewareOptions } from 'better-auth';
 import { eq } from 'drizzle-orm';
 
 // TODO: Devise better user registration flow
-export const setupUserDetails = async (
+export const setupUserDetails = (
   ctx: MiddlewareContext<MiddlewareOptions, object>,
 ) =>
   catchAsync(async () => {

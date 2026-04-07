@@ -29,7 +29,7 @@ export const verifySession = catchAsync(
 );
 
 export const verifyIsRole = (allowedRoles: number[]) =>
-  catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+  catchAsync((req: Request, res: Response, next: NextFunction) => {
     const userRole = res.locals.user.roleId;
     if (!allowedRoles.includes(userRole)) {
       throw new APIError('Forbidden: insufficient permissions', 403);
