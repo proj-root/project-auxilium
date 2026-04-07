@@ -1,21 +1,23 @@
-import { selectAuthState } from "@/features/auth/state/auth-slice";
-import { useAppSelector } from "@/hooks/redux-hooks";
+import { LoadingComponent } from "@/components/misc/loading";
+import { authClient } from "@/lib/auth-client";
 import { useLayoutEffect } from "react";
 import { Outlet, useNavigate } from "react-router";
 
 export default function AuthLayout() {
-  const authState = useAppSelector(selectAuthState);
   const navigate = useNavigate();
-  
-  useLayoutEffect(() => {
-    (async () => {
-      if (authState.accessToken) {
-        navigate('/')
-      }
-    })()
-  }, [authState])
-  
-  if (authState.loading) return <></>;
+  const { data, isPending, error } = authClient.useSession();
 
-  return <Outlet />;
+  useLayoutEffect(() => {
+    if (data?.session && data?.user) {
+      navigate("/", { replace: true });
+    }
+  }, [data, isPending, navigate]);
+
+  if (isPending) return <LoadingComponent />;
+
+  // User not authenticated, show login and register pages
+  if (!isPending && (!data?.session || !data?.user)) return <Outlet />;
+
+  // While redirecting, render nothing
+  return null;
 }

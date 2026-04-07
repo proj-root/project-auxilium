@@ -9,7 +9,7 @@ import {
 import { StatusConfig } from '@auxilium/configs/status';
 import type { PaginationOptions } from '@auxilium/types/pagination';
 import { APIError } from '@auxilium/types/errors';
-import { eq, ilike, or } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 
 interface CreateEventArgs {
   name: string;
@@ -37,16 +37,16 @@ export const createEvent = async (args: CreateEventArgs) => {
 
 export const getEventById = async ({ eventId }: { eventId: string }) => {
   const event = await db.query.event.findFirst({
-    where: eq(eventTable.eventId, eventId),
+    where: {
+      eventId,
+    },
     with: {
       eventType: true,
-      creator: {
-        columns: {
-          password: false,
-        },
-      },
+      creator: true,
       eventReports: {
-        orderBy: (eventReports, { desc }) => desc(eventReports.createdAt),
+        orderBy: {
+          createdAt: 'desc',
+        },
         limit: 25,
       },
     },
@@ -71,38 +71,34 @@ export const getAllEvents = async ({
   statusId = StatusConfig.ACTIVE,
 }: GetPaginatedEventsArgs) => {
   const events = await db.query.event.findMany({
-    where: or(
-      search && search.trim() !== ''
-        ? ilike(eventTable.name, `%${search.trim()}%`)
-        : undefined,
-      eventTypeId ? eq(eventTable.eventTypeId, eventTypeId) : undefined,
-      statusId ? eq(eventTable.statusId, statusId) : undefined,
-    ),
+    where: {
+      OR: [
+        {
+          name: {
+            ilike: search && search.trim() !== '' ? `%${search.trim()}%` : undefined,
+          }
+        },
+        {
+          eventTypeId: {
+            eq: eventTypeId,
+          }
+        },
+        {
+          statusId: {
+            eq: statusId,
+          }
+        }
+      ],
+    },
     with: {
       eventType: true,
-      creator: {
-        columns: {
-          password: false,
-        },
-      },
+      creator: true,
     },
     limit: pageSize,
     offset: (page - 1) * pageSize,
-    orderBy: (events, { desc, asc }) => {
-      if (sortBy === 'name') {
-        return sortOrder === 'asc' ? asc(events.name) : desc(events.name);
-      } else if (sortBy === 'startDate') {
-        return sortOrder === 'asc'
-          ? asc(events.startDate)
-          : desc(events.startDate);
-      } else if (sortBy === 'endDate') {
-        return sortOrder === 'asc' ? asc(events.endDate) : desc(events.endDate);
-      } else {
-        return sortOrder === 'asc'
-          ? asc(events.createdAt)
-          : desc(events.createdAt);
-      }
-    },
+    orderBy: {
+      [sortBy]: sortOrder
+    }
   });
 
   return events;
@@ -197,7 +193,9 @@ export const getEventReportsByEventId = async ({
   eventId: string;
 }) => {
   const eventReports = await db.query.eventReport.findMany({
-    where: eq(eventReportTable.eventId, eventId),
+    where: {
+      eventId
+    }
   });
 
   return eventReports;
@@ -210,18 +208,16 @@ export const getEventReportById = async ({
   eventReportId: string;
 }) => {
   const eventReport = await db.query.eventReport.findFirst({
-    where: eq(eventReportTable.eventReportId, eventReportId),
+    where: {
+      eventReportId
+    },
     with: {
       eventParticipations: {
         with: {
           userProfile: true,
         },
       },
-      creator: {
-        columns: {
-          password: false,
-        },
-      },
+      creator: true,
     },
   });
 
@@ -275,24 +271,17 @@ export const getParticipationRecordsByReportId = async ({
   );
 
   const participations = await db.query.eventParticipation.findMany({
-    where: eq(eventParticipationTable.eventReportId, eventReportId),
+    where: {
+      eventReportId
+    },
     with: {
       userProfile: true,
     },
     limit: pageSize,
     offset: (page - 1) * pageSize,
-    orderBy: (events, { desc, asc }) => {
-      // TODO: Temporary; to add search filter for name
-      if (sortBy === 'createdAt') {
-        return sortOrder === 'asc'
-          ? asc(events.createdAt)
-          : desc(events.createdAt);
-      } else {
-        return sortOrder === 'asc'
-          ? asc(events.createdAt)
-          : desc(events.createdAt);
-      }
-    },
+    orderBy: {
+      [sortBy]: sortOrder,
+    }
   });
 
   return {

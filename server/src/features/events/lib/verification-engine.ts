@@ -52,7 +52,7 @@ export async function verifyParticipants(args: VerifyParticipantsArgs) {
 
   // Generate base event report
   const eventReport = await EventModel.createEventReport({
-    eventId: eventId as string,
+    eventId,
     signupCount,
     feedbackCount,
     createdBy: userId,
@@ -67,7 +67,7 @@ export async function verifyParticipants(args: VerifyParticipantsArgs) {
   const pointsRecordsArray: string[][] = [];
   let serialCount = 1; // For generating serial numbers in points sheet
   let invalidCount = 0;
-  let courseTurnup: Record<string, number> = {};
+  const courseTurnup: Record<string, number> = {};
 
   // Omit headers and loop
   for (const student of signupData.slice(1)) {
@@ -151,8 +151,9 @@ export async function verifyParticipants(args: VerifyParticipantsArgs) {
     }
 
     // Calculate course turnup stats
-    if (studentCourse)
+    if (studentCourse) {
       courseTurnup[studentCourse] = (courseTurnup[studentCourse] || 0) + 1;
+    }
 
     // Record the participation in the database
     const participationRecord = await EventModel.createEventParticipationRecord(

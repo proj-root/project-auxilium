@@ -1,10 +1,7 @@
 {
   "extends": "../tsconfig.base.json",
   "include": [
-    "**/*.ts",
-    "**/*.tsx",
-    "**/*.js",
-    "**/*.jsx",
+    "src/**/*",
     ".react-router/types/**/*",
     "vite.config.ts",
     "*.config.ts",
@@ -21,9 +18,10 @@
     "rootDirs": [".", "./.react-router/types"],
 
     "paths": {
-      "@/*": ["./src/*"],
+      "@/*": ["./src/*"]
     },
 
+    "incremental": true,
     "esModuleInterop": true,
     "noEmit": true,
     "verbatimModuleSyntax": true,
@@ -33,6 +31,11 @@
   },
   "exclude": [
     "node_modules",
-    "**/node_modules/**"
+    "dist",
+    "build",
+    "coverage",
+    "logs",
+    ".next",
+    ".turbo"
   ]
 }

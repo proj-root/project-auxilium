@@ -9,11 +9,8 @@
     "dev:safe": "tsc --noEmit && tsx watch src/app.ts",
     "seed": "tsx src/db/seed.ts",
     "seed:reset": "tsx src/db/seed.ts --reset",
-    "biome:check": "biome check .",
-    "biome:fix": "biome check --write .",
-    "biome:format": "biome format --write .",
-    "biome:lint": "biome lint --write .",
-    "biome:ci": "biome ci ."
+    "lint": "eslint . --ext .js,.ts",
+    "format": "prettier --write ."
   },
   "keywords": [],
   "author": "",
@@ -27,7 +24,7 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/morgan": "^1.9.10",
     "@types/pg": "^8.16.0",
-    "drizzle-kit": "^0.31.9",
+    "drizzle-kit": "^1.0.0-beta.20",
     "tsx": "^4.21.0"
   },
   "dependencies": {
@@ -39,8 +36,8 @@
     "cors": "^2.8.6",
     "date-fns": "^4.1.0",
     "dotenv": "^17.3.1",
-    "drizzle-orm": "^0.45.1",
-    "drizzle-seed": "^0.3.1",
+    "drizzle-orm": "^1.0.0-beta.20",
+    "drizzle-seed": "^1.0.0-beta.20",
     "express": "^4.22.1",
     "express-validator": "^7.3.1",
     "google-auth-library": "^10.6.1",

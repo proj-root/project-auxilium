@@ -1,133 +1,93 @@
 // import { defineRelations } from 'drizzle-orm';
 
-import { relations } from 'drizzle-orm';
+import { defineRelations } from 'drizzle-orm';
 import * as schema from './schema';
 
-// TODO: Upgrade to V2 when the bug with ./_relations is fixed
-// export const relations = defineRelations(schema, (relation) => ({
-//   user: {
-//     userProfile: relation.one.userProfile(),
-//   },
-//   userProfile: {
-//     user: relation.one.user({
-//       from: relation.userProfile.profileId,
-//       to: relation.user.profileId,
-//     }),
-//   },
-//   event: {
-//     eventType: relation.one.eventType(),
-//     creator: relation.one.user({
-//       from: relation.event.createdBy,
-//       to: relation.user.userId,
-//     }),
-//   },
-//   eventType: {
-//     events: relation.many.event({
-//       from: relation.eventType.eventTypeId,
-//       to: relation.event.eventTypeId,
-//     }),
-//   }
-// }));
-
-export const statusRelations = relations(schema.status, ({ many }) => ({
-  users: many(schema.user),
-  events: many(schema.event),
-}));
-
-export const userRelations = relations(schema.user, ({ one }) => ({
-  userProfile: one(schema.userProfile, {
-    fields: [schema.user.profileId],
-    references: [schema.userProfile.profileId],
-  }),
-  userRole: one(schema.userRole, {
-    fields: [schema.user.userId],
-    references: [schema.userRole.userId],
-  }),
-  status: one(schema.status, {
-    fields: [schema.user.statusId],
-    references: [schema.status.statusId],
-  }),
-}));
-
-export const userRoleRelations = relations(schema.userRole, ({ one }) => ({
-  user: one(schema.user, {
-    fields: [schema.userRole.userId],
-    references: [schema.user.userId],
-  }),
-  role: one(schema.role, {
-    fields: [schema.userRole.roleId],
-    references: [schema.role.roleId],
-  }),
-}));
-
-export const roleRelations = relations(schema.role, ({ many }) => ({
-  userRoles: many(schema.userRole),
-}));
-
-export const userProfileRelations = relations(
-  schema.userProfile,
-  ({ one, many }) => ({
-    user: one(schema.user, {
-      fields: [schema.userProfile.profileId],
-      references: [schema.user.profileId],
+export const relations = defineRelations(schema, (r) => ({
+  user: {
+    userProfile: r.one.userProfile({
+      from: r.user.id,
+      to: r.userProfile.userId,
     }),
-
-    eventParticipations: many(schema.eventParticipation),
-
-    course: one(schema.course, {
-      fields: [schema.userProfile.course],
-      references: [schema.course.code],
+    userRole: r.one.userRole({
+      from: r.user.id,
+      to: r.userRole.userId,
     }),
-  }),
-);
-
-export const eventRelations = relations(schema.event, ({ one, many }) => ({
-  eventType: one(schema.eventType, {
-    fields: [schema.event.eventTypeId],
-    references: [schema.eventType.eventTypeId],
-  }),
-  eventReports: many(schema.eventReport),
-  creator: one(schema.user, {
-    fields: [schema.event.createdBy],
-    references: [schema.user.userId],
-  }),
-  status: one(schema.status, {
-    fields: [schema.event.statusId],
-    references: [schema.status.statusId],
-  }),
+    events: r.many.event(),
+    sessions: r.many.session(),
+    accounts: r.many.account(),
+  },
+  session: {
+    user: r.one.user({
+      from: r.session.userId,
+      to: r.user.id,
+    }),
+  },
+  account: {
+    user: r.one.user({
+      from: r.account.userId,
+      to: r.user.id,
+    }),
+  },
+  userProfile: {
+    user: r.one.user({
+      from: r.userProfile.userId,
+      to: r.user.id,
+    }),
+    userCourse: r.one.course({
+      from: r.userProfile.course,
+      to: r.course.code,
+    }),
+  },
+  userRole: {
+    user: r.one.user({
+      from: r.userRole.userId,
+      to: r.user.id,
+    }),
+    role: r.one.role({
+      from: r.userRole.roleId,
+      to: r.role.roleId,
+    }),
+  },
+  role: {
+    userRoles: r.many.userRole(),
+  },
+  event: {
+    eventType: r.one.eventType({
+      from: r.event.eventTypeId,
+      to: r.eventType.eventTypeId,
+    }),
+    creator: r.one.user({
+      from: r.event.createdBy,
+      to: r.user.id,
+    }),
+    eventReports: r.many.eventReport(),
+  },
+  eventParticipation: {
+    eventReport: r.one.eventReport({
+      from: r.eventParticipation.eventReportId,
+      to: r.eventReport.eventReportId,
+    }),
+    userProfile: r.one.userProfile({
+      from: r.eventParticipation.profileId,
+      to: r.userProfile.profileId,
+    }),
+  },
+  eventReport: {
+    event: r.one.event({
+      from: r.eventReport.eventId,
+      to: r.event.eventId,
+    }),
+    creator: r.one.user({
+      from: r.eventReport.createdBy,
+      to: r.user.id,
+    }),
+    eventParticipations: r.many.eventParticipation()
+  },
+  eventType: {
+    events: r.many.event(),
+  },
+  course: {
+    userProfiles: r.many.userProfile(),
+  },
 }));
-
-export const eventTypeRelations = relations(schema.eventType, ({ many }) => ({
-  events: many(schema.event),
-}));
-
-export const eventReportRelations = relations(
-  schema.eventReport,
-  ({ one, many }) => ({
-    event: one(schema.event, {
-      fields: [schema.eventReport.eventId],
-      references: [schema.event.eventId],
-    }),
-
-    eventParticipations: many(schema.eventParticipation),
-    
-    creator: one(schema.user, {
-      fields: [schema.eventReport.createdBy],
-      references: [schema.user.userId],
-    }),
-  }),
-);
-
-export const eventParticipationRelations = relations(
-  schema.eventParticipation,
-  ({ one }) => ({
-    eventReport: one(schema.eventReport, {
-      fields: [schema.eventParticipation.eventReportId],
-      references: [schema.eventReport.eventReportId],
-    }),
-    userProfile: one(schema.userProfile, {
-      fields: [schema.eventParticipation.profileId],
-      references: [schema.userProfile.profileId],
-    }),
-  }),
-);

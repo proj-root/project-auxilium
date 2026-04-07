@@ -12,7 +12,6 @@ import './app.css';
 import StoreProvider from '@/context/store-provider';
 import { ThemeProvider } from 'next-themes';
 import { Toaster } from 'sonner';
-import { AuthInit } from '@/features/auth/components/auth-init';
 
 export const links: Route.LinksFunction = () => [
   { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
@@ -39,21 +38,19 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </head>
       <body>
         <StoreProvider>
-          <AuthInit>
-            <ThemeProvider
-              attribute='class'
-              defaultTheme='dark'
-              enableSystem
-              enableColorScheme
-            >
-              <main className='bg-background flex min-h-screen max-w-screen flex-col items-center justify-center'>
-                {children}
-                <ScrollRestoration />
-              </main>
-              <Scripts />
-              <Toaster theme='system' richColors closeButton expand={true} />
-            </ThemeProvider>
-          </AuthInit>
+          <ThemeProvider
+            attribute='class'
+            defaultTheme='dark'
+            enableSystem
+            enableColorScheme
+          >
+            <main className='bg-background flex min-h-screen max-w-screen flex-col items-center justify-center'>
+              {children}
+              <ScrollRestoration />
+            </main>
+            <Scripts />
+            <Toaster theme='system' richColors closeButton expand={true} />
+          </ThemeProvider>
         </StoreProvider>
       </body>
     </html>

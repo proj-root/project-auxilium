@@ -11,6 +11,7 @@
     "noEmit": true,
     "composite": false,
     "strict": true,
+    "incremental": true,
     "noUncheckedIndexedAccess": true,
     "noFallthroughCasesInSwitch": true,
     "noImplicitOverride": true,

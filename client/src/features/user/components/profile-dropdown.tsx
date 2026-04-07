@@ -5,12 +5,13 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ChevronDown, ChevronUp, Home, Settings } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router';
 import { LogoutButton } from '@/features/auth/components/logout-button';
+import { createUserInitials } from '@/lib/formatters';
 
 export function UserProfileDropdown() {
   const [isOpen, setIsOpen] = useState(false);
@@ -18,20 +19,18 @@ export function UserProfileDropdown() {
 
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
-      <DropdownMenuTrigger className='flex cursor-pointer flex-row items-center gap-3 outline-0'>
-        <Avatar className='size-8 rounded-full outline-2'>
-          <AvatarFallback>
-            {(data?.data.userProfile.firstName?.charAt(0).toUpperCase() || '') +
-              (data?.data.userProfile.lastName?.charAt(0).toUpperCase() || '')}
+      <DropdownMenuTrigger className='flex cursor-pointer flex-row items-center gap-1 outline-0'>
+        <Avatar className='size-7 rounded-full outline-2 me-2'>
+          <AvatarImage src={data?.data.image} />
+          <AvatarFallback className='text-xs'>
+            {createUserInitials(data?.data.name || data?.data.userProfile.firstName + ' ' + data?.data.userProfile.lastName || '')}
           </AvatarFallback>
         </Avatar>
-        <p className='font-semibold'>
-          {data?.data.userProfile.firstName}
-        </p>
+        <p className='font-semibold'>{data?.data.userProfile.firstName}</p>
         {isOpen ? (
           <ChevronUp className='size-5' />
         ) : (
-          <ChevronDown className='size-5' />
+          <ChevronDown className='size-5 mt-1' />
         )}
       </DropdownMenuTrigger>
       <DropdownMenuContent
@@ -42,7 +41,7 @@ export function UserProfileDropdown() {
         {/* Header */}
         <div className='flex flex-col gap-1 px-1'>
           <h1>
-            {data?.data.userProfile.firstName} {data?.data.userProfile.lastName}
+            {data?.data.name}
           </h1>
           <span className='text-muted-foreground text-sm'>
             {data?.data.email}

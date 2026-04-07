@@ -1,11 +1,11 @@
 import express from 'express';
 import * as EventsController from './events.controller';
-import { verifyIsRole, verifyJWT } from '@/middleware/auth.middleware';
 import { Roles } from '@auxilium/configs/roles';
+import { verifyIsRole, verifySession } from '@/middleware/auth.middleware';
 
 const EventsRouter = express.Router();
 
-EventsRouter.use(verifyJWT);
+EventsRouter.use(verifySession);
 EventsRouter.use(verifyIsRole([Roles.ADMIN, Roles.SUPERADMIN]));
 
 // POST /events - Create a new event

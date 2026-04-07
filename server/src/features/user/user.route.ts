@@ -1,9 +1,9 @@
 import express from 'express';
 import * as UserController from './user.controller';
-import { verifyJWT } from '@/middleware/auth.middleware';
+import { verifySession } from '@/middleware/auth.middleware';
 
 const UserRouter = express.Router();
-UserRouter.use(verifyJWT);
+UserRouter.use(verifySession);
 
 UserRouter.get('/', UserController.readPersonalDetailsById);
 
