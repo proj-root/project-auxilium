@@ -9,7 +9,7 @@
 
     // "allowImportingTsExtensions": true,
     "noEmit": true,
-    "composite": false,
+    "composite": true,
     "strict": true,
     "incremental": true,
     "noUncheckedIndexedAccess": true,

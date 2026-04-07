@@ -27,7 +27,7 @@ export function EventItemDrawer({
 
   return (
     <Drawer direction='right' open={isOpen} onOpenChange={setIsOpen}>
-      <DrawerTrigger className={cn('cursor-pointer text-start', className)}>
+      <DrawerTrigger className={cn('cursor-pointer text-start', className)} asChild>
         {children}
       </DrawerTrigger>
       <DrawerContent>

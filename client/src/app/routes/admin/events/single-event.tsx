@@ -1,24 +1,32 @@
 import { BackButton } from '@/components/misc/back-button';
 import { ComingSoonEmpty } from '@/components/misc/empty-screen';
+import { LoadingComponent } from '@/components/misc/loading';
+import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { EventReportDataTable } from '@/features/events/components/event-reports';
 import { GenerateEventReportButton } from '@/features/events/components/gen-event-report-btn';
 import { EventDetailsCard } from '@/features/events/components/single-event-details';
 import { useGetEventByIdQuery } from '@/features/events/state/events-api-slice';
-import { Boxes, FileText, Target } from 'lucide-react';
+import { Boxes, Edit2, FileText, Target } from 'lucide-react';
 import { useParams } from 'react-router';
 
 export default function SingleEventDetailsPage() {
   const { eventId } = useParams();
-  const { data } = useGetEventByIdQuery({ eventId: eventId ?? '' });
+  const { data, isLoading } = useGetEventByIdQuery({ eventId: eventId ?? '' });
 
-  if (!data || !data.data)
+  if (isLoading) {
+    // TODO: Add skeleton loading state here
+    return <LoadingComponent />;
+  }
+
+  if (!data?.data) {
     return (
       <div className='flex h-full w-full items-center justify-center'>
         {/* TODO: Add Sede empty state */}
         <h1 className='text-4xl font-bold'>Where is my event???</h1>
       </div>
     );
+  }
 
   return (
     <div className='flex h-full w-full flex-col gap-2'>
@@ -28,11 +36,17 @@ export default function SingleEventDetailsPage() {
           <h1 className='text-3xl font-semibold'>{data?.data.name}</h1>
           <p className='text-muted-foreground'>{data?.data.description}</p>
         </div>
-        <GenerateEventReportButton event={data?.data} />
+        <div className='flex flex-row items-center gap-2'>
+          <Button variant={'secondary'} size={'sm'}>
+            <Edit2 className='size-4'/>
+            Edit
+          </Button>
+          <GenerateEventReportButton event={data?.data} />
+        </div>
       </div>
       <EventDetailsCard
-        event={data.data}
-        className='w-full md:w-1/2 2xl:w-1/4'
+        event={data?.data}
+        className='w-full text-nowrap md:w-1/2 2xl:w-1/4'
       />
       {/* TODO: Convert into reusable component */}
       <div className='flex h-full w-full flex-col'>

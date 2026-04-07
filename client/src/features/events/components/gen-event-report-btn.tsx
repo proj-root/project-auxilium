@@ -40,8 +40,6 @@ export function GenerateEventReportButton({
     } catch (error: any) {
       console.error('GenerateEventReport Error:', error);
       toast.error(error.data.message);
-    } finally {
-      return;
     }
   };
 
@@ -50,8 +48,9 @@ export function GenerateEventReportButton({
       onClick={handleGenerate}
       disabled={Boolean(!canGenerate || isLoading)}
       className={cn(className)}
+      size={'sm'}
     >
-      <FilePlus className='size-5' />
+      <FilePlus className='size-4' />
       Generate Report
     </Button>
   );
