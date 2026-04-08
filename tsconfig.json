@@ -4,6 +4,7 @@
   "references": [
     {"path": "./client"},
     {"path": "./server"},
-    {"path": "./packages/**"}
+    {"path": "./packages/configs"},
+    {"path": "./packages/types"}
   ],
 }

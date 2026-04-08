@@ -8,7 +8,7 @@
     "moduleResolution": "bundler",
 
     "jsx": "react-jsx",
-    "rootDirs": ["./src", "./.react-router/types"],
+    "rootDirs": [".", "./.react-router/**"],
 
     "paths": {
       "@/*": ["./src/*"]
@@ -25,6 +25,7 @@
   "include": [
     "src/**/*",
     ".react-router/types/**/*",
+    "*.config.ts"
   ],
   "exclude": [
     "node_modules",
