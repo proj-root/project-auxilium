@@ -59,6 +59,9 @@ interface GetPaginatedEventsArgs extends PaginationOptions {
   sortBy?: 'name' | 'startDate' | 'endDate' | 'createdAt';
   eventTypeId?: number;
   statusId?: number;
+  day?: number;
+  month?: number;
+  year?: number;
 }
 
 export const getAllEvents = async ({
@@ -69,27 +72,44 @@ export const getAllEvents = async ({
   search,
   eventTypeId = undefined,
   statusId = StatusConfig.ACTIVE,
+  day,
+  month,
+  year,
 }: GetPaginatedEventsArgs) => {
+  // Build date range for filtering
+  let dateStart: Date | undefined = undefined;
+  let dateEnd: Date | undefined = undefined;
+  if (year && month && day) {
+    // Specific day
+    dateStart = new Date(Date.UTC(year, month - 1, day, 0, 0, 0, 0));
+    dateEnd = new Date(Date.UTC(year, month - 1, day + 1, 0, 0, 0, 0));
+  } else if (year && month) {
+    // Whole month
+    dateStart = new Date(Date.UTC(year, month - 1, 1, 0, 0, 0, 0));
+    dateEnd = new Date(Date.UTC(year, month, 1, 0, 0, 0, 0));
+  } else if (year) {
+    // Whole year
+    dateStart = new Date(Date.UTC(year, 0, 1, 0, 0, 0, 0));
+    dateEnd = new Date(Date.UTC(year + 1, 0, 1, 0, 0, 0, 0));
+  }
+
+  // Build AND conditions for all filters
+  const andConditions: object[] = [];
+  if (search && search.trim() !== '') {
+    andConditions.push({ name: { ilike: `%${search.trim()}%` } });
+  }
+  if (eventTypeId) {
+    andConditions.push({ eventTypeId: { eq: eventTypeId } });
+  }
+  if (statusId) {
+    andConditions.push({ statusId: { eq: statusId } });
+  }
+  if (dateStart && dateEnd) {
+    andConditions.push({ startDate: { gte: dateStart, lt: dateEnd } });
+  }
+
   const events = await db.query.event.findMany({
-    where: {
-      OR: [
-        {
-          name: {
-            ilike: search && search.trim() !== '' ? `%${search.trim()}%` : undefined,
-          }
-        },
-        {
-          eventTypeId: {
-            eq: eventTypeId,
-          }
-        },
-        {
-          statusId: {
-            eq: statusId,
-          }
-        }
-      ],
-    },
+    where: andConditions.length > 0 ? { AND: andConditions } : undefined,
     with: {
       eventType: true,
       creator: true,
