@@ -44,7 +44,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             enableSystem
             enableColorScheme
           >
-            <main className='bg-background flex min-h-screen max-w-screen flex-col items-center justify-center'>
+            <main className='bg-background flex max-h-screen overflow-hidden max-w-screen flex-col items-center justify-center'>
               {children}
               <ScrollRestoration />
             </main>

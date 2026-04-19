@@ -89,7 +89,7 @@ export function EventsGalleryView() {
     <div className='flex flex-row flex-wrap gap-y-4'>
       {data &&
         data.data.map((event) => (
-          <div className='flex w-1/4 pe-4'>
+          <div className='flex w-full lg:w-1/2 xl:w-1/4 pe-4' key={crypto.randomUUID()}>
             <EventGalleryItem event={event} />
           </div>
         ))}

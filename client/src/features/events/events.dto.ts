@@ -76,6 +76,10 @@ export interface GetAllEventsRequest extends PaginationOptions {
   sortBy?: 'name' | 'startDate' | 'endDate' | 'createdAt';
   eventTypeId?: number;
   statusId?: number;
+  day?: number;
+  month?: number;
+  year?: number;
+  search?: string;
 }
 
 export type GetAllEventsResponse = BaseResponseDTO<
