@@ -13,7 +13,7 @@ import {
   notFoundHandler,
 } from '@/middleware/errors.middleware';
 import AuthRouter from '@/features/auth/auth.route';
-import { SystemConfig } from './config/system.config';
+import { SystemConfig } from '../../server/src/config/system.config';
 import UserRouter from './features/user/user.route';
 import { auth } from './lib/auth';
 import { toNodeHandler } from 'better-auth/node';
