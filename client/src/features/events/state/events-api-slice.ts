@@ -69,7 +69,7 @@ export const eventsApiSlice = apiSlice.injectEndpoints({
       GetParticipationsByReportIdRequest
     >({
       query: (params) => ({
-        url: `/events/reports/${params.eventReportId}/participations`,
+        url: `/events/reports/${params.eventReportId}/participants`,
         method: 'GET',
         params: {
           ...params,

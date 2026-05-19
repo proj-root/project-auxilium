@@ -4,7 +4,7 @@ import {
   BadRequestException,
   Logger,
 } from '@nestjs/common';
-import { ZodError, ZodSchema } from 'zod';
+import { ZodSchema } from 'zod';
 
 export class ZodValidationPipe implements PipeTransform {
   private readonly logger = new Logger(ZodValidationPipe.name);
@@ -14,7 +14,7 @@ export class ZodValidationPipe implements PipeTransform {
     try {
       const parsedValue = this.schema.parse(value);
       return parsedValue;
-    } catch (error: ZodError | any) {
+    } catch (error: any) {
       this.logger.error('ZodValidationError:', error);
       throw new BadRequestException(
         error.errors || 'Missing or invalid fields.',
