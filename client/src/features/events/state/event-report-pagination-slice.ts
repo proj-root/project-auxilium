@@ -12,7 +12,7 @@ const initialState: EventReportPaginationState = {
   sortBy: 'createdAt',
   sortOrder: 'desc',
   search: '',
-  eventReportId: undefined,
+  eventReportId: '',
 };
 
 const eventReportPaginationSlice = createSlice({

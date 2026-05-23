@@ -4,7 +4,7 @@ import { createAuthMiddleware } from 'better-auth/api';
 import {
   enrichSessionUserDetails,
   setupUserDetails,
-} from '@/features/auth/lib/auth-hooks';
+} from '@/modules/auth/lib/auth-hooks';
 import { betterAuth } from 'better-auth';
 import { testUtils } from 'better-auth/plugins';
 
@@ -53,10 +53,11 @@ export const auth = betterAuth({
           session: ctx.context.session.session,
           user: {
             ...ctx.context.session.user,
-            role: extra
-          }
+            role: extra,
+          },
         };
       }
+      return;
     }),
   },
 

@@ -1,7 +1,12 @@
 {
   "extends": "./tsconfig.base.json",
-  "files": [],
-  "references": [],
   "include": ["**/*.ts", "**/*.tsx"],
-  "exclude": ["node_modules", "dist", "build", "coverage", "logs", ".turbo", ".vite", "specs"]
+  "exclude": ["node_modules", "dist", "build", ".turbo", ".vite"],
+  "files": [],
+  "references": [
+    {"path": "./client"},
+    {"path": "./server"},
+    {"path": "./packages/configs"},
+    {"path": "./packages/types"}
+  ],
 }

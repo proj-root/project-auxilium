@@ -2,6 +2,10 @@
   "name": "@auxilium/types",
   "version": "1.0.0",
   "main": "dist/index.js",
+  "exports": {
+    "./errors": "./dist/errors.js",
+    "./pagination": "./dist/pagination.js"
+  },
   "scripts": {
     "build": "tsc",
     "watch": "tsc --watch",

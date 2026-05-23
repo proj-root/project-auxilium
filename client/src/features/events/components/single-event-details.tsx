@@ -30,7 +30,7 @@ export function EventDetailsCard({
           <Clock className='size-4' />
           Event Duration
         </p>
-        <p className='w-full'>
+        <div className='w-full'>
           {event.startDate && event.endDate ? (
             <p>
               {isSameDay
@@ -40,7 +40,7 @@ export function EventDetailsCard({
           ) : (
             <p className='text-muted-foreground'>No date information yet</p>
           )}
-        </p>
+        </div>
       </div>
       <div className='flex flex-row items-center gap-2 text-sm'>
         <p className='flex w-full flex-row items-center gap-2'>

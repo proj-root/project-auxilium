@@ -1,0 +1,84 @@
+import * as schema from '@/db/schema';
+import type { PaginationOptions } from '@auxilium/types/pagination';
+import { z } from 'zod';
+
+// Event DTO
+export type EventDTO = typeof schema.event.$inferSelect;
+export type EventReportDTO = typeof schema.eventReport.$inferSelect;
+export type EventParticipationDTO = typeof schema.eventParticipation.$inferSelect;
+export type EventTypeDTO = typeof schema.eventType.$inferSelect;
+
+// Zod Validation Schemas
+export const CreateEventSchema = z.object({
+  name: z.string().min(1, 'Name is required').max(100, 'Name must be at most 100 characters'),
+  eventTypeId: z.coerce.number().int('Event type must be a valid number'),
+  description: z.string().min(1, 'Description is required'),
+  startDate: z.string().optional(),
+  endDate: z.string().optional(),
+  platform: z.string().optional(),
+  signupUrl: z.string().optional(),
+  feedbackUrl: z.string().optional(),
+  helpersUrl: z.string().optional(),
+});
+
+export type CreateEventDTO = z.infer<typeof CreateEventSchema> & {
+  createdBy: string;
+};
+
+export const UpdateEventSchema = z.object({
+  name: z.string().min(1, 'Name is required').max(100, 'Name must be at most 100 characters').optional(),
+  eventTypeId: z.coerce.number().int('Event type must be a valid number').optional(),
+  description: z.string().min(1, 'Description is required').optional(),
+  startDate: z.string().optional(),
+  endDate: z.string().optional(),
+  platform: z.string().optional(),
+  signupUrl: z.string().optional(),
+  feedbackUrl: z.string().optional(),
+  helpersUrl: z.string().optional(),
+});
+
+export type UpdateEventDTO = z.infer<typeof UpdateEventSchema> & {
+  eventId: string;
+};
+
+export const CreateEventReportSchema = z.object({
+  signupCount: z.number().int('Signup count must be an integer').optional(),
+  feedbackCount: z.number().int('Feedback count must be an integer').optional(),
+});
+
+export type CreateEventReportDTO = z.infer<typeof CreateEventReportSchema> & {
+  eventId: string;
+  createdBy: string;
+};
+
+export const CreateEventParticipationSchema = z.object({
+  profileId: z.string(),
+  attended: z.boolean().optional(),
+  eventRole: z.enum(schema.eventRole.enumValues).optional(),
+  pointsType: z.enum(schema.eventPointsType.enumValues).optional(),
+  pointsAwarded: z.number().int('Points awarded must be an integer').optional(),
+});
+
+export type CreateEventParticipationDTO = z.infer<typeof CreateEventParticipationSchema> & {
+  eventReportId: string;
+};
+
+// Query DTOs
+export type GetEventByIdDTO = {
+  eventId: string;
+};
+
+export type GetAllEventsQueryDTO = PaginationOptions & {
+  sortBy?: 'name' | 'startDate' | 'endDate' | 'createdAt';
+  eventTypeId?: number;
+  statusId?: number;
+  day?: number;
+  month?: number;
+  year?: number;
+};
+
+export type GetParticipationRecordsQueryDTO = PaginationOptions & {
+  eventReportId: string;
+  sortBy?: 'name' | 'createdAt';
+  statusId?: number;
+};
