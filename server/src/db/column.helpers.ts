@@ -8,6 +8,6 @@ export const timestamps = {
     .notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' })
     .defaultNow()
-    .$onUpdate(() => /* @__PURE__ */ new Date())
+    .$onUpdate(() => /* @__PURE__ */ new Date().toISOString())
     .notNull(),
 };

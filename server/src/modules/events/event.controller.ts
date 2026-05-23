@@ -1,0 +1,398 @@
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Logger,
+  NotFoundException,
+  Param,
+  Body,
+  Query,
+  Req,
+  HttpCode,
+  BadRequestException,
+  UsePipes,
+} from '@nestjs/common';
+import { EventsService } from './event.service';
+import { VerificationEngineService } from './lib/verification-engine.service';
+import { SheetsService } from './lib/sheets.service';
+import { ZodValidationPipe } from '@/common/zod-validation.pipe';
+import type { Request } from 'express';
+import type {
+  CreateEventDTO,
+  UpdateEventDTO,
+  GetAllEventsQueryDTO,
+  CreateEventReportDTO,
+  CreateEventParticipationDTO,
+  GetParticipationRecordsQueryDTO,
+} from './events.dto';
+import {
+  CreateEventSchema,
+  UpdateEventSchema,
+  CreateEventReportSchema,
+  CreateEventParticipationSchema,
+} from './events.dto';
+import { Session, type UserSession } from '@thallesp/nestjs-better-auth';
+import { SystemConfig } from '@/config/system.config';
+
+const ROUTE_NAME = 'api/events';
+
+@Controller(ROUTE_NAME)
+export class EventsController {
+  private readonly logger = new Logger(EventsController.name);
+  private readonly tempSheetId = SystemConfig.tempSheetId;
+
+  constructor(
+    private readonly eventsService: EventsService,
+    private readonly verificationEngine: VerificationEngineService,
+    private readonly sheetsService: SheetsService,
+  ) {}
+
+  /**
+   * GET /api/events
+   * Retrieve all events with pagination and filtering
+   */
+  @Get()
+  async getAllEvents(@Query() query: Partial<GetAllEventsQueryDTO>) {
+    const {
+      page = 1,
+      pageSize = 10,
+      sortBy = 'createdAt',
+      sortOrder = 'desc',
+      search,
+      eventTypeId,
+      statusId,
+      day,
+      month,
+      year,
+    } = query;
+
+    const events = await this.eventsService.getAllEvents({
+      page: Number(page),
+      pageSize: Number(pageSize),
+      sortBy:
+        (sortBy as 'name' | 'startDate' | 'endDate' | 'createdAt') ||
+        'createdAt',
+      sortOrder: (sortOrder as 'asc' | 'desc') || 'desc',
+      search: search as string,
+      eventTypeId: eventTypeId ? Number(eventTypeId) : undefined,
+      statusId: statusId ? Number(statusId) : undefined,
+      day: day ? Number(day) : undefined,
+      month: month ? Number(month) : undefined,
+      year: year ? Number(year) : undefined,
+    });
+
+    return {
+      status: 'success',
+      message: 'Events retrieved successfully',
+      data: events,
+    };
+  }
+
+  /**
+   * POST /api/events
+   * Create a new event
+   */
+  @Post()
+  @HttpCode(201)
+  async createEvent(
+    @Body(new ZodValidationPipe(CreateEventSchema)) createEventDto: CreateEventDTO,
+    @Session() session: UserSession,
+  ) {
+    // Extract user ID from better-auth session
+    const userId = session.user.id;
+
+    const newEvent = await this.eventsService.createEvent({
+      ...createEventDto,
+      createdBy: userId,
+    });
+
+    return {
+      status: 'success',
+      message: 'Event created successfully',
+      data: newEvent,
+    };
+  }
+
+  /**
+   * GET /api/events/types
+   * Get all event types
+   */
+  @Get('types')
+  async getAllEventTypes() {
+    const eventTypes = await this.eventsService.getAllEventTypes();
+
+    return {
+      status: 'success',
+      message: 'Event types retrieved successfully',
+      data: eventTypes,
+    };
+  }
+
+  /**
+   * GET /api/events/reports/:reportId/participants
+   * Get participation records for an event report
+   */
+  @Get('reports/:reportId/participants')
+  async getParticipationRecords(
+    @Param('reportId') reportId: string,
+    @Query() query: Partial<GetParticipationRecordsQueryDTO>,
+  ) {
+    const {
+      page = 1,
+      pageSize = 10,
+      sortBy = 'createdAt',
+      sortOrder = 'desc',
+      search,
+      statusId,
+    } = query;
+    console.log('Fetching participation records with query:', query);
+
+    const result = await this.eventsService.getParticipationRecordsByReportId({
+      eventReportId: reportId,
+      page: Number(page),
+      pageSize: Number(pageSize),
+      sortBy: (sortBy as 'name' | 'createdAt') || 'createdAt',
+      sortOrder: (sortOrder as 'asc' | 'desc') || 'desc',
+      search: search as string,
+      statusId: statusId ? Number(statusId) : undefined,
+    });
+
+    return {
+      status: 'success',
+      message: 'Participation records retrieved successfully',
+      data: result,
+    };
+  }
+
+  /**
+   * GET /api/events/reports/:reportId
+   * Get a single event report
+   */
+  @Get('reports/:reportId')
+  async getEventReportById(@Param('reportId') reportId: string) {
+    const eventReport = await this.eventsService.getEventReportById({
+      eventReportId: reportId,
+    });
+
+    return {
+      status: 'success',
+      message: 'Event report retrieved successfully',
+      data: eventReport,
+    };
+  }
+
+  /**
+   * POST /api/events/reports/:reportId/participants
+   * Create a participation record
+   */
+  // @Post('reports/:reportId/participants')
+  // @HttpCode(201)
+  // @UsePipes(new ZodValidationPipe(CreateEventParticipationSchema))
+  // async createParticipationRecord(
+  //   @Param('reportId') reportId: string,
+  //   @Body() participationDto: Partial<CreateEventParticipationDTO>,
+  // ) {
+  //   const participationRecord =
+  //     await this.eventsService.createEventParticipationRecord({
+  //       eventReportId: reportId,
+  //       ...participationDto,
+  //     } as CreateEventParticipationDTO);
+
+  //   return {
+  //     status: 'success',
+  //     message: 'Participation record created successfully',
+  //     data: participationRecord,
+  //   };
+  // }
+
+  /**
+   * GET /api/events/:id
+   * Retrieve a single event by ID
+   */
+  @Get(':id')
+  async getEventById(@Param('id') eventId: string) {
+    const event = await this.eventsService.getEventById({ eventId });
+
+    if (!event)
+      throw new NotFoundException(`Event with ID ${eventId} not found`);
+
+    return {
+      status: 'success',
+      message: 'Event retrieved successfully',
+      data: event,
+    };
+  }
+
+  /**
+   * PUT /api/events/:id
+   * Update an event
+   */
+  @Put(':id')
+  async updateEvent(
+    @Param('id') eventId: string,
+    @Body(new ZodValidationPipe(UpdateEventSchema)) updateEventDto: Partial<CreateEventDTO>,
+  ) {
+    const updatedEvent = await this.eventsService.updateEvent({
+      eventId,
+      ...updateEventDto,
+    });
+
+    // TODO: Add updated by who
+
+    return {
+      status: 'success',
+      message: 'Event updated successfully',
+      data: updatedEvent,
+    };
+  }
+
+  /**
+   * POST /api/events/:id/generate
+   * Generate points sheet by verifying participants across signup, feedback, and helper sheets
+   */
+  @Post(':id/generate')
+  @HttpCode(201)
+  async generatePointsSheet(
+    @Param('id') eventId: string,
+    @Session() session: UserSession,
+  ) {
+    // Fetch event to get the spreadsheet URLs
+    const event = await this.eventsService.getEventById({ eventId });
+
+    if (!event) {
+      throw new NotFoundException(`Event with ID ${eventId} not found`);
+    }
+
+    const { signupUrl, feedbackUrl, helpersUrl } = event;
+    if (!signupUrl || !feedbackUrl || !helpersUrl) {
+      throw new BadRequestException(
+        'Missing form URLs. Please ensure signupUrl, feedbackUrl, and helpersUrl are all updated.',
+      );
+    }
+
+    if (!this.tempSheetId) {
+      throw new BadRequestException(
+        'tempSheetId is required to store the generated points',
+      );
+    }
+
+    // Verify participants and get points data
+    const verificationResult = await this.verificationEngine.verifyParticipants(
+      {
+        eventId,
+        userId: session.user.id,
+        signupUrl,
+        feedbackUrl,
+        helpersUrl,
+      },
+    );
+
+    // Insert the points data into the temporary sheet
+    await this.sheetsService.insertIntoSheet({
+      spreadsheetId: this.tempSheetId,
+      range: 'A2:G',
+      values: verificationResult.participants,
+    });
+
+    return {
+      status: 'success',
+      message: 'Points sheet generated successfully',
+      data: {
+        ...verificationResult,
+      },
+    };
+  }
+
+  /**
+   * POST /api/events/:id/restore
+   * Restore a soft-deleted event
+   */
+  @Post(':id/restore')
+  async restoreEvent(@Param('id') eventId: string) {
+    const restoredEvent = await this.eventsService.restoreEvent({ eventId });
+
+    return {
+      status: 'success',
+      message: 'Event restored successfully',
+      data: restoredEvent,
+    };
+  }
+
+  /**
+   * GET /api/events/:eventId/reports
+   * Get all reports for an event
+   */
+  @Get(':eventId/reports')
+  async getEventReportsByEventId(@Param('eventId') eventId: string) {
+    const eventReports = await this.eventsService.getEventReportsByEventId({
+      eventId,
+    });
+
+    return {
+      status: 'success',
+      message: 'Event reports retrieved successfully',
+      data: eventReports,
+    };
+  }
+
+  /**
+   * POST /api/events/:eventId/reports
+   * Create a new event report
+   */
+  // @Post(':eventId/reports')
+  // @HttpCode(201)
+  // @UsePipes(new ZodValidationPipe(CreateEventReportSchema))
+  // async createEventReport(
+  //   @Param('eventId') eventId: string,
+  //   @Body() createReportDto: Partial<CreateEventReportDTO>,
+  //   @Req() req: Request,
+  // ) {
+  //   const userId = (req as any).session?.user?.id;
+
+  //   if (!userId) {
+  //     throw new BadRequestException('User not authenticated');
+  //   }
+
+  //   const eventReport = await this.eventsService.createEventReport({
+  //     eventId,
+  //     ...createReportDto,
+  //     createdBy: userId,
+  //   });
+
+  //   return {
+  //     status: 'success',
+  //     message: 'Event report created successfully',
+  //     data: eventReport,
+  //   };
+  // }
+
+  /**
+   * DELETE /api/events/:id
+   * Soft delete an event (mark as deleted)
+   */
+  @Delete(':id')
+  async deleteEvent(@Param('id') eventId: string) {
+    await this.eventsService.deleteEvent({ eventId });
+
+    return {
+      status: 'success',
+      message: 'Event deleted successfully',
+    };
+  }
+
+  /**
+   * DELETE /api/events/:id/hard
+   * Permanently delete an event
+   */
+  @Delete(':id/hard')
+  async hardDeleteEvent(@Param('id') eventId: string) {
+    await this.eventsService.hardDeleteEvent({ eventId });
+
+    return {
+      status: 'success',
+      message: 'Event permanently deleted successfully',
+    };
+  }
+}

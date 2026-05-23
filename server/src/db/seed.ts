@@ -1,6 +1,5 @@
 import 'dotenv/config';
 import db from '@/db';
-import bcrypt from 'bcrypt';
 import * as schema from './schema';
 import {
   testCourses,
@@ -9,9 +8,9 @@ import {
   testStatuses,
   testUsers,
 } from './test-data';
-import { AuthConfig } from '@/config/auth.config';
-import { reset, seed } from 'drizzle-seed';
-import { auth, getAuthContext } from '@/lib/auth';
+// import { AuthConfig } from '@/config/auth.config';
+import { reset } from 'drizzle-seed';
+import { auth } from '@/lib/auth';
 
 async function main() {
   console.log('🌱 Initiating database seeding protocol...');

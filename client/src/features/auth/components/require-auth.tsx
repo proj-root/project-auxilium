@@ -1,8 +1,8 @@
-import { LoadingComponent } from "@/components/misc/loading";
-import type { RoleDTO } from "@/features/user/user.dto";
-import { authClient } from "@/lib/auth-client";
-import { useLayoutEffect } from "react";
-import { useNavigate } from "react-router";
+import { LoadingComponent } from '@/components/misc/loading';
+import type { RoleDTO } from '@/features/user/user.dto';
+import { authClient } from '@/lib/auth-client';
+import { useLayoutEffect } from 'react';
+import { useNavigate } from 'react-router';
 
 type RequireAuthProps = {
   children: React.ReactNode;
@@ -17,20 +17,26 @@ export function RequireAuth({ children, allowedRoles }: RequireAuthProps) {
   const isAuthorized = () => {
     if (!allowedRoles || allowedRoles.length === 0) return true; // No restriction
 
-    // @ts-ignore
+    // @ts-expect-error - role is a custom attribute
     const userRole: RoleDTO = data?.user?.role || null;
     return allowedRoles.includes(parseInt(userRole.roleId));
   };
 
   useLayoutEffect(() => {
     if (!isPending && (!data?.session || !data?.user)) {
-      navigate("/auth/login", { replace: true });
+      navigate('/auth/login', { replace: true });
     } else if (!isPending && data?.session && data?.user && !isAuthorized()) {
-      navigate("/auth/unauthorized", { replace: true });
+      navigate('/auth/unauthorized', { replace: true });
     }
   }, [data, isPending, navigate, allowedRoles]);
 
-  if (isPending) return <LoadingComponent />;
+  if (isPending) {
+    return (
+      <div className='h-screen'>
+        <LoadingComponent />
+      </div>
+    );
+  }
 
   // If authenticated and authorized, render the content
   if (!isPending && data?.session && data?.user && isAuthorized()) {

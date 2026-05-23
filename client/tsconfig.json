@@ -6,6 +6,7 @@
     "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "bundler",
+    "composite": true,
 
     "jsx": "react-jsx",
     "rootDirs": [".", "./.react-router/**"],
@@ -16,7 +17,7 @@
 
     "incremental": true,
     "esModuleInterop": true,
-    "noEmit": true,
+    // "noEmit": true,
     "verbatimModuleSyntax": true,
     "resolveJsonModule": true,
     "skipLibCheck": true,
