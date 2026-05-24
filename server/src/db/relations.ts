@@ -72,6 +72,10 @@ export const relations = defineRelations(schema, (r) => ({
       from: r.eventParticipation.profileId,
       to: r.userProfile.profileId,
     }),
+    eventRole: r.one.eventRole({
+      from: r.eventParticipation.eventRoleId,
+      to: r.eventRole.eventRoleId,
+    }),
   },
   eventReport: {
     event: r.one.event({
@@ -86,6 +90,9 @@ export const relations = defineRelations(schema, (r) => ({
   },
   eventType: {
     events: r.many.event(),
+  },
+  eventRole: {
+    eventParticipations: r.many.eventParticipation(),
   },
   course: {
     userProfiles: r.many.userProfile(),

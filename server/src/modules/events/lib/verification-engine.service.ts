@@ -3,6 +3,7 @@ import { EventsService } from '../event.service';
 import { UserService } from '@/modules/user/user.service';
 import { SheetsService } from './sheets.service';
 import { capitalizeFirst } from '@/lib/formatters';
+import { EventRoles } from '@/config/system.config';
 
 export interface VerifyParticipantsInput {
   eventId: string;
@@ -210,9 +211,7 @@ export class VerificationEngineService {
           profileId: existingProfile.profileId,
           eventReportId: eventReport.eventReportId,
           attended: true,
-          eventRole: 'PARTICIPANT',
-          pointsType: 'PARTICIPATION',
-          pointsAwarded: 1,
+          eventRoleId: EventRoles.PARTICIPANT,
         });
 
       // Format for points sheet
@@ -221,7 +220,7 @@ export class VerificationEngineService {
         `${existingProfile.firstName} ${existingProfile.lastName}`,
         existingProfile.adminNumber,
         existingProfile.studentClass,
-        `${capitalizeFirst(participationRecord.pointsType || '')}(${participationRecord.pointsType?.charAt(0) || ''})`,
+        `${capitalizeFirst(participationRecord?.eventRole?.pointsType || '')}(${participationRecord?.eventRole?.pointsType?.charAt(0) || ''})`,
         'half day',
         'Participants',
       ]);
@@ -286,9 +285,9 @@ export class VerificationEngineService {
           profileId: existingProfile.profileId,
           eventReportId: eventReport.eventReportId,
           attended: true,
-          eventRole: eventRole,
-          pointsType: 'LEADERSHIP',
-          pointsAwarded: points,
+          eventRoleId: EventRoles.COORDINATOR, // TODO: Assuming helpers get coordinator points, will be assigned in the future
+          // pointsType: 'LEADERSHIP',
+          // pointsAwarded: points,
         });
 
       // Format for points sheet
@@ -297,7 +296,7 @@ export class VerificationEngineService {
         `${existingProfile.firstName} ${existingProfile.lastName}`,
         existingProfile.adminNumber,
         existingProfile.studentClass,
-        `${capitalizeFirst(participationRecord.pointsType || '')}(${participationRecord.pointsType?.charAt(0) || ''})`,
+        `${capitalizeFirst(participationRecord?.eventRole?.pointsType || '')}(${participationRecord?.eventRole?.pointsType?.charAt(0) || ''})`,
         'one week',
         'Organising Committee',
       ]);

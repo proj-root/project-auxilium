@@ -9,12 +9,13 @@ import { text } from 'drizzle-orm/pg-core';
 import { timestamp } from 'drizzle-orm/pg-core';
 import { boolean } from 'drizzle-orm/pg-core';
 import type { AnyPgColumn } from 'drizzle-orm/pg-core';
+import { EventRoles } from '@/config/system.config';
 
-export const eventRole = pgEnum('event_role', [
-  'ORGANIZER',
-  'HELPER',
-  'PARTICIPANT',
-]);
+// export const eventRole = pgEnum('event_role', [
+//   'ORGANIZER',
+//   'HELPER',
+//   'PARTICIPANT',
+// ]);
 
 export const eventPointsType = pgEnum('event_points_type', [
   'LEADERSHIP',
@@ -42,12 +43,19 @@ export const eventType = pgTable('event_type', {
   name: varchar({ length: 100 }).notNull().unique(),
 });
 
-export const user = pgTable("user", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  name: text("name").notNull(),
-  email: text("email").notNull().unique(),
-  emailVerified: boolean("email_verified").default(false).notNull(),
-  image: text("image"),
+export const eventRole = pgTable('event_role', {
+  eventRoleId: integer('event_role_id').primaryKey().unique(),
+  name: varchar('name', { length: 20 }).unique(),
+  pointsType: eventPointsType('points_type').notNull(),
+  pointsAwarded: integer('points_awarded').notNull(),
+});
+
+export const user = pgTable('user', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  name: text('name').notNull(),
+  email: text('email').notNull().unique(),
+  emailVerified: boolean('email_verified').default(false).notNull(),
+  image: text('image'),
   ...timestamps,
 });
 
@@ -118,9 +126,14 @@ export const eventParticipation = pgTable('event_participation', {
       onUpdate: 'cascade',
     }),
   attended: boolean().default(false),
-  eventRole: eventRole('event_role').default('PARTICIPANT'),
-  pointsType: eventPointsType('points_type').default('PARTICIPATION'),
-  pointsAwarded: integer('points_awarded').default(0),
+  eventRoleId: integer('event_role_id')
+    .references(() => eventRole.eventRoleId, {
+      onDelete: 'set null',
+      onUpdate: 'cascade',
+    })
+    .default(EventRoles.PARTICIPANT),
+  // pointsType: eventPointsType('points_type').default('PARTICIPATION'),
+  // pointsAwarded: integer('points_awarded').default(0), // TODO: Deprecate this using eventRole table
   ...timestamps,
 });
 

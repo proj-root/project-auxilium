@@ -260,14 +260,24 @@ export class EventsService {
   async createEventParticipationRecord(
     args: CreateEventParticipationDTO,
   ) {
-    const [participationRecord] = await db
+    const [inserted] = await db
       .insert(eventParticipationTable)
       .values(args)
       .returning();
 
-    if (!participationRecord) {
+    if (!inserted) {
       throw new APIError('Failed to insert event participation record', 500);
     }
+
+    // Fetch the full record with the eventRole
+    const participationRecord = await db.query.eventParticipation.findFirst({
+      where: {
+        participationId: inserted.participationId,
+      },
+      with: {
+        eventRole: true,
+      },
+    });
 
     return participationRecord;
   }
@@ -295,6 +305,7 @@ export class EventsService {
         eventReportId,
       },
       with: {
+        eventRole: true,
         userProfile: true,
       },
       limit: pageSize,
@@ -314,5 +325,11 @@ export class EventsService {
   async getAllEventTypes() {
     const eventTypes = await db.query.eventType.findMany();
     return eventTypes;
+  }
+
+  // Event Roles
+  async getAllEventRoles() {
+    const eventRoles = await db.query.eventRole.findMany();
+    return eventRoles;
   }
 }

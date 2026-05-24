@@ -1,4 +1,4 @@
-import { Roles } from '@auxilium/configs/roles'
+import { Roles } from '@auxilium/configs/roles';
 import { StatusConfig } from '@auxilium/configs/status';
 
 export const testUsers = [
@@ -62,4 +62,55 @@ export const testEventTypes = [
   { eventTypeId: 1, name: 'Workshop' },
   { eventTypeId: 2, name: 'Community Service' },
   { eventTypeId: 3, name: 'Hackathon' },
+];
+
+export const testEventRoles: {
+  eventRoleId: number;
+  name: string;
+  pointsType: 'PARTICIPATION' | 'LEADERSHIP' | 'SERVICE' | 'COMMUNITY SERVICE';
+  pointsAwarded: number;
+}[] = [
+  {
+    eventRoleId: 1,
+    name: 'Participant',
+    pointsType: 'PARTICIPATION',
+    pointsAwarded: 1,
+  },
+  {
+    eventRoleId: 2,
+    name: 'Coordinator',
+    pointsType: 'LEADERSHIP',
+    pointsAwarded: 2,
+  },
+  { eventRoleId: 3, name: 'Mentor', pointsType: 'SERVICE', pointsAwarded: 1 },
+  {
+    eventRoleId: 4,
+    name: 'Facilitator',
+    pointsType: 'SERVICE',
+    pointsAwarded: 1,
+  },
+  {
+    eventRoleId: 5,
+    name: 'Poster Maker',
+    pointsType: 'SERVICE',
+    pointsAwarded: 1,
+  },
+  {
+    eventRoleId: 6,
+    name: 'Email Writer',
+    pointsType: 'SERVICE',
+    pointsAwarded: 1,
+  },
+  {
+    eventRoleId: 7,
+    name: 'Form Maker',
+    pointsType: 'SERVICE',
+    pointsAwarded: 1,
+  },
+  {
+    eventRoleId: 8,
+    name: 'Volunteer',
+    pointsType: 'COMMUNITY SERVICE',
+    pointsAwarded: 2,
+  },
 ];

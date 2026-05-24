@@ -2,6 +2,13 @@ import type { BaseResponseDTO } from '@/types/dto.types';
 import type { PaginationOptions } from '@auxilium/types/pagination';
 import type { UserDTO, UserProfileDTO } from '../user/user.dto';
 
+export enum CCAPointsType {
+  PARTICIPATION = 'PARTICIPATION',
+  LEADERSHIP = 'LEADERSHIP',
+  SERVICE = 'SERVICE',
+  COMMUNITY_SERVICE = 'COMMUNITY SERVICE'
+}
+
 export interface EventReport {
   eventReportId: string;
   signupCount: number;
@@ -14,6 +21,13 @@ export interface EventReport {
 export interface EventType {
   eventTypeId: number;
   name: string;
+}
+
+export interface EventRole {
+  eventRoleId: number;
+  name: string;
+  pointsType: CCAPointsType;
+  pointsAwarded: number;
 }
 
 export interface Event {
@@ -46,9 +60,7 @@ export interface EventParticipation {
   eventReportId: string;
   profileId: string;
   attended: boolean;
-  eventRole: string;
-  pointsType: string;
-  pointsAwarded: number;
+  eventRole: EventRole;
 
   userProfile: UserProfileDTO;
 
