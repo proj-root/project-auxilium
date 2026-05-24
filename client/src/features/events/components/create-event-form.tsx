@@ -113,8 +113,6 @@ export function CreateEventForm({ className }: { className?: string }) {
     } catch (error: any) {
       console.error('CreateEventForm Error:', error);
       toast.error(error.data.message);
-    } finally {
-      return;
     }
   };
 
@@ -122,7 +120,7 @@ export function CreateEventForm({ className }: { className?: string }) {
     <form
       onSubmit={form.handleSubmit(onSubmit)}
       className={cn(
-        'flex grid h-fit w-full grid-cols-2 grid-rows-1 gap-4',
+        'grid h-fit w-full grid-cols-2 grid-rows-1 gap-4',
         className,
       )}
     >

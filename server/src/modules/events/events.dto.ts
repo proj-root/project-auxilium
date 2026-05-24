@@ -26,16 +26,19 @@ export type CreateEventDTO = z.infer<typeof CreateEventSchema> & {
 };
 
 export const UpdateEventSchema = z.object({
-  name: z.string().min(1, 'Name is required').max(100, 'Name must be at most 100 characters').optional(),
+  name: z.string().trim().max(100, 'Name must be at most 100 characters').optional(),
   eventTypeId: z.coerce.number().int('Event type must be a valid number').optional(),
-  description: z.string().min(1, 'Description is required').optional(),
+  description: z.string().trim().optional(),
   startDate: z.string().optional(),
   endDate: z.string().optional(),
   platform: z.string().optional(),
   signupUrl: z.string().optional(),
   feedbackUrl: z.string().optional(),
   helpersUrl: z.string().optional(),
-});
+}).refine(
+  (data) => Object.values(data).some(value => value !== undefined && value !== ''),
+  { message: 'At least one field must be provided for update' }
+);
 
 export type UpdateEventDTO = z.infer<typeof UpdateEventSchema> & {
   eventId: string;

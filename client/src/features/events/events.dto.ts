@@ -70,6 +70,21 @@ export type CreateEventRequest = {
 
 export type CreateEventResponse = BaseResponseDTO<void>;
 
+export type UpdateEventRequest = {
+  eventId: string;
+  name?: string;
+  description?: string;
+  eventTypeId?: string;
+  startDate?: Date;
+  endDate?: Date;
+  platform?: string;
+  signupUrl?: string;
+  feedbackUrl?: string;
+  helpersUrl?: string;
+};
+
+export type UpdateEventResponse = BaseResponseDTO<void>;
+
 export type GetEventByIdResponse = BaseResponseDTO<Event>;
 
 export interface GetAllEventsRequest extends PaginationOptions {
