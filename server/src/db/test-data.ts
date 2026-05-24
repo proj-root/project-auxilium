@@ -55,6 +55,7 @@ export const testCourses = [
   { code: 'DCS', name: 'Diploma in Computer Science' },
   { code: 'DAAA', name: 'Diploma in Applied Artificial Intelligence' },
   { code: 'DCDF', name: 'Diploma in Cybersecurity & Digital Forensics' },
+  { code: 'DCITP', name: 'Common ICT Programme' },
 ];
 
 export const testEventTypes = [

@@ -124,8 +124,8 @@ export class VerificationEngineService {
       const studentFullName = student[1];
       const studentAdminNum = student[2];
       const studentIchat = student[3];
-      const studentCourse = student[5]?.split('/')[0]?.trim() || '';
       const studentClass = student[4];
+      const studentCourse = student[5]?.split('/')[0]?.trim() || '';
 
       if (
         !studentFullName ||
@@ -170,10 +170,10 @@ export class VerificationEngineService {
 
       // Find matching feedback entry
       const feedbackEntry = feedbackData.find(
-        (entry) => entry[3] === studentAdminNum,
+        (entry) => entry[2] === studentAdminNum,
       );
       const helperEntry = helperData.find(
-        (entry) => entry[4] === studentAdminNum,
+        (entry) => entry[2] === studentAdminNum,
       );
 
       // Handle invalid cases
@@ -232,11 +232,11 @@ export class VerificationEngineService {
     // Process helper entries
     for (const helper of helperData.slice(1)) {
       const helperFullName = helper[1];
-      const helperCourse = helper[2];
+      const helperAdminNum = helper[2];
       const helperIchat = helper[3];
-      const helperAdminNum = helper[4];
-      const helperClass = helper[5];
-      const isEventIC = helper[7]?.toLowerCase().includes('[event ic]');
+      const helperClass = helper[4];
+      const helperCourse = helper[5];
+      const isEventIC = helper[6]?.toLowerCase().includes('[event ic]');
       const eventRole = isEventIC ? 'ORGANIZER' : 'HELPER';
       const points = isEventIC ? 2 : 1;
 

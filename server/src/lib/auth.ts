@@ -42,7 +42,7 @@ export const auth = betterAuth({
   hooks: {
     after: createAuthMiddleware(async (ctx) => {
       if (ctx.path.startsWith('/sign-up')) {
-        await setupUserDetails(ctx);
+        // await setupUserDetails(ctx);
         return null;
       }
       if (ctx.path.startsWith('/get-session') && ctx.context.session?.user) {
