@@ -3,6 +3,7 @@ import { ComingSoonEmpty } from '@/components/misc/empty-screen';
 import { LoadingComponent } from '@/components/misc/loading';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { EditEventModal } from '@/features/events/components/edit-event-modal';
 import { EventReportDataTable } from '@/features/events/components/event-reports';
 import { GenerateEventReportButton } from '@/features/events/components/gen-event-report-btn';
 import { EventDetailsCard } from '@/features/events/components/single-event-details';
@@ -37,10 +38,7 @@ export default function SingleEventDetailsPage() {
           <p className='text-muted-foreground'>{data?.data.description}</p>
         </div>
         <div className='flex flex-row items-center gap-2'>
-          <Button variant={'secondary'} size={'sm'}>
-            <Edit2 className='size-4'/>
-            Edit
-          </Button>
+          <EditEventModal eventId={data.data.eventId} />
           <GenerateEventReportButton event={data?.data} />
         </div>
       </div>

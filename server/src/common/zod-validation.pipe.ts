@@ -16,8 +16,9 @@ export class ZodValidationPipe implements PipeTransform {
       return parsedValue;
     } catch (error: any) {
       this.logger.error('ZodValidationError:', error);
+      // TODO: Improve error logging
       throw new BadRequestException(
-        error.errors || 'Missing or invalid fields.',
+        error.errors?.[0]?.message || 'Missing or invalid fields.',
       );
     }
   }

@@ -10,6 +10,8 @@ import type {
   GetEventReportByIdResponse,
   GetParticipationsByReportIdRequest,
   GetParticipationsByReportIdResponse,
+  UpdateEventRequest,
+  UpdateEventResponse,
 } from '../events.dto';
 
 export const eventsApiSlice = apiSlice.injectEndpoints({
@@ -18,6 +20,14 @@ export const eventsApiSlice = apiSlice.injectEndpoints({
       query: (data) => ({
         url: '/events',
         method: 'POST',
+        data,
+      }),
+      invalidatesTags: ['Events'],
+    }),
+    updateEvent: builder.mutation<UpdateEventResponse, UpdateEventRequest>({
+      query: (data) => ({
+        url: `/events/${data.eventId}`,
+        method: 'PUT',
         data,
       }),
       invalidatesTags: ['Events'],
@@ -83,6 +93,7 @@ export const eventsApiSlice = apiSlice.injectEndpoints({
 
 export const {
   useCreateEventMutation,
+  useUpdateEventMutation,
   useGetEventByIdQuery,
   useGetAllEventsQuery,
   useGetAllEventTypesQuery,

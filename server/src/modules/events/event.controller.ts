@@ -232,11 +232,15 @@ export class EventsController {
   @Put(':id')
   async updateEvent(
     @Param('id') eventId: string,
-    @Body(new ZodValidationPipe(UpdateEventSchema)) updateEventDto: Partial<CreateEventDTO>,
+    @Body(new ZodValidationPipe(UpdateEventSchema)) body: Partial<CreateEventDTO>,
   ) {
+    const cleanedData = Object.fromEntries(
+      Object.entries(body).filter(([, value]) => value !== '' && value !== undefined)
+    );
+
     const updatedEvent = await this.eventsService.updateEvent({
       eventId,
-      ...updateEventDto,
+      ...cleanedData,
     });
 
     // TODO: Add updated by who

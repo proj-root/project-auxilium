@@ -181,7 +181,7 @@ async function main() {
       body: {
         email: testUser.email,
         password: testUser.password,
-        name: testUser.firstName + ' ' + testUser.lastName
+        name: testUser.firstName + ' ' + testUser.lastName,
       }
     });
 
