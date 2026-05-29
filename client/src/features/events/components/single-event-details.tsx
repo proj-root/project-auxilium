@@ -71,11 +71,21 @@ export function EventDetailsCard({
         </Button>
         <Button variant={'outline'} size={'xs'}>
           <Link
-            to={event.signupUrl}
+            to={event.feedbackUrl}
             target='_blank'
             className='flex flex-row items-center gap-2'
           >
             <SquareArrowOutUpRight /> Feedback Responses
+          </Link>
+        </Button>
+        {/* TODO: Deprecate this next time */}
+        <Button variant={'outline'} size={'xs'}>
+          <Link
+            to={event.helpersUrl}
+            target='_blank'
+            className='flex flex-row items-center gap-2'
+          >
+            <SquareArrowOutUpRight /> Helper Responses
           </Link>
         </Button>
       </div>

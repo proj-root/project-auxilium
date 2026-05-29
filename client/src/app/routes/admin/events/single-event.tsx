@@ -44,7 +44,7 @@ export default function SingleEventDetailsPage() {
       </div>
       <EventDetailsCard
         event={data?.data}
-        className='w-full text-nowrap md:w-1/2 2xl:w-1/4'
+        className='w-full text-nowrap md:w-1/2 2xl:w-1/3'
       />
       {/* TODO: Convert into reusable component */}
       <div className='flex h-full w-full flex-col'>

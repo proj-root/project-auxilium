@@ -97,7 +97,8 @@ export class EventsController {
   @Post()
   @HttpCode(201)
   async createEvent(
-    @Body(new ZodValidationPipe(CreateEventSchema)) createEventDto: CreateEventDTO,
+    @Body(new ZodValidationPipe(CreateEventSchema))
+    createEventDto: CreateEventDTO,
     @Session() session: UserSession,
   ) {
     // Extract user ID from better-auth session
@@ -232,10 +233,13 @@ export class EventsController {
   @Put(':id')
   async updateEvent(
     @Param('id') eventId: string,
-    @Body(new ZodValidationPipe(UpdateEventSchema)) body: Partial<CreateEventDTO>,
+    @Body(new ZodValidationPipe(UpdateEventSchema))
+    body: Partial<CreateEventDTO>,
   ) {
     const cleanedData = Object.fromEntries(
-      Object.entries(body).filter(([, value]) => value !== '' && value !== undefined)
+      Object.entries(body).filter(
+        ([, value]) => value !== '' && value !== undefined,
+      ),
     );
 
     const updatedEvent = await this.eventsService.updateEvent({
@@ -292,6 +296,12 @@ export class EventsController {
         helpersUrl,
       },
     );
+
+    // Clear the existing data in the temporary sheet before inserting new data
+    await this.sheetsService.clearSheet({
+      spreadsheetId: this.tempSheetId,
+      range: 'A2:G',
+    });
 
     // Insert the points data into the temporary sheet
     await this.sheetsService.insertIntoSheet({
