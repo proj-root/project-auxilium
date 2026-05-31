@@ -338,18 +338,18 @@ export class EventsController {
    * GET /api/events/:eventId/reports
    * Get all reports for an event
    */
-  @Get(':eventId/reports')
-  async getEventReportsByEventId(@Param('eventId') eventId: string) {
-    const eventReports = await this.eventsService.getEventReportsByEventId({
-      eventId,
-    });
+  // @Get(':eventId/reports')
+  // async getEventReportsByEventId(@Param('eventId') eventId: string) {
+  //   const eventReports = await this.eventsService.getEventReportsByEventId({
+  //     eventId,
+  //   });
 
-    return {
-      status: 'success',
-      message: 'Event reports retrieved successfully',
-      data: eventReports,
-    };
-  }
+  //   return {
+  //     status: 'success',
+  //     message: 'Event reports retrieved successfully',
+  //     data: eventReports,
+  //   };
+  // }
 
   /**
    * POST /api/events/:eventId/reports

@@ -141,6 +141,7 @@ export const eventParticipation = pgTable('event_participation', {
 export const eventReport = pgTable('event_report', {
   eventReportId: uuid('event_report_id').primaryKey().defaultRandom(),
   eventId: uuid('event_id')
+    .unique()
     .notNull()
     .references(() => event.eventId, {
       onDelete: 'cascade',

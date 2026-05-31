@@ -61,7 +61,10 @@ export const relations = defineRelations(schema, (r) => ({
       from: r.event.createdBy,
       to: r.user.id,
     }),
-    eventReports: r.many.eventReport(),
+    eventReport: r.one.eventReport({
+      from: r.event.eventId,
+      to: r.eventReport.eventId,
+    }),
   },
   eventParticipation: {
     eventReport: r.one.eventReport({

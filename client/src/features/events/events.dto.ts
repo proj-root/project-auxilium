@@ -41,6 +41,8 @@ export interface Event {
   feedbackUrl: string;
   helpersUrl: string;
 
+  eventReport: EventReport | null;
+
   eventType: EventType;
 
   creator: {
@@ -49,7 +51,7 @@ export interface Event {
     email: string;
   };
 
-  eventReports: EventReport[];
+  // eventReports: EventReport[];
 
   createdAt: string;
   updatedAt: string;

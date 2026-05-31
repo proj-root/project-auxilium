@@ -27,12 +27,7 @@ export class EventsService {
       with: {
         eventType: true,
         creator: true,
-        eventReports: {
-          orderBy: {
-            createdAt: 'desc',
-          },
-          limit: 25,
-        },
+        eventReport: true,
       },
     });
 
@@ -40,7 +35,15 @@ export class EventsService {
   }
 
   async createEvent(args: CreateEventDTO & { createdBy: string }) {
-    const { name, eventTypeId, description, createdBy, startDate, endDate, ...rest } = args;
+    const {
+      name,
+      eventTypeId,
+      description,
+      createdBy,
+      startDate,
+      endDate,
+      ...rest
+    } = args;
 
     if (!name || !eventTypeId || !description) {
       throw new APIError(
@@ -119,8 +122,7 @@ export class EventsService {
     }
 
     const events = await db.query.event.findMany({
-      where:
-        andConditions.length > 0 ? { AND: andConditions } : undefined,
+      where: andConditions.length > 0 ? { AND: andConditions } : undefined,
       with: {
         eventType: true,
         creator: true,
@@ -201,19 +203,48 @@ export class EventsService {
   }
 
   // Event Reports
-  async createEventReport(
-    args: CreateEventReportDTO & { createdBy: string },
-  ) {
+  async createEventReport(args: CreateEventReportDTO & { createdBy: string }) {
     const { eventId, createdBy, ...rest } = args;
 
-    const [eventReport] = await db
-      .insert(eventReportTable)
-      .values({
-        eventId,
-        createdBy,
-        ...rest,
-      })
-      .returning();
+    const eventReport = await db.transaction(async (tx) => {
+      const existingReport = await tx.query.eventReport.findFirst({
+        where: {
+          eventId,
+        },
+      });
+
+      // Check if a report already exists
+      if (existingReport) {
+        // Clear out existing participation records if report already exists
+        await tx
+          .delete(eventParticipationTable)
+          .where(
+            eq(
+              eventParticipationTable.eventReportId,
+              existingReport.eventReportId,
+            ),
+          );
+      }
+
+      // Create the report (this will upsert if it already exists)
+      const [eventReport] = await tx
+        .insert(eventReportTable)
+        .values({
+          eventId,
+          createdBy,
+          ...rest,
+        })
+        .onConflictDoUpdate({
+          target: eventReportTable.eventId,
+          set: {
+            createdBy,
+            ...rest,
+          },
+        })
+        .returning();
+
+      return eventReport;
+    });
 
     if (!eventReport) {
       throw new APIError('Failed to create event report', 500);
@@ -222,15 +253,15 @@ export class EventsService {
     return eventReport;
   }
 
-  async getEventReportsByEventId({ eventId }: { eventId: string }) {
-    const eventReports = await db.query.eventReport.findMany({
-      where: {
-        eventId,
-      },
-    });
+  // async getEventReportsByEventId({ eventId }: { eventId: string }) {
+  //   const eventReports = await db.query.eventReport.findMany({
+  //     where: {
+  //       eventId,
+  //     },
+  //   });
 
-    return eventReports;
-  }
+  //   return eventReports;
+  // }
 
   async getEventReportById({ eventReportId }: { eventReportId: string }) {
     const eventReport = await db.query.eventReport.findFirst({
@@ -256,10 +287,10 @@ export class EventsService {
     return eventReport;
   }
 
+  // TODO: Allow users to delete reports
+
   // Event Participation
-  async createEventParticipationRecord(
-    args: CreateEventParticipationDTO,
-  ) {
+  async createEventParticipationRecord(args: CreateEventParticipationDTO) {
     const [inserted] = await db
       .insert(eventParticipationTable)
       .values(args)

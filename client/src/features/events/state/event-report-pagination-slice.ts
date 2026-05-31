@@ -12,7 +12,6 @@ const initialState: EventReportPaginationState = {
   sortBy: 'createdAt',
   sortOrder: 'desc',
   search: '',
-  eventReportId: '',
 };
 
 const eventReportPaginationSlice = createSlice({
@@ -44,9 +43,6 @@ const eventReportPaginationSlice = createSlice({
     setSearch: (state, action) => {
       state.search = action.payload;
     },
-    setEventReportId: (state, action) => {
-      state.eventReportId = action.payload;
-    },
   },
 });
 
@@ -58,7 +54,6 @@ export const {
   setSortBy,
   setSortOrder,
   setSearch,
-  setEventReportId,
 } = eventReportPaginationSlice.actions;
 
 export const selectEventReportPaginationState = (state: RootState) =>
