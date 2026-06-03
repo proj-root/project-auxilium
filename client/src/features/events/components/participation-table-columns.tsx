@@ -25,13 +25,13 @@ export const columns: ColumnDef<EventParticipation>[] = [
   {
     id: 'eventRole',
     accessorFn: (row) =>
-      `${row.eventRole}`,
+      `${row.eventRole.name}`,
     header: ({ column }) => <DataTableColumnHeader title='Role' column={column} />
   },
   {
     id: 'pointsType',
     accessorFn: (row) =>
-      `${row.pointsType}`,
+      `${row.eventRole.pointsType}`,
     header: ({ column }) => <DataTableColumnHeader title='Points Type' column={column} />
   },
   {

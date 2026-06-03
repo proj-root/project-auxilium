@@ -3,6 +3,7 @@ import db from '@/db';
 import * as schema from './schema';
 import {
   testCourses,
+  testEventRoles,
   testEventTypes,
   testRoles,
   testStatuses,
@@ -94,6 +95,20 @@ async function main() {
       });
   }
   console.log('✅ Seeded event types successfully!');
+
+  console.log('Seeding event roles...');
+  for (const eventRole of testEventRoles) {
+    await db
+      .insert(schema.eventRole)
+      .values(eventRole)
+      .onConflictDoUpdate({
+        target: schema.eventRole.eventRoleId,
+        set: {
+          ...eventRole,
+        },
+      });
+  }
+  console.log('✅ Seeded event roles successfully!');
 
   // Seed Users
   console.log('Clearing users...');

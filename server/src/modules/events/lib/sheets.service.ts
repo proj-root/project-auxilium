@@ -42,10 +42,7 @@ export class SheetsService {
       );
       return rows;
     } catch (error) {
-      this.logger.error(
-        `Error accessing spreadsheet ${spreadsheetId}:`,
-        error,
-      );
+      this.logger.error(`Error accessing spreadsheet ${spreadsheetId}:`, error);
       throw new APIError('Failed to access Google Sheets', 500);
     }
   }
@@ -79,6 +76,26 @@ export class SheetsService {
         error,
       );
       throw new APIError('Failed to insert data into Google Sheets', 500);
+    }
+  }
+
+  async clearSheet({
+    spreadsheetId,
+    range = 'A:Z',
+  }: {
+    spreadsheetId: string;
+    range?: string;
+  }): Promise<void> {
+    try {
+      const GoogleSheets = sheets({ version: 'v4', auth: this.auth });
+      await GoogleSheets.spreadsheets.values.clear({
+        spreadsheetId,
+        range,
+      });
+      this.logger.debug(`Cleared data from sheet: ${spreadsheetId}`);
+    } catch (error) {
+      this.logger.error(`Error clearing sheet ${spreadsheetId}:`, error);
+      throw new APIError('Failed to clear Google Sheets', 500);
     }
   }
 

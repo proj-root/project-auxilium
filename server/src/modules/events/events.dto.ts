@@ -57,9 +57,9 @@ export type CreateEventReportDTO = z.infer<typeof CreateEventReportSchema> & {
 export const CreateEventParticipationSchema = z.object({
   profileId: z.string(),
   attended: z.boolean().optional(),
-  eventRole: z.enum(schema.eventRole.enumValues).optional(),
-  pointsType: z.enum(schema.eventPointsType.enumValues).optional(),
-  pointsAwarded: z.number().int('Points awarded must be an integer').optional(),
+  eventRoleId: z.number().optional(),
+  // pointsType: z.enum(schema.eventPointsType.enumValues).optional(),
+  // pointsAwarded: z.number().int('Points awarded must be an integer').optional(),
 });
 
 export type CreateEventParticipationDTO = z.infer<typeof CreateEventParticipationSchema> & {

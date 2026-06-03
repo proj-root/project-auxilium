@@ -44,5 +44,6 @@ export function RequireAuth({ children, allowedRoles }: RequireAuthProps) {
   }
 
   // While redirecting, render nothing
+  // BUG: Screen freezes here when auth tokens are invalid
   return null;
 }

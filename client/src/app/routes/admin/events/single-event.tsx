@@ -8,7 +8,7 @@ import { EventReportDataTable } from '@/features/events/components/event-reports
 import { GenerateEventReportButton } from '@/features/events/components/gen-event-report-btn';
 import { EventDetailsCard } from '@/features/events/components/single-event-details';
 import { useGetEventByIdQuery } from '@/features/events/state/events-api-slice';
-import { Boxes, Edit2, FileText, Target } from 'lucide-react';
+import { Boxes, ChartArea, Edit2, FileText, Target } from 'lucide-react';
 import { useParams } from 'react-router';
 
 export default function SingleEventDetailsPage() {
@@ -44,7 +44,7 @@ export default function SingleEventDetailsPage() {
       </div>
       <EventDetailsCard
         event={data?.data}
-        className='w-full text-nowrap md:w-1/2 2xl:w-1/4'
+        className='w-full text-nowrap md:w-1/2 2xl:w-1/3'
       />
       {/* TODO: Convert into reusable component */}
       <div className='flex h-full w-full flex-col'>
@@ -55,7 +55,7 @@ export default function SingleEventDetailsPage() {
                 value={'reports'}
                 className='data-[state=active]:border-primary dark:data-[state=active]:border-primary h-full rounded-none border-0 border-b-2 border-transparent bg-transparent! px-3 hover:px-4 data-[state=active]:shadow-none!'
               >
-                <FileText /> Reports
+                <FileText /> Report
               </TabsTrigger>
               <TabsTrigger
                 value={'progress'}
@@ -68,6 +68,12 @@ export default function SingleEventDetailsPage() {
                 className='data-[state=active]:border-primary dark:data-[state=active]:border-primary h-full rounded-none border-0 border-b-2 border-transparent bg-transparent! px-3 hover:px-4 data-[state=active]:shadow-none!'
               >
                 <Boxes /> Resources
+              </TabsTrigger>
+              <TabsTrigger
+                value={'analytics'}
+                className='data-[state=active]:border-primary dark:data-[state=active]:border-primary h-full rounded-none border-0 border-b-2 border-transparent bg-transparent! px-3 hover:px-4 data-[state=active]:shadow-none!'
+              >
+                <ChartArea /> Analytics
               </TabsTrigger>
             </TabsList>
           </div>
@@ -87,6 +93,13 @@ export default function SingleEventDetailsPage() {
 
           <TabsContent
             value={'resources'}
+            className='flex flex-col items-center justify-center'
+          >
+            <ComingSoonEmpty />
+          </TabsContent>
+
+          <TabsContent
+            value={'analytics'}
             className='flex flex-col items-center justify-center'
           >
             <ComingSoonEmpty />

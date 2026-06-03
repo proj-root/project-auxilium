@@ -5,3 +5,13 @@ export const SystemConfig = {
 
   tempSheetId: process.env.TEMP_SHEET_ID || '',
 };
+
+export const EventRoles = {
+  PARTICIPANT: 1,
+  COORDINATOR: 2,
+  MENTOR: 3,
+  FACILITATOR: 4,
+  POSTER_MAKER: 5,
+  EMAIL_WRITER: 6,
+  FORM_MAKER: 7,
+}
