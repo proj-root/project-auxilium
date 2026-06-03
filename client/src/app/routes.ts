@@ -15,11 +15,17 @@ export default [
 
   ...prefix('admin', [
     layout('routes/admin/layout.tsx', [
+      // Admin Dashboard
       index('routes/admin/index.tsx'),
+      // Events Pages
       ...prefix('events', [
         index('routes/admin/events/index.tsx'),
         route('/create', 'routes/admin/events/create.tsx'),
         route('/:eventId', 'routes/admin/events/single-event.tsx'),
+      ]),
+      // User Management Pages
+      ...prefix('users', [
+        index('routes/admin/users/index.tsx'),
       ]),
     ]),
   ]),

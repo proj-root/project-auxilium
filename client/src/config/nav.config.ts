@@ -16,6 +16,11 @@ export const SideBarNavItems: NavItem[] = [
     url: '/admin/events',
     icon: 'calendar',
   },
+  {
+    title: 'Users',
+    url: '/admin/users',
+    icon: 'users',
+  },
 ];
 
 export const SideBarNavFooterItems: NavItem[] = [
