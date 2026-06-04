@@ -2,12 +2,12 @@ import { AppSidebar } from '@/components/navigation/app-sidebar';
 import { SiteHeader } from '@/components/navigation/site-header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { RequireAuth } from '@/features/auth/components/require-auth';
-import { Roles } from '@auxilium/configs/roles';
+import { RolesConfig } from '@auxilium/configs/roles';
 import { Outlet } from 'react-router';
 
 export default function DashboardLayout() {
   return (
-    <RequireAuth allowedRoles={[Roles.ADMIN, Roles.SUPERADMIN]}>
+    <RequireAuth allowedRoles={[RolesConfig.ADMIN, RolesConfig.SUPERADMIN]}>
       <SidebarProvider
         style={
           {

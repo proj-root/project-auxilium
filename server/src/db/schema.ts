@@ -1,7 +1,7 @@
 import { index, uuid } from 'drizzle-orm/pg-core';
 import { timestamps } from './column.helpers';
 import { integer, pgTable, varchar } from 'drizzle-orm/pg-core';
-import { Roles } from '@auxilium/configs/roles';
+import { RolesConfig } from '@auxilium/configs/roles';
 import { primaryKey } from 'drizzle-orm/pg-core';
 import { StatusConfig } from '@auxilium/configs/status';
 import { pgEnum } from 'drizzle-orm/pg-core';
@@ -222,7 +222,7 @@ export const userRole = pgTable(
       }),
     roleId: integer('role_id')
       .notNull()
-      .default(Roles.USER)
+      .default(RolesConfig.USER)
       .references(() => role.roleId, {
         onDelete: 'cascade',
         onUpdate: 'cascade',

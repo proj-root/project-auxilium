@@ -13,6 +13,7 @@ import {
   HttpCode,
   BadRequestException,
   UsePipes,
+  UseGuards,
 } from '@nestjs/common';
 import { EventsService } from './event.service';
 import { VerificationEngineService } from './lib/verification-engine.service';
@@ -35,6 +36,9 @@ import {
 } from './events.dto';
 import { Session, type UserSession } from '@thallesp/nestjs-better-auth';
 import { SystemConfig } from '@/config/system.config';
+import { RoleGuard } from '@/common/guards/role.guard';
+import { RolesConfig } from '@auxilium/configs/roles';
+import { Roles } from '@/common/decorators/roles.decorator';
 
 const ROUTE_NAME = 'api/events';
 
@@ -54,6 +58,8 @@ export class EventsController {
    * Retrieve all events with pagination and filtering
    */
   @Get()
+  @UseGuards(RoleGuard)
+  @Roles(RolesConfig.ADMIN, RolesConfig.SUPERADMIN)
   async getAllEvents(@Query() query: Partial<GetAllEventsQueryDTO>) {
     const {
       page = 1,
@@ -95,6 +101,8 @@ export class EventsController {
    * Create a new event
    */
   @Post()
+  @UseGuards(RoleGuard)
+  @Roles(RolesConfig.ADMIN, RolesConfig.SUPERADMIN)
   @HttpCode(201)
   async createEvent(
     @Body(new ZodValidationPipe(CreateEventSchema))
@@ -136,6 +144,8 @@ export class EventsController {
    * Get participation records for an event report
    */
   @Get('reports/:reportId/participants')
+  @UseGuards(RoleGuard)
+  @Roles(RolesConfig.ADMIN, RolesConfig.SUPERADMIN)
   async getParticipationRecords(
     @Param('reportId') reportId: string,
     @Query() query: Partial<GetParticipationRecordsQueryDTO>,
@@ -172,6 +182,8 @@ export class EventsController {
    * Get a single event report
    */
   @Get('reports/:reportId')
+  @UseGuards(RoleGuard)
+  @Roles(RolesConfig.ADMIN, RolesConfig.SUPERADMIN)
   async getEventReportById(@Param('reportId') reportId: string) {
     const eventReport = await this.eventsService.getEventReportById({
       eventReportId: reportId,
@@ -213,6 +225,8 @@ export class EventsController {
    * Retrieve a single event by ID
    */
   @Get(':id')
+  @UseGuards(RoleGuard)
+  @Roles(RolesConfig.ADMIN, RolesConfig.SUPERADMIN)
   async getEventById(@Param('id') eventId: string) {
     const event = await this.eventsService.getEventById({ eventId });
 
@@ -231,6 +245,8 @@ export class EventsController {
    * Update an event
    */
   @Put(':id')
+  @UseGuards(RoleGuard)
+  @Roles(RolesConfig.ADMIN, RolesConfig.SUPERADMIN)
   async updateEvent(
     @Param('id') eventId: string,
     @Body(new ZodValidationPipe(UpdateEventSchema))
@@ -261,6 +277,8 @@ export class EventsController {
    * Generate points sheet by verifying participants across signup, feedback, and helper sheets
    */
   @Post(':id/generate')
+  @UseGuards(RoleGuard)
+  @Roles(RolesConfig.ADMIN, RolesConfig.SUPERADMIN)
   @HttpCode(201)
   async generatePointsSheet(
     @Param('id') eventId: string,
@@ -324,6 +342,8 @@ export class EventsController {
    * Restore a soft-deleted event
    */
   @Post(':id/restore')
+  @UseGuards(RoleGuard)
+  @Roles(RolesConfig.ADMIN, RolesConfig.SUPERADMIN)
   async restoreEvent(@Param('id') eventId: string) {
     const restoredEvent = await this.eventsService.restoreEvent({ eventId });
 
@@ -387,6 +407,8 @@ export class EventsController {
    * Soft delete an event (mark as deleted)
    */
   @Delete(':id')
+  @UseGuards(RoleGuard)
+  @Roles(RolesConfig.ADMIN, RolesConfig.SUPERADMIN)
   async deleteEvent(@Param('id') eventId: string) {
     await this.eventsService.deleteEvent({ eventId });
 
@@ -401,6 +423,8 @@ export class EventsController {
    * Permanently delete an event
    */
   @Delete(':id/hard')
+  @UseGuards(RoleGuard)
+  @Roles(RolesConfig.ADMIN, RolesConfig.SUPERADMIN)
   async hardDeleteEvent(@Param('id') eventId: string) {
     await this.eventsService.hardDeleteEvent({ eventId });
 
