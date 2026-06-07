@@ -326,6 +326,8 @@ export class EventsService {
       statusId,
     } = args;
 
+    // TODO: Add search filtering here
+
     const count = await db.$count(
       eventParticipationTable,
       eq(eventParticipationTable.eventReportId, eventReportId),

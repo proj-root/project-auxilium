@@ -64,6 +64,7 @@ export const auth = betterAuth({
   // EXTRA CONFIGS
   advanced: {
     disableOriginCheck: isDevEnv, // Disabled in dev for Postman
+    disableCSRFCheck: isDevEnv, // Disabled in dev for Postman
     database: {
       generateId: 'uuid',
     },

@@ -1,6 +1,18 @@
-import { Controller, Get, Logger, Session } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Logger,
+  Param,
+  Query,
+  Session,
+  UseGuards,
+} from '@nestjs/common';
 import { UserService } from './user.service';
 import { type UserSession } from '@thallesp/nestjs-better-auth';
+import { RoleGuard } from '@/common/guards/role.guard';
+import { RolesConfig } from '@auxilium/configs/roles';
+import { Roles } from '@/common/decorators/roles.decorator';
+import { GetAllUsersQueryDTO } from './user.dto';
 
 const ROUTE_NAME = 'api/user';
 
@@ -25,6 +37,75 @@ export class UserController {
       message: 'User details retrieved successfully',
       status: 'success',
       data: user,
+    };
+  }
+
+  @Get('/all')
+  @UseGuards(RoleGuard)
+  @Roles(RolesConfig.ADMIN, RolesConfig.SUPERADMIN)
+  async getAllUsers(@Query() query: Partial<GetAllUsersQueryDTO>) {
+    const {
+      page = 1,
+      pageSize = 10,
+      sortBy = 'createdAt',
+      sortOrder = 'desc',
+      search,
+      statusId,
+    } = query;
+
+    const result = await this.userService.getAllUsers({
+      page: Number(page),
+      pageSize: Number(pageSize),
+      sortBy,
+      sortOrder,
+      search: search as string,
+      statusId: statusId ? Number(statusId) : undefined,
+    });
+
+    return {
+      status: 'success',
+      message: 'Users retrieved successfully',
+      data: result,
+    };
+  }
+
+  @Get('profile/:adminNumber')
+  @UseGuards(RoleGuard)
+  @Roles(RolesConfig.ADMIN, RolesConfig.SUPERADMIN)
+  async getSingleProfile(@Param('adminNumber') adminNumber: string) {
+    const userProfile = await this.userService.getProfileByAdminNumber({
+      adminNumber,
+    });
+
+    // TODO: If userId not null, fetch user details too?
+
+    if (!userProfile) {
+      this.logger.warn(`User with admin number ${adminNumber} not found`);
+      return null;
+    }
+
+    return {
+      message: 'User profile retrieved successfully',
+      status: 'success',
+      data: userProfile,
+    };
+  }
+
+  @Get('/:userId')
+  @UseGuards(RoleGuard)
+  @Roles(RolesConfig.ADMIN, RolesConfig.SUPERADMIN)
+  async getSingleUser(@Param('userId') userId: string) {
+    const userProfile = await this.userService.getUserById({ userId });
+
+    if (!userProfile) {
+      this.logger.warn(`User with ID ${userId} not found`);
+      return null;
+    }
+
+    return {
+      message: 'User profile retrieved successfully',
+      status: 'success',
+      data: userProfile,
     };
   }
 }

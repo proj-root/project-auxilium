@@ -51,7 +51,7 @@ export class RoleGuard implements CanActivate {
     // Check if user has one of the required roles
     if (!requiredRoles.includes(userRole)) {
       throw new ForbiddenException(
-        `Insufficient permissions. Required roles: ${requiredRoles.join(', ')}`,
+        `Insufficient permissions. Please contact an administrator if you believe this is an error.`,
       );
     }
 

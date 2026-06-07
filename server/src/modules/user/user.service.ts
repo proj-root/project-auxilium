@@ -1,8 +1,10 @@
 import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import db from '@/db';
-import { userProfile } from '@/db/schema';
+// import { userProfile } from '@/db/schema';
+import * as schema from '@/db/schema';
 import { APIError } from '@auxilium/types/errors';
 import { eq } from 'drizzle-orm';
+import { GetAllUsersQueryDTO } from './user.dto';
 
 export interface CreateUserProfileInput {
   firstName: string;
@@ -80,7 +82,7 @@ export class UserService {
   async createUserProfile(args: CreateUserProfileInput) {
     try {
       const [newProfile] = await db
-        .insert(userProfile)
+        .insert(schema.userProfile)
         .values(args)
         .returning();
 
@@ -104,9 +106,9 @@ export class UserService {
   }: UpdateUserProfileInput) {
     try {
       const [updatedProfile] = await db
-        .update(userProfile)
+        .update(schema.userProfile)
         .set(updateData)
-        .where(eq(userProfile.profileId, profileId))
+        .where(eq(schema.userProfile.profileId, profileId))
         .returning();
 
       if (!updatedProfile) {
@@ -120,6 +122,75 @@ export class UserService {
     } catch (error) {
       this.logger.error('Error updating user profile:', error);
       throw new APIError('Failed to update user profile', 500);
+    }
+  }
+
+  async getAllUsers(args: GetAllUsersQueryDTO) {
+    try {
+      const {
+        page = 1,
+        pageSize = 10,
+        sortBy = 'createdAt',
+        sortOrder = 'desc',
+        search,
+        statusId,
+      } = args;
+
+      // Build AND conditions for all filters
+      const conditions: object[] = [];
+      if (search && search.trim() !== '') {
+        conditions.push({
+          OR: [
+            { name: { ilike: `%${search.trim()}%` } },
+            { email: { ilike: `%${search.trim()}%` } },
+          ],
+        });
+      }
+
+      if (statusId !== undefined) {
+        conditions.push({ statusId: { eq: statusId } });
+      }
+
+      const count = await db.query.user.findMany({
+        where: conditions.length > 0 ? { AND: conditions } : undefined,
+      }).then(users => users.length);
+
+      const users = await db.query.user.findMany({
+        where: conditions.length > 0 ? { AND: conditions } : undefined,
+        with: {
+          userProfile: true,
+          userRole: {
+            with: {
+              role: true,
+            },
+          },
+        },
+        limit: pageSize,
+        offset: (page - 1) * pageSize,
+        orderBy: {
+          [sortBy]: sortOrder,
+        },
+      });
+
+      // Format users and remove sensitive data
+      const formattedUsers = users.map((user) => ({
+        ...user,
+        password: undefined,
+        userRole: undefined,
+        role: {
+          roleId: user.userRole?.roleId,
+          name: user.userRole?.role?.name,
+        },
+      }));
+
+      return {
+        total: count,
+        pageCount: Math.ceil(count / pageSize),
+        users: formattedUsers,
+      };
+    } catch (error) {
+      this.logger.error('Error fetching all users:', error);
+      throw new APIError('Failed to fetch users', 500);
     }
   }
 }
