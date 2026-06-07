@@ -78,7 +78,7 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   }
 
   return (
-    <main className='container mx-auto p-4 pt-16'>
+    <main className='container mx-auto p-4 pt-16 h-screen'>
       <h1>{message}</h1>
       <p>{details}</p>
       {stack && (

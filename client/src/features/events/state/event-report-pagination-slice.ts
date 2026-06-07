@@ -2,7 +2,7 @@ import type { RootState } from '@/state/store';
 import type { PaginationOptions } from '@auxilium/types/pagination';
 import { createSlice } from '@reduxjs/toolkit';
 
-interface EventReportPaginationState extends PaginationOptions {
+export interface EventReportPaginationState extends PaginationOptions {
   eventReportId?: string;
 }
 
