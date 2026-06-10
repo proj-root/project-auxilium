@@ -1,4 +1,5 @@
 import type { BaseResponseDTO } from '@/types/dto.types';
+import type { PaginationOptions } from '@auxilium/types/pagination';
 
 export interface UserProfileDTO {
   profileId: string;
@@ -14,7 +15,7 @@ export interface UserProfileDTO {
 }
 
 export interface RoleDTO {
-  roleId: string;
+  roleId: string | number;
   name: string;
 }
 
@@ -31,3 +32,13 @@ export interface UserDTO {
 }
 
 export type GetPersonalDetailsResponse = BaseResponseDTO<UserDTO>;
+
+export interface GetAllUsersRequest extends PaginationOptions {
+  roleId: string;
+};
+
+export type GetAllUsersResponse = BaseResponseDTO<{
+  total: number;
+  pageCount: number;
+  users: UserDTO[];
+}>;

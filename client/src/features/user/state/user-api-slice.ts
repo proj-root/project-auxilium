@@ -1,5 +1,9 @@
 import { apiSlice } from '@/state/api-slice';
-import type { GetPersonalDetailsResponse } from '../user.dto';
+import type {
+  GetAllUsersRequest,
+  GetAllUsersResponse,
+  GetPersonalDetailsResponse,
+} from '../user.dto';
 
 export const userApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
@@ -9,9 +13,16 @@ export const userApiSlice = apiSlice.injectEndpoints({
         method: 'GET',
       }),
       providesTags: ['User'],
-    })
+    }),
+    getAllUsers: builder.query<GetAllUsersResponse, GetAllUsersRequest>({
+      query: (params) => ({
+        url: '/user/all',
+        method: 'GET',
+        params,
+      }),
+      providesTags: ['User-Pagination'],
+    }),
   }),
 });
 
-export const { useGetPersonalDetailsQuery } =
-  userApiSlice;
+export const { useGetPersonalDetailsQuery, useGetAllUsersQuery } = userApiSlice;

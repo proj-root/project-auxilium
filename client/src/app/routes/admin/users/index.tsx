@@ -1,10 +1,48 @@
+import { ComingSoonEmpty } from '@/components/misc/empty-screen';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { UserDataTable } from '@/features/user/components/user-pagination-table/user-data-table';
+import { SquareUser, Users } from 'lucide-react';
+
 export default function UserManagementPage() {
   return (
-    <div className="flex h-full flex-col">
-      <h1 className="text-2xl font-semibold">User Management</h1>
+    <div className='flex h-full w-full flex-col'>
+      <h1 className='text-2xl font-semibold'>All Users</h1>
       {/* Use a tab interface as well to seperate existing users from profiles */}
       {/* Profiles = participants detected via participation records */}
       {/* Users = registered users with a role in the system */}
+      <div className='flex h-full w-full flex-col mt-4'>
+        <Tabs defaultValue={'users'} className='flex flex-col gap-4'>
+          <div className='w-full border-b bg-transparent'>
+            <TabsList className='inline-flex flex-row justify-start gap-2 rounded-none border-0 bg-transparent p-0'>
+              <TabsTrigger
+                value={'users'}
+                className='data-[state=active]:border-primary dark:data-[state=active]:border-primary h-full rounded-none border-0 border-b-2 border-transparent bg-transparent! px-3 hover:px-4 data-[state=active]:shadow-none!'
+              >
+                <Users /> Users
+              </TabsTrigger>
+              <TabsTrigger
+                value={'profiles'}
+                className='data-[state=active]:border-primary dark:data-[state=active]:border-primary h-full rounded-none border-0 border-b-2 border-transparent bg-transparent! px-3 hover:px-4 data-[state=active]:shadow-none!'
+              >
+                <SquareUser /> Profiles
+              </TabsTrigger>
+            </TabsList>
+          </div>
+          {/* Users Tab */}
+          <TabsContent value={'users'}>
+            <div className='flex h-full w-full flex-col gap-4'>
+              <UserDataTable />
+            </div>
+          </TabsContent>
+          {/* Profiles Tab */}
+          <TabsContent
+            value={'profiles'}
+            className='flex flex-col items-center justify-center'
+          >
+            <ComingSoonEmpty />
+          </TabsContent>
+        </Tabs>
+      </div>
     </div>
-  )
+  );
 }
