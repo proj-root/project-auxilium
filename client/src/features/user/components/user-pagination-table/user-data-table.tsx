@@ -5,12 +5,17 @@ import {
   selectUserPaginationState,
   setPage,
   setPageSize,
+  setSearch,
 } from './user-pagination-slice';
 import { useGetAllUsersQuery, userApiSlice } from '../../state/user-api-slice';
-import { PaginationControls, type PaginationControlDef } from '@/components/misc/pagination-controls';
+import {
+  PaginationControls,
+  type PaginationControlDef,
+} from '@/components/misc/pagination-controls';
 import { Input } from '@/components/ui/input';
 import { DataTable } from '@/components/ui/data-table';
 import { columns } from './columns';
+import { SearchFilter } from '@/components/search-filter';
 
 export function UserDataTable() {
   const dispatch = useAppDispatch();
@@ -30,7 +35,7 @@ export function UserDataTable() {
   };
 
   return (
-    <div className='flex flex-col w-full h-full gap-4'>
+    <div className='flex h-full w-full flex-col gap-4'>
       {/* Loading state */}
       {isLoading && <div>Loading...</div>}
 
@@ -45,17 +50,24 @@ export function UserDataTable() {
 
       {!isLoading && data?.data && (
         <div className='flex h-full flex-col gap-4'>
-          {/* TODO: Placeholder search input */}
-          <Input type='text' placeholder='Search...' className='w-fit' />
-          <div>
-            <DataTable columns={columns} data={data.data.users} />
+          <SearchFilter setSearchCb={setSearch} />
+          <DataTable columns={columns} data={data.data.users} />
+          <div className='flex flex-row justify-between px-2'>
+            <p className='text-muted-foreground w-full text-sm'>
+              Showing {paginationState.page} -{' '}
+              {Math.min(
+                Number(paginationState.page) * Number(paginationState.pageSize),
+                data.data.total,
+              )}{' '}
+              of {data.data.total} records
+            </p>
+            <PaginationControls
+              paginationControls={paginationControls}
+              updateCb={() =>
+                dispatch(userApiSlice.util.invalidateTags(['User-Pagination']))
+              }
+            />
           </div>
-          <PaginationControls
-            paginationControls={paginationControls}
-            updateCb={() =>
-              dispatch(userApiSlice.util.invalidateTags(['User-Pagination']))
-            }
-          />
         </div>
       )}
     </div>

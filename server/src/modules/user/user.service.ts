@@ -4,7 +4,7 @@ import db from '@/db';
 import * as schema from '@/db/schema';
 import { APIError } from '@auxilium/types/errors';
 import { eq } from 'drizzle-orm';
-import { GetAllUsersQueryDTO } from './user.dto';
+import { GetAllUserProfilesQueryDTO, GetAllUsersQueryDTO } from './user.dto';
 
 export interface CreateUserProfileInput {
   firstName: string;
@@ -191,6 +191,57 @@ export class UserService {
     } catch (error) {
       this.logger.error('Error fetching all users:', error);
       throw new APIError('Failed to fetch users', 500);
+    }
+  }
+
+  async getAllUserProfiles(args: GetAllUserProfilesQueryDTO) {
+    try {
+      const {
+        page = 1,
+        pageSize = 10,
+        sortBy = 'createdAt',
+        sortOrder = 'desc',
+        search,
+        statusId,
+      } = args;
+
+      // Build AND conditions for all filters
+      const conditions: object[] = [];
+      if (search && search.trim() !== '') {
+        conditions.push({
+          OR: [
+            { firstName: { ilike: `%${search.trim()}%` } },
+            { lastName: { ilike: `%${search.trim()}%` } },
+            { adminNumber: { ilike: `${search.trim()}%` } },
+          ],
+        });
+      }
+
+      if (statusId !== undefined) {
+        conditions.push({ statusId: { eq: statusId } });
+      }
+
+      const count = await db.query.userProfile.findMany({
+        where: conditions.length > 0 ? { AND: conditions } : undefined,
+      }).then(result => result.length);
+
+      const userProfiles = await db.query.userProfile.findMany({
+        where: conditions.length > 0 ? { AND: conditions } : undefined,
+        limit: pageSize,
+        offset: (page - 1) * pageSize,
+        orderBy: {
+          [sortBy]: sortOrder,
+        },
+      });
+
+      return {
+        total: count,
+        pageCount: Math.ceil(count / pageSize),
+        userProfiles,
+      };
+    } catch (error) {
+      this.logger.error('Error fetching all user profiles:', error);
+      throw new APIError('Failed to fetch user profiles', 500);
     }
   }
 }

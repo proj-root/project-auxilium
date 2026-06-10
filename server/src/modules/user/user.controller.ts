@@ -12,7 +12,7 @@ import { type UserSession } from '@thallesp/nestjs-better-auth';
 import { RoleGuard } from '@/common/guards/role.guard';
 import { RolesConfig } from '@auxilium/configs/roles';
 import { Roles } from '@/common/decorators/roles.decorator';
-import { GetAllUsersQueryDTO } from './user.dto';
+import { GetAllUserProfilesQueryDTO, GetAllUsersQueryDTO } from './user.dto';
 
 const ROUTE_NAME = 'api/user';
 
@@ -65,6 +65,36 @@ export class UserController {
     return {
       status: 'success',
       message: 'Users retrieved successfully',
+      data: result,
+    };
+  }
+
+  // Get all user profiles in the system, which includes records not associated with a user account
+  @Get('/profile/all')
+  @UseGuards(RoleGuard)
+  @Roles(RolesConfig.ADMIN, RolesConfig.SUPERADMIN)
+  async getAllUserProfiles(@Query() query: Partial<GetAllUserProfilesQueryDTO>) {
+    const {
+      page = 1,
+      pageSize = 10,
+      sortBy = 'createdAt',
+      sortOrder = 'desc',
+      search,
+      statusId,
+    } = query;
+
+    const result = await this.userService.getAllUserProfiles({
+      page: Number(page),
+      pageSize: Number(pageSize),
+      sortBy,
+      sortOrder,
+      search: search as string,
+      statusId: statusId ? Number(statusId) : undefined,
+    });
+
+    return {
+      status: 'success',
+      message: 'User profiles retrieved successfully',
       data: result,
     };
   }
