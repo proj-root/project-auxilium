@@ -42,3 +42,13 @@ export type GetAllUsersResponse = BaseResponseDTO<{
   pageCount: number;
   users: UserDTO[];
 }>;
+
+// export interface GetAllUserProfilesRequest extends PaginationOptions {
+
+// };
+
+export type GetAllUserProfilesResponse = BaseResponseDTO<{
+  total: number;
+  pageCount: number;
+  userProfiles: UserProfileDTO[];
+}>;

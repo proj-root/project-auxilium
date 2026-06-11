@@ -1,9 +1,11 @@
 import { apiSlice } from '@/state/api-slice';
 import type {
+  GetAllUserProfilesResponse,
   GetAllUsersRequest,
   GetAllUsersResponse,
   GetPersonalDetailsResponse,
 } from '../user.dto';
+import type { PaginationOptions } from '@auxilium/types/pagination';
 
 export const userApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
@@ -22,7 +24,22 @@ export const userApiSlice = apiSlice.injectEndpoints({
       }),
       providesTags: ['User-Pagination'],
     }),
+    getAllUserProfiles: builder.query<
+      GetAllUserProfilesResponse,
+      PaginationOptions
+    >({
+      query: (params) => ({
+        url: '/user/profile/all',
+        method: 'GET',
+        params,
+      }),
+      providesTags: ['User-Profile-Pagination'],
+    }),
   }),
 });
 
-export const { useGetPersonalDetailsQuery, useGetAllUsersQuery } = userApiSlice;
+export const {
+  useGetPersonalDetailsQuery,
+  useGetAllUsersQuery,
+  useGetAllUserProfilesQuery,
+} = userApiSlice;

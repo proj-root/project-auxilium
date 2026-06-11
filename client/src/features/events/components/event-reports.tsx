@@ -120,7 +120,7 @@ export function EventReportDataTable({ event }: { event: Event }) {
               placeholder='Search...'
               className='w-fit'
             />
-            <div className='overflow-y-scroll max-h-full scrollbar-none hover:scrollbar-thin'>
+            <div>
               <DataTable columns={columns} data={data.data.participations} />
             </div>
             <PaginationControls

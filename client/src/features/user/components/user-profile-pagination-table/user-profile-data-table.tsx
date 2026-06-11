@@ -2,25 +2,28 @@ import { useAppDispatch, useAppSelector } from '@/hooks/redux-hooks';
 import {
   nextPage,
   prevPage,
-  selectUserPaginationState,
+  selectUserProfilePaginationState,
   setPage,
   setPageSize,
   setSearch,
-} from './user-pagination-slice';
-import { useGetAllUsersQuery, userApiSlice } from '../../state/user-api-slice';
+} from './user-profile-pagination-slice';
+import {
+  useGetAllUserProfilesQuery,
+  userApiSlice,
+} from '../../state/user-api-slice';
 import {
   PaginationControls,
   type PaginationControlDef,
 } from '@/components/misc/pagination-controls';
+import { SearchFilter } from '@/components/search-filter';
 import { DataTable } from '@/components/ui/data-table';
 import { columns } from './columns';
-import { SearchFilter } from '@/components/search-filter';
 
-export function UserDataTable() {
+export function UserProfileDataTable() {
   const dispatch = useAppDispatch();
-  const paginationState = useAppSelector(selectUserPaginationState);
+  const paginationState = useAppSelector(selectUserProfilePaginationState);
 
-  const { data, isLoading, isError } = useGetAllUsersQuery({
+  const { data, isLoading, isError } = useGetAllUserProfilesQuery({
     ...paginationState,
   });
 
@@ -50,7 +53,7 @@ export function UserDataTable() {
       {!isLoading && data?.data && (
         <div className='flex h-full flex-col gap-4'>
           <SearchFilter setSearchCb={setSearch} />
-          <DataTable columns={columns} data={data.data.users} />
+          <DataTable columns={columns} data={data.data.userProfiles} />
           <div className='flex flex-row justify-between px-2'>
             <p className='text-muted-foreground w-full text-sm'>
               Showing {paginationState.page} -{' '}
@@ -63,7 +66,9 @@ export function UserDataTable() {
             <PaginationControls
               paginationControls={paginationControls}
               updateCb={() =>
-                dispatch(userApiSlice.util.invalidateTags(['User-Pagination']))
+                dispatch(
+                  userApiSlice.util.invalidateTags(['User-Profile-Pagination']),
+                )
               }
             />
           </div>

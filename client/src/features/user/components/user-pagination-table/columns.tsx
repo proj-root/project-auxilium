@@ -29,7 +29,7 @@ export const columns: ColumnDef<UserDTO>[] = [
 
       return (
         <div className='flex flex-row items-center gap-1.5 text-sm'>
-          <p>{row.original.email}</p>
+          <p>{row.original.email.toLowerCase()}</p>
           {isVerified || <BadgeCheck className="h-4 w-4 text-primary" />}
         </div>
       );

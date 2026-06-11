@@ -15,5 +15,12 @@ export const apiSlice = createApi({
   }),
   endpoints: () => ({}),
   // Edit tags here as needed
-  tagTypes: ['User', 'User-Pagination', 'Events', 'EventReports', 'EventTypes'],
+  tagTypes: [
+    'User',
+    'User-Pagination',
+    'User-Profile-Pagination',
+    'Events',
+    'EventReports',
+    'EventTypes',
+  ],
 });

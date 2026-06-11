@@ -79,7 +79,7 @@ export default function SingleEventDetailsPage() {
           </div>
           {/* Reports */}
           <TabsContent value={'reports'}>
-            <div className='flex h-[calc(70vh-120px)] w-full flex-col'>
+            <div className='flex w-full flex-col'>
               <EventReportDataTable event={data.data} />
             </div>
           </TabsContent>

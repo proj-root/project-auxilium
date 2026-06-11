@@ -1,6 +1,7 @@
 import { ComingSoonEmpty } from '@/components/misc/empty-screen';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { UserDataTable } from '@/features/user/components/user-pagination-table/user-data-table';
+import { UserProfileDataTable } from '@/features/user/components/user-profile-pagination-table/user-profile-data-table';
 import { SquareUser, Users } from 'lucide-react';
 
 export default function UserManagementPage() {
@@ -10,7 +11,7 @@ export default function UserManagementPage() {
       {/* Use a tab interface as well to seperate existing users from profiles */}
       {/* Profiles = participants detected via participation records */}
       {/* Users = registered users with a role in the system */}
-      <div className='flex h-full w-full flex-col mt-4'>
+      <div className='mt-4 flex h-full w-full flex-col'>
         <Tabs defaultValue={'users'} className='flex flex-col gap-4'>
           <div className='w-full border-b bg-transparent'>
             <TabsList className='inline-flex flex-row justify-start gap-2 rounded-none border-0 bg-transparent p-0'>
@@ -35,11 +36,10 @@ export default function UserManagementPage() {
             </div>
           </TabsContent>
           {/* Profiles Tab */}
-          <TabsContent
-            value={'profiles'}
-            className='flex flex-col items-center justify-center'
-          >
-            <ComingSoonEmpty />
+          <TabsContent value={'profiles'}>
+            <div className='flex h-full w-full flex-col gap-4'>
+              <UserProfileDataTable />
+            </div>
           </TabsContent>
         </Tabs>
       </div>
