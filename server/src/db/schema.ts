@@ -236,3 +236,33 @@ export const userRole = pgTable(
     }),
   ],
 );
+
+export const department = pgTable('department', {
+  departmentId: integer('department_id').primaryKey().unique(),
+  name: varchar({ length: 50 }).notNull().unique(),
+  ...timestamps,
+});
+
+export const userDepartment = pgTable(
+  'user_department',
+  {
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => user.id, {
+        onDelete: 'cascade',
+        onUpdate: 'cascade',
+      }),
+    departmentId: integer('department_id')
+      .notNull()
+      .references(() => department.departmentId, {
+        onDelete: 'cascade',
+        onUpdate: 'cascade',
+      }),
+    ...timestamps,
+  },
+  (table) => [
+    primaryKey({
+      columns: [table.userId, table.departmentId],
+    }),
+  ],
+);

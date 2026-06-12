@@ -1,8 +1,11 @@
 import {
+  Body,
   Controller,
+  ForbiddenException,
   Get,
   Logger,
   Param,
+  Put,
   Query,
   Session,
   UseGuards,
@@ -12,7 +15,13 @@ import { type UserSession } from '@thallesp/nestjs-better-auth';
 import { RoleGuard } from '@/common/guards/role.guard';
 import { RolesConfig } from '@auxilium/configs/roles';
 import { Roles } from '@/common/decorators/roles.decorator';
-import { GetAllUserProfilesQueryDTO, GetAllUsersQueryDTO } from './user.dto';
+import {
+  GetAllUserProfilesQueryDTO,
+  GetAllUsersQueryDTO,
+  UpdateUserDTO,
+  UpdateUserSchema,
+} from './user.dto';
+import { ZodValidationPipe } from '@/common/zod-validation.pipe';
 
 const ROUTE_NAME = 'api/user';
 
@@ -73,7 +82,9 @@ export class UserController {
   @Get('/profile/all')
   @UseGuards(RoleGuard)
   @Roles(RolesConfig.ADMIN, RolesConfig.SUPERADMIN)
-  async getAllUserProfiles(@Query() query: Partial<GetAllUserProfilesQueryDTO>) {
+  async getAllUserProfiles(
+    @Query() query: Partial<GetAllUserProfilesQueryDTO>,
+  ) {
     const {
       page = 1,
       pageSize = 10,
@@ -121,21 +132,65 @@ export class UserController {
     };
   }
 
-  @Get('/:userId')
+  @Get(':userId')
   @UseGuards(RoleGuard)
   @Roles(RolesConfig.ADMIN, RolesConfig.SUPERADMIN)
   async getSingleUser(@Param('userId') userId: string) {
-    const userProfile = await this.userService.getUserById({ userId });
+    const user = await this.userService.getUserById({ userId });
 
-    if (!userProfile) {
+    if (!user) {
       this.logger.warn(`User with ID ${userId} not found`);
       return null;
     }
 
     return {
-      message: 'User profile retrieved successfully',
+      message: 'User retrieved successfully',
       status: 'success',
-      data: userProfile,
+      data: user,
+    };
+  }
+
+  // Update self
+  @Put()
+  async updateUser(
+    @Session() session: UserSession,
+    @Body(new ZodValidationPipe(UpdateUserSchema)) body: Partial<UpdateUserDTO>,
+  ) {
+    const userId = session.user.id;
+    const user = await this.userService.updateUser({ userId, ...body });
+
+    return {
+      message: 'User updated successfully',
+      status: 'success',
+      data: user,
+    };
+  }
+
+  @Put(':userId')
+  @UseGuards(RoleGuard)
+  @Roles(RolesConfig.ADMIN, RolesConfig.SUPERADMIN)
+  async updateUserByUserId(
+    @Session() session: UserSession,
+    @Param('userId') userId: string,
+    @Body(new ZodValidationPipe(UpdateUserSchema)) body: Partial<UpdateUserDTO>,
+  ) {
+    const userRole = (session.user as any)?.role?.roleId;
+
+    if (userId === session.user.id) {
+      throw new ForbiddenException(
+        'Use the /api/user endpoint to update your own profile',
+      );
+    }
+
+    const user = await this.userService.updateUser(
+      { userId, ...body },
+      userRole,
+    );
+
+    return {
+      message: 'User updated successfully',
+      status: 'success',
+      data: user,
     };
   }
 }

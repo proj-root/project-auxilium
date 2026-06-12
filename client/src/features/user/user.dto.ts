@@ -19,6 +19,11 @@ export interface RoleDTO {
   name: string;
 }
 
+export interface DepartmentDTO {
+  departmentId: string | number;
+  name: string;
+}
+
 export interface UserDTO {
   id: string;
   name: string;
@@ -27,6 +32,7 @@ export interface UserDTO {
   image: string;
   userProfile: UserProfileDTO;
   role: RoleDTO;
+  departments: DepartmentDTO[];
   createdAt: string;
   updatedAt: string;
 }

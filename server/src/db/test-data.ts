@@ -114,3 +114,21 @@ export const testEventRoles: {
     pointsAwarded: 2,
   },
 ];
+
+export const departments: {
+  departmentId: number;
+  name: string;
+}[] = [
+  {
+    departmentId: 1,
+    name: 'Events',
+  },
+  {
+    departmentId: 2,
+    name: 'Admin',
+  },
+  {
+    departmentId: 3,
+    name: 'Publicity',
+  }
+]

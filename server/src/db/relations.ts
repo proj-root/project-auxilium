@@ -13,6 +13,14 @@ export const relations = defineRelations(schema, (r) => ({
       from: r.user.id,
       to: r.userRole.userId,
     }),
+    // userDepartments: r.many.userDepartment({
+    //   from: r.user.id,
+    //   to: r.userDepartment.userId,
+    // }),
+    departments: r.many.department({
+      from: r.user.id.through(r.userDepartment.userId),
+      to: r.department.departmentId.through(r.userDepartment.departmentId),
+    }),
     events: r.many.event(),
     sessions: r.many.session(),
     accounts: r.many.account(),
@@ -47,6 +55,16 @@ export const relations = defineRelations(schema, (r) => ({
     role: r.one.role({
       from: r.userRole.roleId,
       to: r.role.roleId,
+    }),
+  },
+  userDepartment: {
+    user: r.one.user({
+      from: r.userDepartment.userId,
+      to: r.user.id,
+    }),
+    department: r.one.department({
+      from: r.userDepartment.departmentId,
+      to: r.department.departmentId,
     }),
   },
   role: {
@@ -100,4 +118,7 @@ export const relations = defineRelations(schema, (r) => ({
   course: {
     userProfiles: r.many.userProfile(),
   },
+  department: {
+    userDepartments: r.many.userDepartment(),
+  }
 }));

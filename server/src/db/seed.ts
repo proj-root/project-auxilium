@@ -2,6 +2,7 @@ import 'dotenv/config';
 import db from '@/db';
 import * as schema from './schema';
 import {
+  departments,
   testCourses,
   testEventRoles,
   testEventTypes,
@@ -52,6 +53,20 @@ async function main() {
       });
   }
   console.log('✅ Seeded roles successfully!');
+
+  console.log('Seeding departments...');
+  for (const department of departments) {
+    await db
+      .insert(schema.department)
+      .values(department)
+      .onConflictDoUpdate({
+        target: schema.department.departmentId,
+        set: {
+          ...department,
+        },
+      });
+  }
+  console.log('✅ Seeded departments successfully!');
 
   // Seed Statuses
   console.log('Seeding statuses...');
@@ -197,7 +212,7 @@ async function main() {
         email: testUser.email,
         password: testUser.password,
         name: testUser.firstName + ' ' + testUser.lastName,
-      }
+      },
     });
 
     await db.transaction(async (tx) => {
