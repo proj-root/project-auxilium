@@ -18,6 +18,7 @@ import {
 import { SearchFilter } from '@/components/search-filter';
 import { DataTable } from '@/components/ui/data-table';
 import { columns } from './columns';
+import { UserProfilePaginationContextMenu } from './context-menu';
 
 export function UserProfileDataTable() {
   const dispatch = useAppDispatch();
@@ -53,7 +54,11 @@ export function UserProfileDataTable() {
       {!isLoading && data?.data && (
         <div className='flex h-full flex-col gap-4'>
           <SearchFilter setSearchCb={setSearch} />
-          <DataTable columns={columns} data={data.data.userProfiles} />
+          <DataTable
+            columns={columns}
+            data={data.data.userProfiles}
+            ContextMenu={UserProfilePaginationContextMenu}
+          />
           <div className='flex flex-row justify-between px-2'>
             <p className='text-muted-foreground w-full text-sm'>
               Showing {paginationState.page} -{' '}
