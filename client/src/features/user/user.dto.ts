@@ -58,3 +58,15 @@ export type GetAllUserProfilesResponse = BaseResponseDTO<{
   pageCount: number;
   userProfiles: UserProfileDTO[];
 }>;
+
+export type GetSingleUserResponse = BaseResponseDTO<UserProfileDTO & {
+  email: string;
+  emailVerified: string;
+  image: string;
+  role: RoleDTO;
+  departments: DepartmentDTO[];
+}>;
+
+export interface GetSingleUserRequest {
+  userProfileId: string;
+}

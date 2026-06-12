@@ -68,10 +68,15 @@ export class UserService {
             columns: {
               createdAt: false,
               updatedAt: false,
-            }
+            },
           },
         },
       });
+
+      if (!user) {
+        this.logger.warn(`User with ID ${userId} not found`);
+        return null;
+      }
 
       // Clear sensitive data and format data
       return {
@@ -84,6 +89,58 @@ export class UserService {
       };
     } catch (error) {
       this.logger.error(`Error fetching user by ID ${userId}:`, error);
+      throw new APIError('Failed to fetch user by ID', 500);
+    }
+  }
+
+  async getUserByProfileId({ userProfileId }: { userProfileId: string }) {
+    try {
+      const userProfile = await db.query.userProfile.findFirst({
+        where: {
+          profileId: userProfileId,
+        },
+        with: {
+          user: {
+            columns: {
+              createdAt: false,
+              updatedAt: false,
+            },
+            with: {
+              userRole: {
+                with: {
+                  role: true,
+                },
+              },
+              departments: {
+                columns: {
+                  createdAt: false,
+                  updatedAt: false,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      if (!userProfile) {
+        this.logger.warn(`User profile with ID ${userProfileId} not found`);
+        return null;
+      }
+
+      // Clear sensitive data and format data
+      return {
+        ...userProfile,
+        ...userProfile.user,
+        role: {
+          roleId: userProfile?.user?.userRole?.roleId,
+          name: userProfile?.user?.userRole?.role?.name,
+        },
+        userRole: undefined,
+        user: undefined,
+        id: undefined,
+      };
+    } catch (error) {
+      this.logger.error(`Error fetching user profile by ID ${userProfileId}:`, error);
       throw new APIError('Failed to fetch user by ID', 500);
     }
   }
@@ -179,7 +236,7 @@ export class UserService {
             columns: {
               createdAt: false,
               updatedAt: false,
-            }
+            },
           },
         },
         limit: pageSize,

@@ -4,6 +4,7 @@ import {
   ForbiddenException,
   Get,
   Logger,
+  NotFoundException,
   Param,
   Put,
   Query,
@@ -110,37 +111,37 @@ export class UserController {
     };
   }
 
-  @Get('profile/:adminNumber')
+  // @Get('profile/:adminNumber')
+  // @UseGuards(RoleGuard)
+  // @Roles(RolesConfig.ADMIN, RolesConfig.SUPERADMIN)
+  // async getSingleProfile(@Param('adminNumber') adminNumber: string) {
+  //   const userProfile = await this.userService.getProfileByAdminNumber({
+  //     adminNumber,
+  //   });
+
+  //   // TODO: If userId not null, fetch user details too?
+
+  //   if (!userProfile) {
+  //     this.logger.warn(`User with admin number ${adminNumber} not found`);
+  //     return null;
+  //   }
+
+  //   return {
+  //     message: 'User profile retrieved successfully',
+  //     status: 'success',
+  //     data: userProfile,
+  //   };
+  // }
+
+  // Get single user data by user profile ID, which includes user account details if it exists
+  @Get('profile/:userProfileId')
   @UseGuards(RoleGuard)
   @Roles(RolesConfig.ADMIN, RolesConfig.SUPERADMIN)
-  async getSingleProfile(@Param('adminNumber') adminNumber: string) {
-    const userProfile = await this.userService.getProfileByAdminNumber({
-      adminNumber,
-    });
-
-    // TODO: If userId not null, fetch user details too?
-
-    if (!userProfile) {
-      this.logger.warn(`User with admin number ${adminNumber} not found`);
-      return null;
-    }
-
-    return {
-      message: 'User profile retrieved successfully',
-      status: 'success',
-      data: userProfile,
-    };
-  }
-
-  @Get(':userId')
-  @UseGuards(RoleGuard)
-  @Roles(RolesConfig.ADMIN, RolesConfig.SUPERADMIN)
-  async getSingleUser(@Param('userId') userId: string) {
-    const user = await this.userService.getUserById({ userId });
+  async getSingleUser(@Param('userProfileId') userProfileId: string) {
+    const user = await this.userService.getUserByProfileId({ userProfileId });
 
     if (!user) {
-      this.logger.warn(`User with ID ${userId} not found`);
-      return null;
+      throw new NotFoundException(`User profile with ID ${userProfileId} not found`);
     }
 
     return {

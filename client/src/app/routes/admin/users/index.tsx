@@ -1,4 +1,3 @@
-import { ComingSoonEmpty } from '@/components/misc/empty-screen';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { UserDataTable } from '@/features/user/components/user-pagination-table/user-data-table';
 import { UserProfileDataTable } from '@/features/user/components/user-profile-pagination-table/user-profile-data-table';

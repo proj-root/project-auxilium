@@ -3,6 +3,8 @@ import type { UserDTO } from '../../user.dto';
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
 import { BadgeCheck } from 'lucide-react';
 import { UserRoleBadge } from '../role-badge';
+import { Link } from 'react-router';
+import { Badge } from '@/components/ui/badge';
 
 export const columns: ColumnDef<UserDTO>[] = [
   {
@@ -11,6 +13,18 @@ export const columns: ColumnDef<UserDTO>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader title='Name' column={column} />
     ),
+    cell: ({ row }) => {
+      const userProfile = row.original.userProfile;
+
+      return (
+        <Link
+          to={`/admin/users/${userProfile.profileId}`}
+          className='hover:underline'
+        >
+          {row.original.name}
+        </Link>
+      );
+    },
   },
   {
     id: 'adminNumber',
@@ -30,7 +44,7 @@ export const columns: ColumnDef<UserDTO>[] = [
       return (
         <div className='flex flex-row items-center gap-1.5 text-sm'>
           <p>{row.original.email.toLowerCase()}</p>
-          {isVerified || <BadgeCheck className="h-4 w-4 text-primary" />}
+          {isVerified && <BadgeCheck className='text-primary h-4 w-4' />}
         </div>
       );
     },
@@ -42,6 +56,29 @@ export const columns: ColumnDef<UserDTO>[] = [
     ),
     cell: ({ row }) => {
       return <UserRoleBadge role={row.original.role} />;
+    },
+  },
+  {
+    accessorKey: 'departments',
+    header: ({ column }) => (
+      <DataTableColumnHeader title='Departments' column={column} />
+    ),
+    cell: ({ row }) => {
+      return (
+        <div className='flex flex-wrap gap-1'>
+          {row.original.departments.map((dept) => (
+            <Badge
+              key={dept.departmentId}
+              variant='secondary'
+            >
+              {dept.name}
+            </Badge>
+          ))}
+          {row.original.departments.length === 0 && (
+            <Badge variant='outline'>NA</Badge>
+          )}
+        </div>
+      );
     },
   },
 ];

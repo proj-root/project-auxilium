@@ -4,6 +4,8 @@ import type {
   GetAllUsersRequest,
   GetAllUsersResponse,
   GetPersonalDetailsResponse,
+  GetSingleUserRequest,
+  GetSingleUserResponse,
 } from '../user.dto';
 import type { PaginationOptions } from '@auxilium/types/pagination';
 
@@ -12,6 +14,13 @@ export const userApiSlice = apiSlice.injectEndpoints({
     getPersonalDetails: builder.query<GetPersonalDetailsResponse, void>({
       query: () => ({
         url: '/user',
+        method: 'GET',
+      }),
+      providesTags: ['User'],
+    }),
+    getSingleUser: builder.query<GetSingleUserResponse, GetSingleUserRequest>({
+      query: ({ userProfileId }) => ({
+        url: `/user/profile/${userProfileId}`,
         method: 'GET',
       }),
       providesTags: ['User'],
@@ -42,4 +51,5 @@ export const {
   useGetPersonalDetailsQuery,
   useGetAllUsersQuery,
   useGetAllUserProfilesQuery,
+  useGetSingleUserQuery,
 } = userApiSlice;

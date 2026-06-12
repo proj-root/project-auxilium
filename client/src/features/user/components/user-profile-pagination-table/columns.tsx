@@ -1,6 +1,7 @@
 import type { ColumnDef } from '@tanstack/react-table';
 import type { UserProfileDTO } from '../../user.dto';
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
+import { Link } from 'react-router';
 
 export const columns: ColumnDef<UserProfileDTO>[] = [
   {
@@ -9,6 +10,13 @@ export const columns: ColumnDef<UserProfileDTO>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader title='Name' column={column} />
     ),
+    cell: ({ row }) => {
+      return (
+        <Link to={`/admin/users/${row.original.profileId}`} className='hover:underline'>
+          {row.original.firstName + ' ' + row.original.lastName}
+        </Link>
+      );
+    },
   },
   {
     id: 'adminNumber',

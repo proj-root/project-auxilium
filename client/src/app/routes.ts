@@ -26,6 +26,7 @@ export default [
       // User Management Pages
       ...prefix('users', [
         index('routes/admin/users/index.tsx'),
+        route('/:userProfileId', 'routes/admin/users/single-user.tsx'),
       ]),
     ]),
   ]),
