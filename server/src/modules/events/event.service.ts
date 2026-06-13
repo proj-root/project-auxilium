@@ -2,7 +2,8 @@ import db from '@/db';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { StatusConfig } from '@auxilium/configs/status';
 import { APIError } from '@auxilium/types/errors';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
+import * as schema from '@/db/schema';
 import {
   event as eventTable,
   eventReport as eventReportTable,
@@ -15,6 +16,8 @@ import type {
   CreateEventReportDTO,
   CreateEventParticipationDTO,
   GetParticipationRecordsQueryDTO,
+  AssignUserToEventDTO,
+  UnassignUserFromEventDTO,
 } from './events.dto';
 
 @Injectable()
@@ -352,6 +355,64 @@ export class EventsService {
       pageCount: Math.ceil(count / pageSize),
       participations,
     };
+  }
+
+  async createUserEventRole(args: AssignUserToEventDTO) {
+    // Check if the user is already assigned to the event with the same role
+    const existingRole = await db.query.userEventRole.findFirst({
+      where: {
+        eventId: args.eventId,
+        userId: args.userId,
+        // TODO: Consider whether we want to allow multiple roles per user per event
+        // Temporarily enforce rule of highest role per user per event
+        // eventRoleId: args.eventRoleId,
+      },
+    });
+
+    if (existingRole) {
+      throw new APIError(
+        'User is already assigned to this event with Event Role: ' +
+          args.eventRoleId,
+        400,
+      );
+    }
+
+    const [createdRole] = await db
+      .insert(schema.userEventRole)
+      .values({
+        eventId: args.eventId,
+        userId: args.userId,
+        eventRoleId: args.eventRoleId,
+      })
+      .onConflictDoUpdate({
+        target: [schema.userEventRole.eventId, schema.userEventRole.userId],
+        set: {
+          eventRoleId: args.eventRoleId,
+        },
+      })
+      .returning();
+
+    return createdRole;
+  }
+
+  async deleteUserEventRole(args: UnassignUserFromEventDTO) {
+    const deleted = await db
+      .delete(schema.userEventRole)
+      .where(
+        and(
+          eq(schema.userEventRole.eventId, args.eventId),
+          eq(schema.userEventRole.userId, args.userId),
+        ),
+      )
+      .returning();
+
+    if (deleted.length === 0) {
+      throw new NotFoundException(
+        `User event role not found for user ${args.userId} and event ${args.eventId}`,
+      );
+    }
+
+    return deleted[0];
   }
 
   // Event Types

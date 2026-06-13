@@ -27,12 +27,16 @@ import type {
   CreateEventReportDTO,
   CreateEventParticipationDTO,
   GetParticipationRecordsQueryDTO,
+  AssignUserToEventDTO,
+  UnassignUserFromEventDTO,
 } from './events.dto';
 import {
   CreateEventSchema,
   UpdateEventSchema,
   CreateEventReportSchema,
   CreateEventParticipationSchema,
+  AssignUserToEventSchema,
+  UnassignUserFromEventSchema,
 } from './events.dto';
 import { Session, type UserSession } from '@thallesp/nestjs-better-auth';
 import { SystemConfig } from '@/config/system.config';
@@ -431,6 +435,40 @@ export class EventsController {
     return {
       status: 'success',
       message: 'Event permanently deleted successfully',
+    };
+  }
+
+  @Post(':id/assign')
+  async assignUserToEvent(
+    @Param('id') eventId: string,
+    @Body(new ZodValidationPipe(AssignUserToEventSchema))
+    body: Partial<AssignUserToEventDTO>,
+  ) {
+    await this.eventsService.createUserEventRole({
+      eventId,
+      ...body,
+    } as AssignUserToEventDTO);
+
+    return {
+      status: 'success',
+      message: 'User assigned to event successfully',
+    };
+  }
+
+  @Delete(':id/assign')
+  async unassignUserFromEvent(
+    @Param('id') eventId: string,
+    @Body(new ZodValidationPipe(UnassignUserFromEventSchema))
+    body: Partial<UnassignUserFromEventDTO>,
+  ) {
+    await this.eventsService.deleteUserEventRole({
+      eventId,
+      ...body,
+    } as UnassignUserFromEventDTO);
+
+    return {
+      status: 'success',
+      message: 'User unassigned from event successfully',
     };
   }
 }

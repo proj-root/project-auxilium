@@ -132,8 +132,30 @@ export const eventParticipation = pgTable('event_participation', {
       onUpdate: 'cascade',
     })
     .default(EventRoles.PARTICIPANT),
-  // pointsType: eventPointsType('points_type').default('PARTICIPATION'),
-  // pointsAwarded: integer('points_awarded').default(0), // TODO: Deprecate this using eventRole table
+  ...timestamps,
+});
+
+// Event Helper Table
+export const userEventRole = pgTable('user_event_role', {
+  userEventRoleId: uuid('user_event_role_id').primaryKey().defaultRandom(),
+  eventId: uuid('event_id')
+    .notNull()
+    .references(() => event.eventId, {
+      onDelete: 'cascade',
+      onUpdate: 'cascade',
+    }),
+  userId: uuid('user_id')
+    .notNull()
+    .references(() => user.id, {
+      onDelete: 'cascade',
+      onUpdate: 'cascade',
+    }),
+  eventRoleId: integer('event_role_id')
+    .notNull()
+    .references(() => eventRole.eventRoleId, {
+      onDelete: 'set null',
+      onUpdate: 'cascade',
+    }),
   ...timestamps,
 });
 

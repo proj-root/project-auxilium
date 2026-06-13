@@ -21,6 +21,10 @@ export const relations = defineRelations(schema, (r) => ({
       from: r.user.id.through(r.userDepartment.userId),
       to: r.department.departmentId.through(r.userDepartment.departmentId),
     }),
+    eventRoles: r.many.eventRole({
+      from: r.user.id.through(r.userEventRole.userId),
+      to: r.eventRole.eventRoleId.through(r.userEventRole.eventRoleId),
+    }),
     events: r.many.event(),
     sessions: r.many.session(),
     accounts: r.many.account(),
@@ -79,6 +83,10 @@ export const relations = defineRelations(schema, (r) => ({
       from: r.event.createdBy,
       to: r.user.id,
     }),
+    userEventRoles: r.many.userEventRole({
+      from: r.event.eventId,
+      to: r.userEventRole.eventId,
+    }),
     eventReport: r.one.eventReport({
       from: r.event.eventId,
       to: r.eventReport.eventId,
@@ -109,11 +117,26 @@ export const relations = defineRelations(schema, (r) => ({
     }),
     eventParticipations: r.many.eventParticipation()
   },
+  userEventRole: {
+    event: r.one.event({
+      from: r.userEventRole.eventId,
+      to: r.event.eventId,
+    }),
+    user: r.one.user({
+      from: r.userEventRole.userId,
+      to: r.user.id,
+    }),
+    eventRole: r.one.eventRole({
+      from: r.userEventRole.eventRoleId,
+      to: r.eventRole.eventRoleId,
+    }),
+  },
   eventType: {
     events: r.many.event(),
   },
   eventRole: {
     eventParticipations: r.many.eventParticipation(),
+    userEventRoles: r.many.userEventRole(),
   },
   course: {
     userProfiles: r.many.userProfile(),
