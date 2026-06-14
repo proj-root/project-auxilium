@@ -39,10 +39,12 @@ import {
   UnassignUserFromEventSchema,
 } from './events.dto';
 import { Session, type UserSession } from '@thallesp/nestjs-better-auth';
-import { SystemConfig } from '@/config/system.config';
+import { EventRolesConfig, SystemConfig } from '@/config/system.config';
 import { RoleGuard } from '@/common/guards/role.guard';
 import { RolesConfig } from '@auxilium/configs/roles';
 import { Roles } from '@/common/decorators/roles.decorator';
+import { EventRoleGuard } from '@/common/guards/event-role.guard';
+import { EventRoles } from '@/common/decorators/event-roles.decorator';
 
 const ROUTE_NAME = 'api/events';
 
@@ -439,8 +441,9 @@ export class EventsController {
   }
 
   @Post(':id/assign')
-  @UseGuards(RoleGuard)
+  @UseGuards(RoleGuard, EventRoleGuard)
   @Roles(RolesConfig.ADMIN, RolesConfig.SUPERADMIN)
+  @EventRoles({ paramKey: ':id', roles: [EventRolesConfig.COORDINATOR] })
   async assignUserToEvent(
     @Param('id') eventId: string,
     @Body(new ZodValidationPipe(AssignUserToEventSchema))
@@ -458,8 +461,9 @@ export class EventsController {
   }
 
   @Delete(':id/assign')
-  @UseGuards(RoleGuard)
+  @UseGuards(RoleGuard, EventRoleGuard)
   @Roles(RolesConfig.ADMIN, RolesConfig.SUPERADMIN)
+  @EventRoles({ paramKey: ':id', roles: [EventRolesConfig.COORDINATOR] })
   async unassignUserFromEvent(
     @Param('id') eventId: string,
     @Body(new ZodValidationPipe(UnassignUserFromEventSchema))

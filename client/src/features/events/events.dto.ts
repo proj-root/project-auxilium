@@ -6,7 +6,7 @@ export enum CCAPointsType {
   PARTICIPATION = 'PARTICIPATION',
   LEADERSHIP = 'LEADERSHIP',
   SERVICE = 'SERVICE',
-  COMMUNITY_SERVICE = 'COMMUNITY SERVICE'
+  COMMUNITY_SERVICE = 'COMMUNITY SERVICE',
 }
 
 export interface EventReport {
@@ -30,6 +30,16 @@ export interface EventRole {
   pointsAwarded: number;
 }
 
+export interface UserEventRole {
+  eventRole: EventRole;
+  user: {
+    name: string;
+    email: string;
+    image: string;
+    userProfile: UserProfileDTO;
+  };
+}
+
 export interface Event {
   eventId: string;
   name: string;
@@ -51,15 +61,7 @@ export interface Event {
     email: string;
   };
 
-  userEventRoles: {
-    eventRole: EventRole;
-    user: {
-      name: string;
-      email: string;
-      image: string;
-      userProfile: UserProfileDTO;
-    }
-  }[]
+  userEventRoles: UserEventRole[];
 
   // eventReports: EventReport[];
 

@@ -19,6 +19,7 @@ export function RequireAuth({ children, allowedRoles }: RequireAuthProps) {
 
     // @ts-expect-error - role is a custom attribute
     const userRole: RoleDTO = data?.user?.role || null;
+    // @ts-expect-error - role is a custom attribute
     return allowedRoles.includes(parseInt(userRole.roleId));
   };
 

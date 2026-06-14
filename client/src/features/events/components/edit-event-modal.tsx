@@ -114,9 +114,8 @@ export function EditEventModal({
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant={'secondary'} size={'sm'}>
+        <Button variant={'ghost'} size={'icon'}>
           <Edit2 className='size-4' />
-          Edit
         </Button>
       </DialogTrigger>
       <DialogContent>
@@ -125,9 +124,9 @@ export function EditEventModal({
             <DialogTitle className='flex flex-row items-center gap-2'>
               Edit Event <Edit2 className='size-4' />
             </DialogTitle>
-            <DialogDescription>Remember to save your changes</DialogDescription>
+            <DialogDescription>Remember to save your changes!</DialogDescription>
           </DialogHeader>
-          <div className='scrollbar-none flex max-h-[50vh] flex-col gap-4 overflow-y-scroll'>
+          <div className='mt-3 scrollbar-none flex max-h-[50vh] flex-col gap-4 overflow-y-scroll'>
             {/* Event Name */}
             <Controller
               name='name'

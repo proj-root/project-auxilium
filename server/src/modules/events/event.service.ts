@@ -389,9 +389,7 @@ export class EventsService {
       throw new BadRequestException(
         `User with ID ${args.userId} does not exist.`,
       );
-    }
-
-    if (
+    } else if (
       userRole.roleId !== RolesConfig.ADMIN &&
       userRole.roleId !== RolesConfig.SUPERADMIN
     ) {
@@ -464,5 +462,15 @@ export class EventsService {
   async getAllEventRoles() {
     const eventRoles = await db.query.eventRole.findMany();
     return eventRoles;
+  }
+
+  async getUserEventRole(args: { userId: string; eventId: string }) {
+    const userEventRole = await db.query.userEventRole.findFirst({
+      where: {
+        ...args,
+      },
+    });
+
+    return userEventRole;
   }
 }

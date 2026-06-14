@@ -9,7 +9,7 @@ import { text } from 'drizzle-orm/pg-core';
 import { timestamp } from 'drizzle-orm/pg-core';
 import { boolean } from 'drizzle-orm/pg-core';
 import type { AnyPgColumn } from 'drizzle-orm/pg-core';
-import { EventRoles } from '@/config/system.config';
+import { EventRolesConfig } from '@/config/system.config';
 
 // export const eventRole = pgEnum('event_role', [
 //   'ORGANIZER',
@@ -131,7 +131,7 @@ export const eventParticipation = pgTable('event_participation', {
       onDelete: 'set null',
       onUpdate: 'cascade',
     })
-    .default(EventRoles.PARTICIPANT),
+    .default(EventRolesConfig.PARTICIPANT),
   ...timestamps,
 });
 

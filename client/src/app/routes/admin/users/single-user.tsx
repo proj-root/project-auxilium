@@ -66,7 +66,9 @@ export default function SingleUserPage() {
             {data.data.email ? (
               <p className='flex flex-row items-center gap-1.5'>
                 {data.data.email}{' '}
-                {data.data.emailVerified && <BadgeCheck className='size-4 text-primary' />}
+                {data.data.emailVerified && (
+                  <BadgeCheck className='text-primary size-4' />
+                )}
               </p>
             ) : (
               <p className='text-muted-foreground italic'>No email provided</p>
@@ -74,6 +76,7 @@ export default function SingleUserPage() {
             {/* Department badges */}
             <div className='flex flex-row gap-1 pt-1'>
               {data.data.departments &&
+                data.data.role.roleId !== RolesConfig.USER &&
                 data.data.departments.map((dept) => (
                   <Badge key={dept.departmentId} variant='secondary'>
                     {dept.name}
