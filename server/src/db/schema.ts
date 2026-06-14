@@ -136,28 +136,33 @@ export const eventParticipation = pgTable('event_participation', {
 });
 
 // Event Helper Table
-export const userEventRole = pgTable('user_event_role', {
-  userEventRoleId: uuid('user_event_role_id').primaryKey().defaultRandom(),
-  eventId: uuid('event_id')
-    .notNull()
-    .references(() => event.eventId, {
-      onDelete: 'cascade',
-      onUpdate: 'cascade',
-    }),
-  userId: uuid('user_id')
-    .notNull()
-    .references(() => user.id, {
-      onDelete: 'cascade',
-      onUpdate: 'cascade',
-    }),
-  eventRoleId: integer('event_role_id')
-    .notNull()
-    .references(() => eventRole.eventRoleId, {
-      onDelete: 'set null',
-      onUpdate: 'cascade',
-    }),
-  ...timestamps,
-});
+export const userEventRole = pgTable(
+  'user_event_role',
+  {
+    eventId: uuid('event_id')
+      .notNull()
+      .references(() => event.eventId, {
+        onDelete: 'cascade',
+        onUpdate: 'cascade',
+      }),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => user.id, {
+        onDelete: 'cascade',
+        onUpdate: 'cascade',
+      }),
+    eventRoleId: integer('event_role_id')
+      .notNull()
+      .references(() => eventRole.eventRoleId, {
+        onDelete: 'set null',
+        onUpdate: 'cascade',
+      }),
+    ...timestamps,
+  },
+  // Composite primary key to prevent duplicate entries for the same user and event
+  // Assuming 1 user can only be granted 1 role per event
+  (table) => [primaryKey({ columns: [table.eventId, table.userId] })],
+);
 
 // Event Points Report Table
 export const eventReport = pgTable('event_report', {

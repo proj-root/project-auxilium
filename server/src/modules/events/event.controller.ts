@@ -439,6 +439,8 @@ export class EventsController {
   }
 
   @Post(':id/assign')
+  @UseGuards(RoleGuard)
+  @Roles(RolesConfig.ADMIN, RolesConfig.SUPERADMIN)
   async assignUserToEvent(
     @Param('id') eventId: string,
     @Body(new ZodValidationPipe(AssignUserToEventSchema))
@@ -456,6 +458,8 @@ export class EventsController {
   }
 
   @Delete(':id/assign')
+  @UseGuards(RoleGuard)
+  @Roles(RolesConfig.ADMIN, RolesConfig.SUPERADMIN)
   async unassignUserFromEvent(
     @Param('id') eventId: string,
     @Body(new ZodValidationPipe(UnassignUserFromEventSchema))

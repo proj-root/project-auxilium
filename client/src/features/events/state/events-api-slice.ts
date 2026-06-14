@@ -20,7 +20,7 @@ export const eventsApiSlice = apiSlice.injectEndpoints({
       query: (data) => ({
         url: '/events',
         method: 'POST',
-        data,
+        body: data,
       }),
       invalidatesTags: ['Events'],
     }),
@@ -28,7 +28,7 @@ export const eventsApiSlice = apiSlice.injectEndpoints({
       query: (data) => ({
         url: `/events/${data.eventId}`,
         method: 'PUT',
-        data,
+        body: data,
       }),
       invalidatesTags: ['Events'],
     }),

@@ -51,6 +51,16 @@ export interface Event {
     email: string;
   };
 
+  userEventRoles: {
+    eventRole: EventRole;
+    user: {
+      name: string;
+      email: string;
+      image: string;
+      userProfile: UserProfileDTO;
+    }
+  }[]
+
   // eventReports: EventReport[];
 
   createdAt: string;

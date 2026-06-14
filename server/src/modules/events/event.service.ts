@@ -1,5 +1,9 @@
 import db from '@/db';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { StatusConfig } from '@auxilium/configs/status';
 import { APIError } from '@auxilium/types/errors';
 import { and, eq } from 'drizzle-orm';
@@ -19,6 +23,7 @@ import type {
   AssignUserToEventDTO,
   UnassignUserFromEventDTO,
 } from './events.dto';
+import { RolesConfig } from '@auxilium/configs/roles';
 
 @Injectable()
 export class EventsService {
@@ -31,6 +36,21 @@ export class EventsService {
         eventType: true,
         creator: true,
         eventReport: true,
+        userEventRoles: {
+          with: {
+            eventRole: true,
+            user: {
+              columns: {
+                name: true,
+                email: true,
+                image: true,
+              },
+              with: {
+                userProfile: true,
+              },
+            },
+          },
+        },
       },
     });
 
@@ -358,22 +378,41 @@ export class EventsService {
   }
 
   async createUserEventRole(args: AssignUserToEventDTO) {
-    // Check if the user is already assigned to the event with the same role
-    const existingRole = await db.query.userEventRole.findFirst({
+    // Check if the user is an administrator
+    const userRole = await db.query.userRole.findFirst({
       where: {
-        eventId: args.eventId,
         userId: args.userId,
-        // TODO: Consider whether we want to allow multiple roles per user per event
-        // Temporarily enforce rule of highest role per user per event
-        // eventRoleId: args.eventRoleId,
       },
     });
 
-    if (existingRole) {
-      throw new APIError(
-        'User is already assigned to this event with Event Role: ' +
-          args.eventRoleId,
-        400,
+    if (!userRole) {
+      throw new BadRequestException(
+        `User with ID ${args.userId} does not exist.`,
+      );
+    }
+
+    if (
+      userRole.roleId !== RolesConfig.ADMIN &&
+      userRole.roleId !== RolesConfig.SUPERADMIN
+    ) {
+      throw new BadRequestException(
+        'Only administrators can be assigned event roles.',
+      );
+    }
+
+    const selectedEventRole = await db.query.eventRole.findFirst({
+      where: {
+        eventRoleId: args.eventRoleId,
+      },
+    });
+
+    // Ensure user has a valid event role that is not a participation-only role
+    if (
+      !selectedEventRole ||
+      selectedEventRole.pointsType === 'PARTICIPATION'
+    ) {
+      throw new BadRequestException(
+        `Invalid Event role ID ${args.eventRoleId} provided. Event role has to exist and cannot be a participation-only role.`,
       );
     }
 
@@ -408,7 +447,7 @@ export class EventsService {
 
     if (deleted.length === 0) {
       throw new NotFoundException(
-        `User event role not found for user ${args.userId} and event ${args.eventId}`,
+        `User ${args.userId} not assigned to event ${args.eventId}`,
       );
     }
 

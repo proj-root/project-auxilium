@@ -107,6 +107,7 @@ export function CreateEventForm({ className }: { className?: string }) {
   });
 
   const onSubmit = async (data: CreateEventFormValues) => {
+    console.log('Form Data:', data);
     try {
       await createEvent(data).unwrap();
       toast.success('Event created succesfully!');
@@ -131,7 +132,7 @@ export function CreateEventForm({ className }: { className?: string }) {
           control={form.control}
           render={({ field, fieldState }) => (
             <Field>
-              <FieldLabel htmlFor='name'>Event Name</FieldLabel>
+              <FieldLabel className='gap-0.5' htmlFor='name'>Event Name<p className='text-red-400'>*</p></FieldLabel>
               <FieldDescription>A cool event name!</FieldDescription>
               <Input
                 {...field}
@@ -153,7 +154,9 @@ export function CreateEventForm({ className }: { className?: string }) {
           control={form.control}
           render={({ field, fieldState }) => (
             <Field>
-              <FieldLabel htmlFor='description'>Description</FieldLabel>
+              <FieldLabel className='gap-0.5' htmlFor='description'>
+                Description<p className='text-red-400'>*</p>
+              </FieldLabel>
               <Textarea
                 {...field}
                 id={field.name}
@@ -174,7 +177,9 @@ export function CreateEventForm({ className }: { className?: string }) {
           render={({ field, fieldState }) => (
             <Field orientation={'responsive'} data-invalid={fieldState.invalid}>
               <FieldContent>
-                <FieldLabel htmlFor='eventTypeId'>Event Type</FieldLabel>
+                <FieldLabel className='gap-0.5' htmlFor='eventTypeId'>
+                  Event Type<p className='text-red-400'>*</p>
+                </FieldLabel>
               </FieldContent>
               <Select
                 name={field.name}
