@@ -140,7 +140,10 @@ export class UserService {
         id: undefined,
       };
     } catch (error) {
-      this.logger.error(`Error fetching user profile by ID ${userProfileId}:`, error);
+      this.logger.error(
+        `Error fetching user profile by ID ${userProfileId}:`,
+        error,
+      );
       throw new APIError('Failed to fetch user by ID', 500);
     }
   }
@@ -199,6 +202,7 @@ export class UserService {
         sortBy = 'createdAt',
         sortOrder = 'desc',
         search,
+        roleIds,
         statusId,
       } = args;
 
@@ -211,6 +215,10 @@ export class UserService {
             { email: { ilike: `%${search.trim()}%` } },
           ],
         });
+      }
+
+      if (roleIds && Array.isArray(roleIds)) {
+        conditions.push({ userRole: { roleId: { in: roleIds } } });
       }
 
       if (statusId !== undefined) {
@@ -238,6 +246,7 @@ export class UserService {
               updatedAt: false,
             },
           },
+          eventRoles: true,
         },
         limit: pageSize,
         offset: (page - 1) * pageSize,

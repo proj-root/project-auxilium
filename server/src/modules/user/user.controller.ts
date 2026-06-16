@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   ForbiddenException,
@@ -63,6 +64,22 @@ export class UserController {
       statusId,
     } = query;
 
+    let { roleIds } = query;
+
+    console.log('query:', query);
+
+    // Convert into array if it's a single value, and validate that all values are numbers
+    if (!Array.isArray(roleIds)) roleIds = roleIds ? roleIds.split(',') : undefined;
+    if (
+      roleIds &&
+      (!Array.isArray(roleIds) ||
+        !roleIds.every(
+          (id) => parseInt(id as string) && parseInt(id as string) > 0,
+        ))
+    ) {
+      throw new BadRequestException('roleIds must be an array of numbers');
+    }
+
     const result = await this.userService.getAllUsers({
       page: Number(page),
       pageSize: Number(pageSize),
@@ -70,6 +87,7 @@ export class UserController {
       sortOrder,
       search: search as string,
       statusId: statusId ? Number(statusId) : undefined,
+      roleIds: roleIds ? roleIds.map(Number) : undefined,
     });
 
     return {
@@ -141,7 +159,9 @@ export class UserController {
     const user = await this.userService.getUserByProfileId({ userProfileId });
 
     if (!user) {
-      throw new NotFoundException(`User profile with ID ${userProfileId} not found`);
+      throw new NotFoundException(
+        `User profile with ID ${userProfileId} not found`,
+      );
     }
 
     return {

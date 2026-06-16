@@ -9,7 +9,7 @@ export type UserProfileDTO = typeof schema.userProfile.$inferSelect;
 export type GetAllUsersQueryDTO = PaginationOptions & {
   sortBy?: 'name' | 'createdAt';
   statusId?: number;
-  roleId?: number;
+  roleIds?: string | (number | string)[];
 };
 
 export type GetAllUserProfilesQueryDTO = PaginationOptions & {

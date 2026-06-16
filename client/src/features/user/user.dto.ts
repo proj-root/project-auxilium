@@ -1,5 +1,6 @@
 import type { BaseResponseDTO } from '@/types/dto.types';
 import type { PaginationOptions } from '@auxilium/types/pagination';
+import type { EventRole } from '../events/events.dto';
 
 export interface UserProfileDTO {
   profileId: string;
@@ -33,6 +34,7 @@ export interface UserDTO {
   userProfile: UserProfileDTO;
   role: RoleDTO;
   departments: DepartmentDTO[];
+  eventRoles: EventRole[];
   createdAt: string;
   updatedAt: string;
 }
@@ -40,7 +42,7 @@ export interface UserDTO {
 export type GetPersonalDetailsResponse = BaseResponseDTO<UserDTO>;
 
 export interface GetAllUsersRequest extends PaginationOptions {
-  roleId: string;
+  roleIds?: number[];
 };
 
 export type GetAllUsersResponse = BaseResponseDTO<{
