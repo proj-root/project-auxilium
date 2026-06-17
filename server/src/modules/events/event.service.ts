@@ -1,8 +1,13 @@
 import db from '@/db';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { StatusConfig } from '@auxilium/configs/status';
 import { APIError } from '@auxilium/types/errors';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
+import * as schema from '@/db/schema';
 import {
   event as eventTable,
   eventReport as eventReportTable,
@@ -15,7 +20,10 @@ import type {
   CreateEventReportDTO,
   CreateEventParticipationDTO,
   GetParticipationRecordsQueryDTO,
+  AssignUserToEventDTO,
+  UnassignUserFromEventDTO,
 } from './events.dto';
+import { RolesConfig } from '@auxilium/configs/roles';
 
 @Injectable()
 export class EventsService {
@@ -28,6 +36,25 @@ export class EventsService {
         eventType: true,
         creator: true,
         eventReport: true,
+        userEventRoles: {
+          with: {
+            eventRole: true,
+            user: {
+              columns: {
+                id: true,
+                name: true,
+                email: true,
+                image: true,
+              },
+              with: {
+                userProfile: true,
+              },
+            },
+          },
+          orderBy: {
+            createdAt: 'desc',
+          }
+        },
       },
     });
 
@@ -326,6 +353,8 @@ export class EventsService {
       statusId,
     } = args;
 
+    // TODO: Add search filtering here
+
     const count = await db.$count(
       eventParticipationTable,
       eq(eventParticipationTable.eventReportId, eventReportId),
@@ -352,6 +381,81 @@ export class EventsService {
     };
   }
 
+  async createUserEventRole(args: AssignUserToEventDTO) {
+    // Check if the user is an administrator
+    const userRole = await db.query.userRole.findFirst({
+      where: {
+        userId: args.userId,
+      },
+    });
+
+    if (!userRole) {
+      throw new BadRequestException(
+        `User with ID ${args.userId} does not exist.`,
+      );
+    } else if (
+      userRole.roleId !== RolesConfig.ADMIN &&
+      userRole.roleId !== RolesConfig.SUPERADMIN
+    ) {
+      throw new BadRequestException(
+        'Only administrators can be assigned event roles.',
+      );
+    }
+
+    const selectedEventRole = await db.query.eventRole.findFirst({
+      where: {
+        eventRoleId: args.eventRoleId,
+      },
+    });
+
+    // Ensure user has a valid event role that is not a participation-only role
+    if (
+      !selectedEventRole ||
+      selectedEventRole.pointsType === 'PARTICIPATION'
+    ) {
+      throw new BadRequestException(
+        `Invalid Event role ID ${args.eventRoleId} provided. Event role has to exist and cannot be a participation-only role.`,
+      );
+    }
+
+    const [createdRole] = await db
+      .insert(schema.userEventRole)
+      .values({
+        eventId: args.eventId,
+        userId: args.userId,
+        eventRoleId: args.eventRoleId,
+      })
+      .onConflictDoUpdate({
+        target: [schema.userEventRole.eventId, schema.userEventRole.userId],
+        set: {
+          eventRoleId: args.eventRoleId,
+        },
+      })
+      .returning();
+
+    return createdRole;
+  }
+
+  async deleteUserEventRole(args: UnassignUserFromEventDTO) {
+    const deleted = await db
+      .delete(schema.userEventRole)
+      .where(
+        and(
+          eq(schema.userEventRole.eventId, args.eventId),
+          eq(schema.userEventRole.userId, args.userId),
+        ),
+      )
+      .returning();
+
+    if (deleted.length === 0) {
+      throw new NotFoundException(
+        `User ${args.userId} not assigned to event ${args.eventId}`,
+      );
+    }
+
+    return deleted[0];
+  }
+
   // Event Types
   async getAllEventTypes() {
     const eventTypes = await db.query.eventType.findMany();
@@ -362,5 +466,15 @@ export class EventsService {
   async getAllEventRoles() {
     const eventRoles = await db.query.eventRole.findMany();
     return eventRoles;
+  }
+
+  async getUserEventRole(args: { userId: string; eventId: string }) {
+    const userEventRole = await db.query.userEventRole.findFirst({
+      where: {
+        ...args,
+      },
+    });
+
+    return userEventRole;
   }
 }

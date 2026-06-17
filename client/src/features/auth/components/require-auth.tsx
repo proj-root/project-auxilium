@@ -11,7 +11,7 @@ type RequireAuthProps = {
 
 export function RequireAuth({ children, allowedRoles }: RequireAuthProps) {
   const navigate = useNavigate();
-  const { data, isPending, error } = authClient.useSession();
+  const { data, isPending } = authClient.useSession();
 
   // Helper: check if user has at least one allowed role
   const isAuthorized = () => {
@@ -19,18 +19,21 @@ export function RequireAuth({ children, allowedRoles }: RequireAuthProps) {
 
     // @ts-expect-error - role is a custom attribute
     const userRole: RoleDTO = data?.user?.role || null;
+    // @ts-expect-error - role is a custom attribute
     return allowedRoles.includes(parseInt(userRole.roleId));
   };
 
   useLayoutEffect(() => {
     if (!isPending && (!data?.session || !data?.user)) {
+      // User not authenticated
       navigate('/auth/login', { replace: true });
     } else if (!isPending && data?.session && data?.user && !isAuthorized()) {
+      // User authenticated but unauthorized
       navigate('/auth/unauthorized', { replace: true });
     }
-  }, [data, isPending, navigate, allowedRoles]);
+  }, [data, isPending, navigate]);
 
-  if (isPending) {
+  if (isPending || !data?.session || !data?.user) {
     return (
       <div className='h-screen'>
         <LoadingComponent />
@@ -39,11 +42,14 @@ export function RequireAuth({ children, allowedRoles }: RequireAuthProps) {
   }
 
   // If authenticated and authorized, render the content
-  if (!isPending && data?.session && data?.user && isAuthorized()) {
+  if (isAuthorized()) {
     return <>{children}</>;
   }
 
-  // While redirecting, render nothing
-  // BUG: Screen freezes here when auth tokens are invalid
-  return null;
+  // If authenticated but not authorized for this route, show loading while redirecting
+  return (
+    <div className='h-screen'>
+      <LoadingComponent />
+    </div>
+  );
 }

@@ -13,12 +13,14 @@ import {
   Home,
   MessageSquareText,
   Plus,
+  Users,
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router';
 
 const iconMap: Record<string, React.ElementType> = {
   home: Home,
   calendar: Calendar,
+  users: Users,
   help: HelpCircle,
   feedback: MessageSquareText,
 };

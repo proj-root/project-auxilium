@@ -3,7 +3,7 @@ import { EventsService } from '../event.service';
 import { UserService } from '@/modules/user/user.service';
 import { SheetsService } from './sheets.service';
 import { capitalizeFirst } from '@/lib/formatters';
-import { EventRoles } from '@/config/system.config';
+import { EventRolesConfig } from '@/config/system.config';
 
 export interface VerifyParticipantsInput {
   eventId: string;
@@ -211,7 +211,7 @@ export class VerificationEngineService {
           profileId: existingProfile.profileId,
           eventReportId: eventReport.eventReportId,
           attended: true,
-          eventRoleId: EventRoles.PARTICIPANT,
+          eventRoleId: EventRolesConfig.PARTICIPANT,
         });
 
       // Format for points sheet
@@ -285,7 +285,7 @@ export class VerificationEngineService {
           profileId: existingProfile.profileId,
           eventReportId: eventReport.eventReportId,
           attended: true,
-          eventRoleId: EventRoles.COORDINATOR, // TODO: Assuming helpers get coordinator points, will be assigned in the future
+          eventRoleId: EventRolesConfig.COORDINATOR, // TODO: Assuming helpers get coordinator points, will be assigned in the future
           // pointsType: 'LEADERSHIP',
           // pointsAwarded: points,
         });

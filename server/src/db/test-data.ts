@@ -1,4 +1,4 @@
-import { Roles } from '@auxilium/configs/roles';
+import { RolesConfig } from '@auxilium/configs/roles';
 import { StatusConfig } from '@auxilium/configs/status';
 
 export const testUsers = [
@@ -11,7 +11,7 @@ export const testUsers = [
     ichat: 'wolfyre@ichat.sp.edu.sg',
     studentClass: 'DIT/FT/2B/01',
     adminNumber: '2429634',
-    role: Roles.SUPERADMIN,
+    role: RolesConfig.SUPERADMIN,
   },
   {
     email: 'admin2@gmail.com',
@@ -22,7 +22,7 @@ export const testUsers = [
     ichat: 'johndoe@ichat.sp.edu.sg',
     studentClass: 'DAAA/FT/2B/02',
     adminNumber: '2429635',
-    role: Roles.ADMIN,
+    role: RolesConfig.ADMIN,
   },
   {
     email: 'user@gmail.com',
@@ -33,7 +33,7 @@ export const testUsers = [
     ichat: 'regularuser@ichat.sp.edu.sg',
     studentClass: 'DCDF/FT/2B/03',
     adminNumber: '2429636',
-    role: Roles.USER,
+    role: RolesConfig.USER,
   },
 ];
 
@@ -43,9 +43,9 @@ export const testStatuses = Object.keys(StatusConfig).map((key) => ({
   name: key,
 }));
 
-export const testRoles = Object.keys(Roles).map((key) => ({
+export const testRoles = Object.keys(RolesConfig).map((key) => ({
   // @ts-ignore
-  roleId: Roles[key],
+  roleId: RolesConfig[key],
   name: key,
 }));
 
@@ -114,3 +114,21 @@ export const testEventRoles: {
     pointsAwarded: 2,
   },
 ];
+
+export const departments: {
+  departmentId: number;
+  name: string;
+}[] = [
+  {
+    departmentId: 1,
+    name: 'Events',
+  },
+  {
+    departmentId: 2,
+    name: 'Admin',
+  },
+  {
+    departmentId: 3,
+    name: 'Publicity',
+  }
+]

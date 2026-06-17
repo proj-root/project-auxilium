@@ -6,7 +6,7 @@ export enum CCAPointsType {
   PARTICIPATION = 'PARTICIPATION',
   LEADERSHIP = 'LEADERSHIP',
   SERVICE = 'SERVICE',
-  COMMUNITY_SERVICE = 'COMMUNITY SERVICE'
+  COMMUNITY_SERVICE = 'COMMUNITY SERVICE',
 }
 
 export interface EventReport {
@@ -30,6 +30,18 @@ export interface EventRole {
   pointsAwarded: number;
 }
 
+export interface UserEventRole {
+  eventId: string;
+  eventRole: EventRole;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    image: string;
+    userProfile: UserProfileDTO;
+  };
+}
+
 export interface Event {
   eventId: string;
   name: string;
@@ -50,6 +62,8 @@ export interface Event {
     profileId: string;
     email: string;
   };
+
+  userEventRoles: UserEventRole[];
 
   // eventReports: EventReport[];
 
@@ -117,6 +131,8 @@ export type GetAllEventsResponse = BaseResponseDTO<
 
 export type GetAllEventTypesResponse = BaseResponseDTO<EventType[]>;
 
+export type GetAllEventRolesResponse = BaseResponseDTO<EventRole[]>;
+
 export type GenerateEventReportResponse = BaseResponseDTO<void>;
 
 export type GetEventReportByIdResponse = BaseResponseDTO<
@@ -135,3 +151,11 @@ export type GetParticipationsByReportIdResponse = BaseResponseDTO<{
   pageCount: number;
   participations: EventParticipation[];
 }>;
+
+export interface AssignUserToEventRequest {
+  eventId: string;
+  eventRoleId: string;
+  userId: string;
+};
+
+export type AssignUserToEventResponse = BaseResponseDTO<void>;

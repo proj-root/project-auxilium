@@ -6,7 +6,7 @@ export const SystemConfig = {
   tempSheetId: process.env.TEMP_SHEET_ID || '',
 };
 
-export const EventRoles = {
+export const EventRolesConfig = {
   PARTICIPANT: 1,
   COORDINATOR: 2,
   MENTOR: 3,

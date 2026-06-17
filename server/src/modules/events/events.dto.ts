@@ -85,3 +85,20 @@ export type GetParticipationRecordsQueryDTO = PaginationOptions & {
   sortBy?: 'name' | 'createdAt';
   statusId?: number;
 };
+
+export const AssignUserToEventSchema = z.object({
+  userId: z.string(),
+  eventRoleId: z.coerce.number().int('Event role ID must be a valid integer'),
+});
+
+export type AssignUserToEventDTO = z.infer<typeof AssignUserToEventSchema> & {
+  eventId: string;
+};
+
+export const UnassignUserFromEventSchema = z.object({
+  userId: z.string(),
+});
+
+export type UnassignUserFromEventDTO = z.infer<typeof UnassignUserFromEventSchema> & {
+  eventId: string;
+};

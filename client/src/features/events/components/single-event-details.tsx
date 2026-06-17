@@ -1,4 +1,10 @@
-import { Building, Clock, List, SquareArrowOutUpRight } from 'lucide-react';
+import {
+  Building,
+  Clock,
+  List,
+  SquareArrowOutUpRight,
+  SquareChevronDown,
+} from 'lucide-react';
 import type { Event } from '../events.dto';
 import { format, isEqual, startOfDay } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -21,11 +27,11 @@ export function EventDetailsCard({
   return (
     <div
       className={cn(
-        'bg-card flex flex-col gap-2 rounded-md border px-4 py-3',
+        'flex flex-col gap-2',
         className,
       )}
     >
-      <div className='flex flex-row items-center gap-2 text-sm'>
+      <div className='flex flex-row items-center gap-2'>
         <p className='flex w-full flex-row items-center gap-2'>
           <Clock className='size-4' />
           Event Duration
@@ -42,14 +48,14 @@ export function EventDetailsCard({
           )}
         </div>
       </div>
-      <div className='flex flex-row items-center gap-2 text-sm'>
+      <div className='flex flex-row items-center gap-2'>
         <p className='flex w-full flex-row items-center gap-2'>
-          <List className='size-4' />
+          <SquareChevronDown className='size-4' />
           Event Type
         </p>
         <p className='w-full'>{event.eventType.name}</p>
       </div>
-      <div className='flex flex-row items-center gap-2 text-sm'>
+      <div className='flex flex-row items-center gap-2'>
         <p className='flex w-full flex-row items-center gap-2'>
           <Building className='size-4' />
           Platform
@@ -58,8 +64,8 @@ export function EventDetailsCard({
           {event.platform ?? 'Not Specified'}
         </p>
       </div>
-      <Separator />
-      <div className='flex flex-row gap-2 items-center'>
+      <Separator className='my-1' />
+      <div className='flex flex-row items-center gap-2'>
         <Button variant={'outline'} size={'xs'}>
           <Link
             to={event.signupUrl}
@@ -79,7 +85,7 @@ export function EventDetailsCard({
           </Link>
         </Button>
         {/* TODO: Deprecate this next time */}
-        <Button variant={'outline'} size={'xs'}>
+        {/* <Button variant={'outline'} size={'xs'}>
           <Link
             to={event.helpersUrl}
             target='_blank'
@@ -87,7 +93,13 @@ export function EventDetailsCard({
           >
             <SquareArrowOutUpRight /> Helper Responses
           </Link>
-        </Button>
+        </Button> */}
+      </div>
+      <div className='text-muted-foreground flex flex-col gap-1 text-xs'>
+        <p>
+          Created on {format(event.createdAt, 'do MMM yyyy h:m a')} by{' '}
+          {event.creator.email}
+        </p>
       </div>
     </div>
   );

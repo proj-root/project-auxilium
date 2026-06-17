@@ -5,7 +5,7 @@ import * as schema from '@/db/schema';
 // import { logger } from '@/lib/logger';
 // TODO: Figure out a way to use NestJS logger for things outside modules
 
-import { Roles } from '@auxilium/configs/roles';
+import { RolesConfig } from '@auxilium/configs/roles';
 import { APIError } from '@auxilium/types/errors';
 import { MiddlewareContext, MiddlewareOptions } from 'better-auth';
 
@@ -28,7 +28,7 @@ export const setupUserDetails = async (
 
     await tx.insert(schema.userRole).values({
       userId: newUserId,
-      roleId: Roles.USER, // Default user
+      roleId: RolesConfig.USER, // Default user
     });
   });
 };

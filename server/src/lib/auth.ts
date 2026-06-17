@@ -1,4 +1,4 @@
-import { drizzleAdapter } from 'better-auth/adapters/drizzle';
+import { drizzleAdapter } from '@better-auth/drizzle-adapter';
 import db from '@/db';
 import { createAuthMiddleware } from 'better-auth/api';
 import {
@@ -41,10 +41,10 @@ export const auth = betterAuth({
   // HOOKS & MIDDLEWARE
   hooks: {
     after: createAuthMiddleware(async (ctx) => {
-      if (ctx.path.startsWith('/sign-up')) {
-        // await setupUserDetails(ctx);
-        return null;
-      }
+      // if (ctx.path.startsWith('/sign-up')) {
+      //   // await setupUserDetails(ctx);
+      //   return null;
+      // }
       if (ctx.path.startsWith('/get-session') && ctx.context.session?.user) {
         const userId = ctx.context.session.user.id;
         const extra = await enrichSessionUserDetails(userId);
@@ -64,6 +64,7 @@ export const auth = betterAuth({
   // EXTRA CONFIGS
   advanced: {
     disableOriginCheck: isDevEnv, // Disabled in dev for Postman
+    disableCSRFCheck: isDevEnv, // Disabled in dev for Postman
     database: {
       generateId: 'uuid',
     },

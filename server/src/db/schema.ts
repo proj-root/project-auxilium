@@ -1,7 +1,7 @@
 import { index, uuid } from 'drizzle-orm/pg-core';
 import { timestamps } from './column.helpers';
 import { integer, pgTable, varchar } from 'drizzle-orm/pg-core';
-import { Roles } from '@auxilium/configs/roles';
+import { RolesConfig } from '@auxilium/configs/roles';
 import { primaryKey } from 'drizzle-orm/pg-core';
 import { StatusConfig } from '@auxilium/configs/status';
 import { pgEnum } from 'drizzle-orm/pg-core';
@@ -9,7 +9,7 @@ import { text } from 'drizzle-orm/pg-core';
 import { timestamp } from 'drizzle-orm/pg-core';
 import { boolean } from 'drizzle-orm/pg-core';
 import type { AnyPgColumn } from 'drizzle-orm/pg-core';
-import { EventRoles } from '@/config/system.config';
+import { EventRolesConfig } from '@/config/system.config';
 
 // export const eventRole = pgEnum('event_role', [
 //   'ORGANIZER',
@@ -131,11 +131,38 @@ export const eventParticipation = pgTable('event_participation', {
       onDelete: 'set null',
       onUpdate: 'cascade',
     })
-    .default(EventRoles.PARTICIPANT),
-  // pointsType: eventPointsType('points_type').default('PARTICIPATION'),
-  // pointsAwarded: integer('points_awarded').default(0), // TODO: Deprecate this using eventRole table
+    .default(EventRolesConfig.PARTICIPANT),
   ...timestamps,
 });
+
+// Event Helper Table
+export const userEventRole = pgTable(
+  'user_event_role',
+  {
+    eventId: uuid('event_id')
+      .notNull()
+      .references(() => event.eventId, {
+        onDelete: 'cascade',
+        onUpdate: 'cascade',
+      }),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => user.id, {
+        onDelete: 'cascade',
+        onUpdate: 'cascade',
+      }),
+    eventRoleId: integer('event_role_id')
+      .notNull()
+      .references(() => eventRole.eventRoleId, {
+        onDelete: 'set null',
+        onUpdate: 'cascade',
+      }),
+    ...timestamps,
+  },
+  // Composite primary key to prevent duplicate entries for the same user and event
+  // Assuming 1 user can only be granted 1 role per event
+  (table) => [primaryKey({ columns: [table.eventId, table.userId] })],
+);
 
 // Event Points Report Table
 export const eventReport = pgTable('event_report', {
@@ -222,7 +249,7 @@ export const userRole = pgTable(
       }),
     roleId: integer('role_id')
       .notNull()
-      .default(Roles.USER)
+      .default(RolesConfig.USER)
       .references(() => role.roleId, {
         onDelete: 'cascade',
         onUpdate: 'cascade',
@@ -233,6 +260,36 @@ export const userRole = pgTable(
   (table) => [
     primaryKey({
       columns: [table.userId, table.roleId],
+    }),
+  ],
+);
+
+export const department = pgTable('department', {
+  departmentId: integer('department_id').primaryKey().unique(),
+  name: varchar({ length: 50 }).notNull().unique(),
+  ...timestamps,
+});
+
+export const userDepartment = pgTable(
+  'user_department',
+  {
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => user.id, {
+        onDelete: 'cascade',
+        onUpdate: 'cascade',
+      }),
+    departmentId: integer('department_id')
+      .notNull()
+      .references(() => department.departmentId, {
+        onDelete: 'cascade',
+        onUpdate: 'cascade',
+      }),
+    ...timestamps,
+  },
+  (table) => [
+    primaryKey({
+      columns: [table.userId, table.departmentId],
     }),
   ],
 );
