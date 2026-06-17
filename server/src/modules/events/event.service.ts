@@ -41,6 +41,7 @@ export class EventsService {
             eventRole: true,
             user: {
               columns: {
+                id: true,
                 name: true,
                 email: true,
                 image: true,
@@ -50,6 +51,9 @@ export class EventsService {
               },
             },
           },
+          orderBy: {
+            createdAt: 'desc',
+          }
         },
       },
     });

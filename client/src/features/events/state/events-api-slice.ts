@@ -1,8 +1,11 @@
 import { apiSlice } from '@/state/api-slice';
 import type {
+  AssignUserToEventRequest,
+  AssignUserToEventResponse,
   CreateEventRequest,
   CreateEventResponse,
   GenerateEventReportResponse,
+  GetAllEventRolesResponse,
   GetAllEventsRequest,
   GetAllEventsResponse,
   GetAllEventTypesResponse,
@@ -88,6 +91,40 @@ export const eventsApiSlice = apiSlice.injectEndpoints({
       }),
       providesTags: ['Events'],
     }),
+    getAllEventRoles: builder.query<GetAllEventRolesResponse, void>({
+      query: () => ({
+        url: '/events/roles',
+        method: 'GET',
+      }),
+      providesTags: ['Events'],
+    }),
+    assignUserToEvent: builder.mutation<
+      AssignUserToEventResponse,
+      AssignUserToEventRequest
+    >({
+      query: (data) => ({
+        url: `/events/${data.eventId}/assign`,
+        method: 'POST',
+        body: {
+          userId: data.userId,
+          eventRoleId: data.eventRoleId,
+        },
+      }),
+      invalidatesTags: ['Events', 'User'],
+    }),
+    unassignUserFromEvent: builder.mutation<
+      AssignUserToEventResponse,
+      { eventId: string; userId: string }
+    >({
+      query: (data) => ({
+        url: `/events/${data.eventId}/assign`,
+        method: 'DELETE',
+        body: {
+          userId: data.userId,
+        },
+      }),
+      invalidatesTags: ['Events', 'User'],
+    }),
   }),
 });
 
@@ -100,4 +137,7 @@ export const {
   useGenerateEventReportMutation,
   useGetEventReportByIdQuery,
   useGetParticipationsByReportIdQuery,
+  useAssignUserToEventMutation,
+  useGetAllEventRolesQuery,
+  useUnassignUserFromEventMutation,
 } = eventsApiSlice;

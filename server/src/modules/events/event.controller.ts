@@ -146,6 +146,21 @@ export class EventsController {
   }
 
   /**
+   * GET /api/events/roles
+   * Get all event roles
+   */
+  @Get('roles')
+  async getAllEventRoles() {
+    const eventRoles = await this.eventsService.getAllEventRoles();
+
+    return {
+      status: 'success',
+      message: 'Event roles retrieved successfully',
+      data: eventRoles,
+    };
+  }
+
+  /**
    * GET /api/events/reports/:reportId/participants
    * Get participation records for an event report
    */

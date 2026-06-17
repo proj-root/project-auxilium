@@ -21,9 +21,13 @@ export const relations = defineRelations(schema, (r) => ({
       from: r.user.id.through(r.userDepartment.userId),
       to: r.department.departmentId.through(r.userDepartment.departmentId),
     }),
-    eventRoles: r.many.eventRole({
-      from: r.user.id.through(r.userEventRole.userId),
-      to: r.eventRole.eventRoleId.through(r.userEventRole.eventRoleId),
+    // eventRoles: r.many.eventRole({
+    //   from: r.user.id.through(r.userEventRole.userId),
+    //   to: r.eventRole.eventRoleId.through(r.userEventRole.eventRoleId),
+    // }),
+    userEventRoles: r.many.userEventRole({
+      from: r.user.id,
+      to: r.userEventRole.userId,
     }),
     events: r.many.event(),
     sessions: r.many.session(),

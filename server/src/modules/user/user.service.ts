@@ -246,7 +246,7 @@ export class UserService {
               updatedAt: false,
             },
           },
-          eventRoles: true,
+          userEventRoles: true,
         },
         limit: pageSize,
         offset: (page - 1) * pageSize,

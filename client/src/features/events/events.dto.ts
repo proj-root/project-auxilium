@@ -31,8 +31,10 @@ export interface EventRole {
 }
 
 export interface UserEventRole {
+  eventId: string;
   eventRole: EventRole;
   user: {
+    id: string;
     name: string;
     email: string;
     image: string;
@@ -129,6 +131,8 @@ export type GetAllEventsResponse = BaseResponseDTO<
 
 export type GetAllEventTypesResponse = BaseResponseDTO<EventType[]>;
 
+export type GetAllEventRolesResponse = BaseResponseDTO<EventRole[]>;
+
 export type GenerateEventReportResponse = BaseResponseDTO<void>;
 
 export type GetEventReportByIdResponse = BaseResponseDTO<
@@ -147,3 +151,11 @@ export type GetParticipationsByReportIdResponse = BaseResponseDTO<{
   pageCount: number;
   participations: EventParticipation[];
 }>;
+
+export interface AssignUserToEventRequest {
+  eventId: string;
+  eventRoleId: string;
+  userId: string;
+};
+
+export type AssignUserToEventResponse = BaseResponseDTO<void>;
