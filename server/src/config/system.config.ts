@@ -15,3 +15,15 @@ export const EventRolesConfig = {
   EMAIL_WRITER: 6,
   FORM_MAKER: 7,
 }
+
+export enum TaskStatusEnum {
+  NOT_STARTED = 'Not started',
+  IN_PROGRESS = 'In progress',
+  COMPLETED = 'Completed',
+}
+
+export enum TaskPriorityEnum {
+  LOW = 'Low',
+  MEDIUM = 'Medium',
+  HIGH = 'High',
+}
