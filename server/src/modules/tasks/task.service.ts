@@ -1,5 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { CreateTaskDTO, UpdateTaskDTO } from './task.dto';
+import {
+  CreateTaskDTO,
+  GetAllEventTasksQueryDTO,
+  UpdateTaskDTO,
+} from './task.dto';
 import db from '@/db';
 import * as schema from '@/db/schema';
 import { eq } from 'drizzle-orm';
@@ -11,24 +15,82 @@ export class TaskService {
       where: {
         taskId,
       },
+      with: {
+        creator: true,
+        assignee: true,
+        comments: true,
+      },
     });
 
     return task;
+  }
+
+  async getAllEventTasks(args: GetAllEventTasksQueryDTO & { eventId: string }) {
+    const {
+      eventId,
+      page = 1,
+      pageSize = 20,
+      sortBy = 'createdAt',
+      sortOrder = 'desc',
+      search,
+    } = args;
+
+    // Build AND conditions for all filters
+    const andConditions: object[] = [];
+    if (search && search.trim() !== '') {
+      andConditions.push({
+        title: { ilike: `%${search.trim()}%` },
+      });
+    }
+
+    const tasks = await db.query.task.findMany({
+      where: {
+        eventId,
+        AND: andConditions.length > 0 ? andConditions : undefined,
+      },
+      limit: pageSize,
+      offset: (page - 1) * pageSize,
+      orderBy: {
+        [sortBy]: sortOrder,
+      },
+    });
+
+    return tasks;
   }
 
   // Create a new task
   async createTask(args: CreateTaskDTO) {
     const { deadline, ...rest } = args;
 
-    const [newTask] = await db
-      .insert(schema.task)
-      .values({
-        deadline: deadline ? new Date(deadline) : undefined,
-        ...rest,
-      })
-      .returning();
+    const newTask = await db.transaction(async (tx) => {
+      // Insert the new task
+      const [task] = await tx
+        .insert(schema.task)
+        .values({
+          deadline: deadline ? new Date(deadline) : undefined,
+          ...rest,
+        })
+        .returning();
+      
+      if (!task) {
+        throw new Error('Failed to create task');
+      }
 
-    // TODO: Initialise with new task comment
+      const creator = await tx.query.user.findFirst({
+        where: {
+          id: rest.createdBy,
+        },
+      });
+
+      // Insert initial comment
+      await tx.insert(schema.taskComment).values({
+        taskId: task.taskId,
+        text: `Task created by ${creator?.name}`,
+        createdBy: rest.createdBy,
+      });
+
+      return task;
+    });
 
     return newTask;
   }
@@ -47,5 +109,14 @@ export class TaskService {
       .returning();
 
     return updatedTask;
+  }
+
+  async deleteTask({ taskId }: { taskId: string }) {
+    const deletedTask = await db
+      .delete(schema.task)
+      .where(eq(schema.task.taskId, taskId))
+      .returning();
+
+    return deletedTask;
   }
 }

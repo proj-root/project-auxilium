@@ -4,9 +4,15 @@ import { auth } from './lib/auth';
 import { AppController } from './app.controller';
 import { EventsModule } from './modules/events/event.module';
 import { UserModule } from './modules/user/user.module';
+import { TasksModule } from './modules/tasks/task.module';
 
 @Module({
-  imports: [AuthModule.forRoot({ auth }), EventsModule, UserModule],
+  imports: [
+    AuthModule.forRoot({ auth }),
+    EventsModule,
+    UserModule,
+    TasksModule,
+  ],
   controllers: [AppController],
   providers: [],
 })

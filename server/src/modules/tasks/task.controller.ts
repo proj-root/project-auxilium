@@ -10,6 +10,7 @@ import {
   Param,
   Post,
   Put,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { TaskService } from './task.service';
@@ -28,6 +29,7 @@ import { EventsService } from '../events/event.service';
 import { EventRoleGuard } from '@/common/guards/event-role.guard';
 import { EventRoles } from '@/common/decorators/event-roles.decorator';
 import { EventRolesConfig } from '@/config/system.config';
+import { GetAllEventsQueryDTO } from '../events/events.dto';
 
 const ROUTE_NAME = 'api/events';
 
@@ -90,8 +92,32 @@ export class TasksController {
   @Get(':eventId/tasks')
   @UseGuards(RoleGuard)
   @Roles(RolesConfig.ADMIN, RolesConfig.SUPERADMIN)
-  async getTasks(@Param('eventId') eventId: string) {
-    // Implementation for fetching tasks
+  async getTasks(
+    @Param('eventId') eventId: string,
+    @Query() query: Partial<GetAllEventsQueryDTO>,
+  ) {
+    const {
+      page = 1,
+      pageSize = 10,
+      sortBy = 'createdAt',
+      sortOrder = 'desc',
+      search,
+    } = query;
+
+    const eventTasks = await this.tasksService.getAllEventTasks({
+      eventId,
+      page: Number(page),
+      pageSize: Number(pageSize),
+      sortBy: (sortBy as 'priority' | 'status' | 'createdAt') || 'createdAt',
+      sortOrder: (sortOrder as 'asc' | 'desc') || 'desc',
+      search: search as string,
+    });
+
+    return {
+      status: 'success',
+      message: 'Tasks fetched successfully',
+      data: eventTasks,
+    };
   }
 
   /**
@@ -102,7 +128,17 @@ export class TasksController {
   @UseGuards(RoleGuard)
   @Roles(RolesConfig.ADMIN, RolesConfig.SUPERADMIN)
   async getTaskById(@Param('taskId') taskId: string) {
-    // Implementation for fetching a specific task by ID
+    const task = await this.tasksService.getTaskById({ taskId });
+
+    if (!task) {
+      throw new NotFoundException(`Task with ID ${taskId} not found`);
+    }
+
+    return {
+      status: 'success',
+      message: 'Task fetched successfully',
+      data: task,
+    };
   }
 
   /**
@@ -159,6 +195,15 @@ export class TasksController {
   @UseGuards(RoleGuard)
   @Roles(RolesConfig.ADMIN, RolesConfig.SUPERADMIN)
   async deleteTask(@Param('taskId') taskId: string) {
-    // Implementation for deleting a specific task by ID
+    const task = await this.tasksService.deleteTask({ taskId });
+
+    if (!task) {
+      throw new NotFoundException(`Task with ID ${taskId} not found`);
+    }
+
+    return {
+      status: 'success',
+      message: 'Task deleted successfully',
+    };
   }
 }
