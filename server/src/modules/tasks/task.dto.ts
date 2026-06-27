@@ -11,7 +11,7 @@ export const CreateTaskSchema = z.object({
     .string()
     .min(1, 'Title is required')
     .max(100, 'Title has a maximum of 100 characters'),
-  description: z.string().min(1, 'Description is required'),
+  description: z.string().optional(),
   assigneeId: z.string().optional(),
   status: z.enum([
     TaskStatusEnum.NOT_STARTED,
@@ -23,7 +23,7 @@ export const CreateTaskSchema = z.object({
     TaskPriorityEnum.MEDIUM,
     TaskPriorityEnum.HIGH,
   ]).optional(),
-  department: z.coerce.number().optional(),
+  departmentId: z.coerce.number().optional(),
   deadline: z.coerce.date().optional(),
 });
 

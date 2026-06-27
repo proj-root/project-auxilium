@@ -10,6 +10,7 @@ import { EventTeamList } from '@/features/events/components/event-team-list';
 import { GenerateEventReportButton } from '@/features/events/components/gen-event-report-btn';
 import { EventDetailsCard } from '@/features/events/components/single-event-details';
 import { useGetEventByIdQuery } from '@/features/events/state/events-api-slice';
+import { EventTaskList } from '@/features/tasks/components/tasklist';
 import { authClient } from '@/lib/auth-client';
 import { RolesConfig } from '@auxilium/configs/roles';
 import {
@@ -81,6 +82,12 @@ export default function SingleEventDetailsPage() {
                 <TableOfContents /> Overview
               </TabsTrigger>
               <TabsTrigger
+                value={'progress'}
+                className='data-[state=active]:border-primary dark:data-[state=active]:border-primary h-full rounded-none border-0 border-b-2 border-transparent bg-transparent! px-3 hover:px-4 data-[state=active]:shadow-none!'
+              >
+                <Target /> Progress
+              </TabsTrigger>
+              <TabsTrigger
                 value={'reports'}
                 className='data-[state=active]:border-primary dark:data-[state=active]:border-primary h-full rounded-none border-0 border-b-2 border-transparent bg-transparent! px-3 hover:px-4 data-[state=active]:shadow-none!'
               >
@@ -116,7 +123,22 @@ export default function SingleEventDetailsPage() {
             </div>
 
             <div className='flex h-full w-full flex-col gap-2'>
-              <h1 className='text-xl font-medium'>Tasks</h1>
+              <h1 className='mb-2 text-xl font-medium'>Tasks</h1>
+              <EventTaskList eventId={data.data.eventId} />
+            </div>
+          </TabsContent>
+
+          {/* Progress */}
+          <TabsContent
+            value={'progress'}
+            className='flex flex-row items-center justify-center gap-3 p-3'
+          >
+            <div className='border-muted-foreground flex h-full w-full flex-col items-center justify-center rounded-xl border border-dashed p-2'>
+              {/* TODO: Swap between kanban and list */}
+              Task list goes here
+            </div>
+            <div className='border-muted-foreground flex h-full w-1/4 flex-col items-center justify-center rounded-xl border border-dashed'>
+              Filters should go here
             </div>
           </TabsContent>
 
@@ -125,13 +147,6 @@ export default function SingleEventDetailsPage() {
             <div className='flex h-full w-full flex-col py-2'>
               <EventReportDataTable event={data.data} />
             </div>
-          </TabsContent>
-
-          <TabsContent
-            value={'progress'}
-            className='flex flex-col items-center justify-center'
-          >
-            <ComingSoonEmpty />
           </TabsContent>
 
           <TabsContent

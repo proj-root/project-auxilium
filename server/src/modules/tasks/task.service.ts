@@ -48,6 +48,9 @@ export class TaskService {
         eventId,
         AND: andConditions.length > 0 ? andConditions : undefined,
       },
+      with: {
+        assignee: true,
+      },
       limit: pageSize,
       offset: (page - 1) * pageSize,
       orderBy: {
@@ -60,6 +63,8 @@ export class TaskService {
 
   // Create a new task
   async createTask(args: CreateTaskDTO) {
+    // TODO: Check that assignee is a member of the event + ADMIN
+    
     const { deadline, ...rest } = args;
 
     const newTask = await db.transaction(async (tx) => {
