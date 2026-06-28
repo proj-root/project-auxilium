@@ -1,6 +1,6 @@
-import type { BaseResponseDTO } from "@/types/dto.types";
-import type { PaginationOptions } from "@auxilium/types/pagination";
-import type { UserDTO } from "../user/user.dto";
+import type { BaseResponseDTO } from '@/types/dto.types';
+import type { PaginationOptions } from '@auxilium/types/pagination';
+import type { DepartmentDTO, UserDTO } from '../user/user.dto';
 
 export enum TaskStatusEnum {
   NOT_STARTED = 'Not started',
@@ -25,9 +25,18 @@ export interface TaskDTO {
   status: TaskStatusEnum;
   priority: TaskPriorityEnum;
   departmentId: string | null;
+  department: DepartmentDTO;
   deadline: Date | null;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface TaskCommentDTO {
+  taskCommentId: string;
+  taskId: string;
+  text: string;
+  creator: UserDTO;
+  createdAt: string;
 }
 
 export interface CreateTaskRequest {
@@ -47,4 +56,14 @@ export interface GetAllTasksRequest extends PaginationOptions {
   eventId: string;
 }
 
-export type GetAllTasksResponse = BaseResponseDTO<TaskDTO[]>
+export type GetAllTasksResponse = BaseResponseDTO<TaskDTO[]>;
+
+export interface GetTaskByIdRequest {
+  taskId: string;
+}
+
+export type GetTaskByIdResponnse = BaseResponseDTO<
+  TaskDTO & {
+    comments: TaskCommentDTO[];
+  }
+>;

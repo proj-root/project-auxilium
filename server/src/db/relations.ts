@@ -124,7 +124,7 @@ export const relations = defineRelations(schema, (r) => ({
       from: r.eventReport.createdBy,
       to: r.user.id,
     }),
-    eventParticipations: r.many.eventParticipation()
+    eventParticipations: r.many.eventParticipation(),
   },
   userEventRole: {
     event: r.one.event({
@@ -153,6 +153,10 @@ export const relations = defineRelations(schema, (r) => ({
       from: r.task.assigneeId,
       to: r.user.id,
     }),
+    department: r.one.department({
+      from: r.task.departmentId,
+      to: r.department.departmentId,
+    }),
     comments: r.many.taskComment(),
   },
   taskComment: {
@@ -177,5 +181,6 @@ export const relations = defineRelations(schema, (r) => ({
   },
   department: {
     userDepartments: r.many.userDepartment(),
-  }
+    department: r.many.task()
+  },
 }));

@@ -3,6 +3,7 @@ import {
   Circle,
   MoreHorizontal,
   PlusCircle,
+  User2,
 } from 'lucide-react';
 import { useGetAllTasksQuery } from '../state/tasks-api-slice';
 import { TaskPriorityEnum, TaskStatusEnum, type TaskDTO } from '../tasks.dto';
@@ -11,11 +12,13 @@ import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { SingleTaskDialog } from './single-task-dialog';
 
 function TaskItem({ task }: { task: TaskDTO }) {
   return (
-    <div className='flex flex-row justify-between'>
-      <div className='flex flex-row items-center gap-2'>
+    <div className='flex flex-row justify-between gap-2'>
+      <div className='flex flex-row items-center gap-2 w-full'>
         <button className='cursor-pointer'>
           <Circle
             className={cn(
@@ -26,9 +29,21 @@ function TaskItem({ task }: { task: TaskDTO }) {
             )}
           />
         </button>
-        <p>{task.title}</p>
+        <SingleTaskDialog taskId={task.taskId}>
+          <span className='w-full'>{task.title}</span>
+        </SingleTaskDialog>
       </div>
       <div className='flex flex-row items-center gap-2'>
+        <Avatar className='size-6'>
+          <AvatarImage src={task.assignee?.image} alt={task.assignee?.name} />
+          <AvatarFallback>
+            {task.assignee ? (
+              <p>{task.assignee?.name.charAt(0).toUpperCase()}</p>
+            ) : (
+              <User2 className='size-4' />
+            )}
+          </AvatarFallback>
+        </Avatar>
         {task.deadline && (
           <div className='flex flex-row items-center gap-2'>
             <CalendarClock className='text-muted-foreground size-4' />
@@ -78,13 +93,13 @@ export function EventTaskList({ eventId }: { eventId: string }) {
   // Consider adding kanban style view option
   if (!isLoading && data?.data && data?.data.length > 0) {
     return (
-      <div className='flex h-full flex-col gap-2'>
+      <div className='flex h-full flex-col gap-2 overflow-y-auto'>
         {/* Task List */}
         {data?.data.map((item) => (
-          <>
+          <div className='flex flex-col gap-1' key={item.taskId}>
             <TaskItem task={item} />
             <Separator className='my-1' />
-          </>
+          </div>
         ))}
         {/* Add Task button */}
         <button className='hover:text-primary text-muted-foreground flex cursor-pointer flex-row items-center gap-1 text-left text-sm font-medium'>

@@ -18,7 +18,12 @@ export class TaskService {
       with: {
         creator: true,
         assignee: true,
-        comments: true,
+        department: true,
+        comments: {
+          with: {
+            creator: true
+          }
+        },
       },
     });
 
@@ -50,6 +55,7 @@ export class TaskService {
       },
       with: {
         assignee: true,
+        department: true,
       },
       limit: pageSize,
       offset: (page - 1) * pageSize,
