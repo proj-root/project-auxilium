@@ -29,6 +29,10 @@ export const relations = defineRelations(schema, (r) => ({
       from: r.user.id,
       to: r.userEventRole.userId,
     }),
+    tasks: r.many.task({
+      from: r.user.id,
+      to: r.task.assigneeId,
+    }),
     events: r.many.event(),
     sessions: r.many.session(),
     accounts: r.many.account(),
@@ -95,6 +99,7 @@ export const relations = defineRelations(schema, (r) => ({
       from: r.event.eventId,
       to: r.eventReport.eventId,
     }),
+    tasks: r.many.task(),
   },
   eventParticipation: {
     eventReport: r.one.eventReport({
@@ -119,7 +124,7 @@ export const relations = defineRelations(schema, (r) => ({
       from: r.eventReport.createdBy,
       to: r.user.id,
     }),
-    eventParticipations: r.many.eventParticipation()
+    eventParticipations: r.many.eventParticipation(),
   },
   userEventRole: {
     event: r.one.event({
@@ -135,6 +140,35 @@ export const relations = defineRelations(schema, (r) => ({
       to: r.eventRole.eventRoleId,
     }),
   },
+  task: {
+    event: r.one.event({
+      from: r.task.eventId,
+      to: r.event.eventId,
+    }),
+    creator: r.one.user({
+      from: r.task.createdBy,
+      to: r.user.id,
+    }),
+    assignee: r.one.user({
+      from: r.task.assigneeId,
+      to: r.user.id,
+    }),
+    department: r.one.department({
+      from: r.task.departmentId,
+      to: r.department.departmentId,
+    }),
+    comments: r.many.taskComment(),
+  },
+  taskComment: {
+    task: r.one.task({
+      from: r.taskComment.taskId,
+      to: r.task.taskId,
+    }),
+    creator: r.one.user({
+      from: r.taskComment.createdBy,
+      to: r.user.id,
+    }),
+  },
   eventType: {
     events: r.many.event(),
   },
@@ -147,5 +181,6 @@ export const relations = defineRelations(schema, (r) => ({
   },
   department: {
     userDepartments: r.many.userDepartment(),
-  }
+    department: r.many.task()
+  },
 }));

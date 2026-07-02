@@ -1,4 +1,4 @@
-import { index, uuid } from 'drizzle-orm/pg-core';
+import { date, index, uuid } from 'drizzle-orm/pg-core';
 import { timestamps } from './column.helpers';
 import { integer, pgTable, varchar } from 'drizzle-orm/pg-core';
 import { RolesConfig } from '@auxilium/configs/roles';
@@ -23,6 +23,14 @@ export const eventPointsType = pgEnum('event_points_type', [
   'SERVICE',
   'COMMUNITY SERVICE',
 ]);
+
+export const taskStatus = pgEnum('task_status', [
+  'Not started',
+  'In progress',
+  'Completed',
+]);
+
+export const taskPriority = pgEnum('task_priority', ['High', 'Medium', 'Low']);
 
 // Status Table
 export const status = pgTable('status', {
@@ -293,3 +301,54 @@ export const userDepartment = pgTable(
     }),
   ],
 );
+
+export const task = pgTable('task', {
+  taskId: uuid('task_id').primaryKey().defaultRandom().unique(),
+  eventId: uuid('event_id')
+    .notNull()
+    .references(() => event.eventId, {
+      onDelete: 'cascade',
+      onUpdate: 'cascade',
+    }),
+  assigneeId: uuid('assignee_id').references(() => user.id, {
+    onDelete: 'set null',
+    onUpdate: 'cascade',
+  }),
+  createdBy: uuid('created_by')
+    .notNull()
+    .references(() => user.id, {
+      onDelete: 'cascade',
+      onUpdate: 'cascade',
+    }),
+  title: varchar({ length: 100 }).notNull(),
+  description: varchar('description', { length: 250 }),
+  status: taskStatus('status').notNull().default('Not started'),
+  priority: taskPriority('priority').notNull().default('High'),
+  departmentId: integer('department_id').references(
+    () => department.departmentId,
+    {
+      onDelete: 'set null',
+      onUpdate: 'cascade',
+    },
+  ),
+  deadline: date('deadline', { mode: 'date' }),
+  ...timestamps,
+});
+
+export const taskComment = pgTable('task_comment', {
+  taskCommentId: uuid('task_comment_id').primaryKey().defaultRandom().unique(),
+  taskId: uuid('task_id')
+    .notNull()
+    .references(() => task.taskId, {
+      onDelete: 'cascade',
+      onUpdate: 'cascade',
+    }),
+  text: text('text').notNull(),
+  createdBy: uuid('created_by')
+    .notNull()
+    .references(() => user.id, {
+      onDelete: 'cascade',
+      onUpdate: 'cascade',
+    }),
+  ...timestamps,
+});
