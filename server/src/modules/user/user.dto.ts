@@ -6,6 +6,19 @@ import { z } from 'zod';
 export type UserDTO = typeof schema.user.$inferSelect;
 export type UserProfileDTO = typeof schema.userProfile.$inferSelect;
 
+export const CreateUserProfileSchema = z.object({
+  firstName: z.string(),
+  lastName: z.string(),
+  course: z.string(),
+  ichat: z.string(),
+  studentClass: z.string(),
+  adminNumber: z.string(),
+});
+
+export type CreateUserProfileDTO = z.infer<typeof CreateUserProfileSchema> & {
+  userId?: string;
+}
+
 export type GetAllUsersQueryDTO = PaginationOptions & {
   sortBy?: 'name' | 'createdAt';
   statusId?: number;

@@ -4,20 +4,21 @@ import * as schema from '@/db/schema';
 import { APIError } from '@auxilium/types/errors';
 import { eq } from 'drizzle-orm';
 import {
+  CreateUserProfileDTO,
   GetAllUserProfilesQueryDTO,
   GetAllUsersQueryDTO,
   UpdateUserDTO,
 } from './user.dto';
 import { RolesConfig } from '@auxilium/configs/roles';
 
-export interface CreateUserProfileInput {
-  firstName: string;
-  lastName: string;
-  course: string;
-  ichat: string;
-  studentClass: string;
-  adminNumber: string;
-}
+// export interface CreateUserProfileInput {
+//   firstName: string;
+//   lastName: string;
+//   course: string;
+//   ichat: string;
+//   studentClass: string;
+//   adminNumber: string;
+// }
 
 export interface UpdateUserProfileInput {
   profileId: string;
@@ -148,8 +149,18 @@ export class UserService {
     }
   }
 
-  async createUserProfile(args: CreateUserProfileInput) {
+  async createUserProfile(args: CreateUserProfileDTO) {
     try {
+      if (args.userId) {
+        const user = await db.query.user.findFirst({
+          where: {
+            id: args.userId
+          }
+        });
+
+        if (!user) throw new NotFoundException(`User with ID ${args.userId} not found.`)
+      }
+
       const [newProfile] = await db
         .insert(schema.userProfile)
         .values(args)
@@ -160,7 +171,7 @@ export class UserService {
       }
 
       this.logger.debug(
-        `Created user profile for admin number: ${args.adminNumber}`,
+        `Created user profile for admin number: ${args.adminNumber}, name: ${args.firstName} ${args.lastName}`,
       );
       return newProfile;
     } catch (error) {

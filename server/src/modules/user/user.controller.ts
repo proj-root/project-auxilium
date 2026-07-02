@@ -7,6 +7,7 @@ import {
   Logger,
   NotFoundException,
   Param,
+  Post,
   Put,
   Query,
   Session,
@@ -18,8 +19,9 @@ import { RoleGuard } from '@/common/guards/role.guard';
 import { RolesConfig } from '@auxilium/configs/roles';
 import { Roles } from '@/common/decorators/roles.decorator';
 import {
-  GetAllUserProfilesQueryDTO,
-  GetAllUsersQueryDTO,
+  type CreateUserProfileDTO,
+  type GetAllUserProfilesQueryDTO,
+  type GetAllUsersQueryDTO,
   UpdateUserDTO,
   UpdateUserSchema,
 } from './user.dto';
@@ -32,6 +34,46 @@ export class UserController {
   private readonly logger = new Logger(UserController.name);
 
   constructor(private readonly userService: UserService) {}
+
+  // Create a new user profile for the logged in user based on the provided body
+  // Requires verification token
+  @Post()
+  async initializeUserProfile(
+    @Session() session: UserSession,
+    @Body(new ZodValidationPipe(UpdateUserSchema))
+    body: CreateUserProfileDTO,
+  ) {
+    const userId = session.user.id;
+
+    const userProfile = await this.userService.createUserProfile({
+      ...body,
+      userId,
+    });
+
+    return {
+      message: 'User profile initialized successfully.',
+      status: 'success',
+      data: userProfile,
+    };
+  }
+
+  // Create a new user profile (can be tied to user or just standalone)
+  @Post('profile')
+  async createUserProfile(
+    @Body(new ZodValidationPipe(UpdateUserSchema))
+    body: CreateUserProfileDTO,
+  ) {
+    // Creates a new user profile with or without a userId
+    const userProfile = await this.userService.createUserProfile({
+      ...body,
+    });
+
+    return {
+      message: 'User profile created successfully.',
+      status: 'success',
+      data: userProfile
+    }
+  }
 
   @Get()
   async getPersonalDetails(@Session() session: UserSession) {
@@ -69,7 +111,8 @@ export class UserController {
     console.log('query:', query);
 
     // Convert into array if it's a single value, and validate that all values are numbers
-    if (!Array.isArray(roleIds)) roleIds = roleIds ? roleIds.split(',') : undefined;
+    if (!Array.isArray(roleIds))
+      roleIds = roleIds ? roleIds.split(',') : undefined;
     if (
       roleIds &&
       (!Array.isArray(roleIds) ||
