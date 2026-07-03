@@ -31,7 +31,7 @@ export interface UserDTO {
   email: string;
   emailVerified: string;
   image: string;
-  userProfile: UserProfileDTO;
+  userProfile?: UserProfileDTO;
   role: RoleDTO;
   departments: DepartmentDTO[];
   userEventRoles: UserEventRole[];

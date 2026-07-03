@@ -21,11 +21,6 @@ export const setupUserDetails = async (
   const newUserId = newSession.user.id;
 
   await db.transaction(async (tx) => {
-    await tx.insert(schema.userProfile).values({
-      userId: newUserId,
-      ...ctx.body,
-    });
-
     await tx.insert(schema.userRole).values({
       userId: newUserId,
       roleId: RolesConfig.USER, // Default user

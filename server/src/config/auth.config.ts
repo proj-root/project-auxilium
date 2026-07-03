@@ -1,4 +1,5 @@
 import type { CookieOptions as CookieOptionsType } from "express"
+import { SystemConfig } from "./system.config";
 
 export const AuthConfig = {
   jwtSecret: process.env.JWT_SECRET || 'auxilium_secret',
@@ -18,5 +19,5 @@ export const CookieConfig = {
 } satisfies CookieOptionsType;
 
 export const OTPConfig = {
-  expiry: 300 // 5 minutes in seconds
+  expiry: SystemConfig.isProduction ? 300 : 180 // 5 minutes in seconds : 3 minute in dev
 }

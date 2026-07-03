@@ -35,6 +35,15 @@ export const columns: ColumnDef<UserDTO>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader title='Admin Number' column={column} />
     ),
+    cell: ({ row }) => {
+      const userProfile = row.original.userProfile ?? null;
+
+      if (!userProfile) {
+        return <span title='No profile linked'>-</span>;
+      }
+
+      return <span>{userProfile.adminNumber}</span>;
+    }
   },
   {
     accessorKey: 'email',

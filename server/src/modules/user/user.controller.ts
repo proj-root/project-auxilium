@@ -141,8 +141,7 @@ export class UserController {
     }
 
     return {
-      message:
-        'Successfully found a matching profile, verification email sent.',
+      message: 'Verification email sent. Please use the OTP provided.',
       status: 'success',
       data: {
         profileExists,
@@ -155,7 +154,7 @@ export class UserController {
   async verifyIdentityOTP(
     @Session() session: UserSession,
     @Param('otp') otp: string,
-    @Body(new ZodValidationPipe(ProfileLinkSchema)) body: ProfileLinkDTO,
+    @Body() body: ProfileLinkDTO,
   ) {
     const key = `otp:auth:profile-link:user_${session.user.id}`;
     const profileLinkSession = await this.redisClient
@@ -184,6 +183,10 @@ export class UserController {
         ichat: profileLinkSession.ichat,
       });
     } else {
+      // Check that all fields are accounted for
+      const result = ProfileLinkSchema.safeParse(body);
+      if (!result.success) throw new HttpException('Missing fields in request', 400);
+
       // Create a new account based on the provided body
       userProfile = await this.userService.createUserProfile({
         ...body,

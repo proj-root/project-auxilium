@@ -7,7 +7,7 @@ export function UserRoleBadge({ role }: { role: RoleDTO }) {
   let Icon: LucideIcon = User;
 
   if (!role.name || !role.roleId) {
-    return <Badge variant='outline'>N/A</Badge>;
+    return <Badge variant='outline'>NA</Badge>;
   }
 
   if (role.roleId === RolesConfig.ADMIN) {

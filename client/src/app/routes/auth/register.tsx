@@ -1,10 +1,8 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { LoginForm } from '@/features/auth/components/login-form';
-import {
-  GitHubSSOButton,
-  GoogleSSOButton,
-} from '@/features/auth/components/sso-buttons';
+import { RegisterForm } from '@/features/auth/components/register-form';
+import { GitHubSSOButton, GoogleSSOButton } from '@/features/auth/components/sso-buttons';
 import { Link } from 'react-router';
 
 export default function LoginPage() {
@@ -18,20 +16,20 @@ export default function LoginPage() {
           </Avatar>
           <h1 className='text-lg font-semibold'>The GARDEN Terminal</h1>
         </Link>
-        <h1 className='text-3xl font-semibold'>Welcome back!</h1>
+        <h1 className='text-3xl font-semibold'>Create your account</h1>
 
         <div className='flex flex-col gap-4'>
           {/* Main Form */}
-          <LoginForm />
+          <RegisterForm />
           <Separator />
           <GoogleSSOButton />
           <GitHubSSOButton />
         </div>
 
         <div className='text-muted-foreground flex flex-row text-sm'>
-          <p>Don&apos;t have an account?&nbsp;</p>
-          <Link to={'/auth/register'} className='underline'>
-            Register!
+          <p>Already have an account?&nbsp;</p>
+          <Link to={'/auth/login'} className='underline'>
+            Login!
           </Link>
         </div>
       </div>
