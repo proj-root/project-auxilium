@@ -14,7 +14,11 @@ export const columns: ColumnDef<UserDTO>[] = [
       <DataTableColumnHeader title='Name' column={column} />
     ),
     cell: ({ row }) => {
-      const userProfile = row.original.userProfile;
+      const userProfile = row.original.userProfile ?? null;
+
+      if (!userProfile) {
+        return <span title='No profile linked'>{row.original.name}</span>;
+      }
 
       return (
         <Link
@@ -27,8 +31,7 @@ export const columns: ColumnDef<UserDTO>[] = [
     },
   },
   {
-    id: 'adminNumber',
-    accessorFn: (row) => row.userProfile.adminNumber,
+    accessorKey: 'adminNumber',
     header: ({ column }) => (
       <DataTableColumnHeader title='Admin Number' column={column} />
     ),

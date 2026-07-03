@@ -17,7 +17,8 @@ export const auth = betterAuth({
   baseURL: process.env.AUTH_BASE_URL || 'http://localhost:5175',
   basePath: '/api/auth',
   trustedOrigins: [
-    process.env.CLIENT_URL || 'http://localhost:5173',
+    process.env.CLIENT_URL || '',
+    'http://localhost:5173',
     `http://localhost:${port}`,
   ],
 

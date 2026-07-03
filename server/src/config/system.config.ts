@@ -3,6 +3,8 @@ export const SystemConfig = {
   nodeEnv: process.env.NODE_ENV || 'development',
   clientUrl: process.env.CLIENT_URL || 'http://localhost:5173',
 
+  isProduction: process.env.NODE_ENV === 'production',
+
   tempSheetId: process.env.TEMP_SHEET_ID || '',
 };
 

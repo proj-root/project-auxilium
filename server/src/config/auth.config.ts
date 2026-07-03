@@ -16,3 +16,7 @@ export const CookieConfig = {
   sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
   maxAge: parseInt(process.env.COOKIE_MAXAGE || '2592000000'), // default 30 days
 } satisfies CookieOptionsType;
+
+export const OTPConfig = {
+  expiry: 300 // 5 minutes in seconds
+}

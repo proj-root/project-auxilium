@@ -6,6 +6,22 @@ import { z } from 'zod';
 export type UserDTO = typeof schema.user.$inferSelect;
 export type UserProfileDTO = typeof schema.userProfile.$inferSelect;
 
+export const VerifyIdentitySchema = z.object({
+  ichat: z.email(),
+});
+
+export type VerifyIdentityDTO = z.infer<typeof VerifyIdentitySchema>;
+
+export const ProfileLinkSchema = z.object({
+  firstName: z.string(),
+  lastName: z.string(),
+  course: z.string(),
+  studentClass: z.string(),
+  adminNumber: z.string(),
+});
+
+export type ProfileLinkDTO = z.infer<typeof ProfileLinkSchema>;
+
 export const CreateUserProfileSchema = z.object({
   firstName: z.string(),
   lastName: z.string(),

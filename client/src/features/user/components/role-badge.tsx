@@ -6,6 +6,10 @@ import type { RoleDTO } from "../user.dto";
 export function UserRoleBadge({ role }: { role: RoleDTO }) {
   let Icon: LucideIcon = User;
 
+  if (!role.name || !role.roleId) {
+    return <Badge variant='outline'>N/A</Badge>;
+  }
+
   if (role.roleId === RolesConfig.ADMIN) {
     Icon = Shield;
   } else if (role.roleId === RolesConfig.SUPERADMIN) {
