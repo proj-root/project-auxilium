@@ -4,22 +4,27 @@ import * as schema from '@/db/schema';
 import { APIError } from '@auxilium/types/errors';
 import { eq } from 'drizzle-orm';
 import {
+  CreateUserProfileDTO,
   GetAllUserProfilesQueryDTO,
   GetAllUsersQueryDTO,
   UpdateUserDTO,
 } from './user.dto';
 import { RolesConfig } from '@auxilium/configs/roles';
+import { SystemConfig } from '@/config/system.config';
 
-export interface CreateUserProfileInput {
-  firstName: string;
-  lastName: string;
-  course: string;
-  ichat: string;
-  studentClass: string;
-  adminNumber: string;
-}
+// export interface CreateUserProfileInput {
+//   firstName: string;
+//   lastName: string;
+//   course: string;
+//   ichat: string;
+//   studentClass: string;
+//   adminNumber: string;
+// }
+
+const ICHAT_DOMAIN = 'ichat.sp.edu.sg';
 
 export interface UpdateUserProfileInput {
+  userId?: string;
   profileId: string;
   firstName?: string;
   lastName?: string;
@@ -93,6 +98,30 @@ export class UserService {
     }
   }
 
+  async getProfileByIchat({ ichat }: { ichat: string }) {
+    try {
+      const userProfile = await db.query.userProfile.findFirst({
+        where: {
+          userId: { isNull: true },
+          ichat: { ilike: `${ichat.trim()}` },
+        },
+      });
+
+      if (!userProfile) {
+        this.logger.warn(`User profile with ichat ${ichat} not found`);
+        return null;
+      }
+
+      return userProfile;
+    } catch (error) {
+      this.logger.error(
+        `Error fetching user profile by ichat ${ichat}:`,
+        error,
+      );
+      throw new APIError('Failed to fetch user profile', 500);
+    }
+  }
+
   async getUserByProfileId({ userProfileId }: { userProfileId: string }) {
     try {
       const userProfile = await db.query.userProfile.findFirst({
@@ -148,50 +177,77 @@ export class UserService {
     }
   }
 
-  async createUserProfile(args: CreateUserProfileInput) {
-    try {
-      const [newProfile] = await db
-        .insert(schema.userProfile)
-        .values(args)
-        .returning();
+  async getUserProfileByUserId({ userId }: { userId: string }) {
+    const userProfile = await db.query.userProfile.findFirst({
+      where: {
+        userId,
+      },
+    });
 
-      if (!newProfile) {
-        throw new APIError('Failed to create user profile', 500);
-      }
+    if (!userProfile) {
+      this.logger.warn(`User profile for user ID ${userId} not found`);
+      return null;
+    }
 
-      this.logger.debug(
-        `Created user profile for admin number: ${args.adminNumber}`,
-      );
-      return newProfile;
-    } catch (error) {
-      this.logger.error('Error creating user profile:', error);
+    return userProfile;
+  }
+
+  async createUserProfile(args: CreateUserProfileDTO) {
+    // ENABLE IN PRODUCTION
+    if (
+      SystemConfig.isProduction &&
+      args.ichat.toLowerCase().split('@')[1] !== ICHAT_DOMAIN
+    ) {
+      throw new APIError(`Invalid email domain. Must be ${ICHAT_DOMAIN}`, 400);
+    }
+
+    if (args.userId) {
+      const user = await db.query.user.findFirst({
+        where: {
+          id: args.userId,
+        },
+      });
+
+      if (!user)
+        throw new NotFoundException(`User with ID ${args.userId} not found.`);
+    }
+
+    const [newProfile] = await db
+      .insert(schema.userProfile)
+      .values({
+        ...args,
+        ichat: args.ichat.trim().toLowerCase(),
+      })
+      .returning();
+
+    if (!newProfile) {
       throw new APIError('Failed to create user profile', 500);
     }
+
+    this.logger.debug(
+      `Created user profile for admin number: ${args.adminNumber}, name: ${args.firstName} ${args.lastName}`,
+    );
+    return newProfile;
   }
 
   async updateUserProfile({
     profileId,
     ...updateData
   }: UpdateUserProfileInput) {
-    try {
-      const [updatedProfile] = await db
-        .update(schema.userProfile)
-        .set(updateData)
-        .where(eq(schema.userProfile.profileId, profileId))
-        .returning();
+    const [updatedProfile] = await db
+      .update(schema.userProfile)
+      .set(updateData)
+      .where(eq(schema.userProfile.profileId, profileId))
+      .returning();
 
-      if (!updatedProfile) {
-        throw new NotFoundException(
-          `User profile with ID ${profileId} not found`,
-        );
-      }
-
-      this.logger.debug(`Updated user profile: ${profileId}`);
-      return updatedProfile;
-    } catch (error) {
-      this.logger.error('Error updating user profile:', error);
-      throw new APIError('Failed to update user profile', 500);
+    if (!updatedProfile) {
+      throw new NotFoundException(
+        `User profile with ID ${profileId} not found`,
+      );
     }
+
+    this.logger.debug(`Updated user profile: ${profileId}`);
+    return updatedProfile;
   }
 
   async getAllUsers(args: GetAllUsersQueryDTO) {
@@ -455,6 +511,33 @@ export class UserService {
         throw error;
       }
       throw new APIError('Failed to update user', 500);
+    }
+  }
+
+  async linkProfileToUser({
+    userId,
+    ichat,
+  }: {
+    userId: string;
+    ichat: string;
+  }) {
+    try {
+      const [userProfile] = await db
+        .update(schema.userProfile)
+        .set({ userId })
+        .where(eq(schema.userProfile.ichat, ichat))
+        .returning();
+
+      if (!userProfile) {
+        throw new NotFoundException(
+          `User profile with ichat ${ichat} not found`,
+        );
+      }
+
+      return userProfile;
+    } catch (error) {
+      this.logger.error('Error linking profile to user:', error);
+      throw new APIError('Failed to link profile to user', 500);
     }
   }
 }

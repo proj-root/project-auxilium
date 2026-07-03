@@ -31,6 +31,9 @@ export function NavBar() {
             <Button asChild size={'sm'}>
               <Link to={'/auth/login'}>Login</Link>
             </Button>
+            <Button asChild size={'sm'} variant={'secondary'}>
+              <Link to={'/auth/register'}>Register</Link>
+            </Button>
           </div>
         ) : (
           <UserProfileDropdown />

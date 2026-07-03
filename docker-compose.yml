@@ -1,0 +1,44 @@
+name: garden
+services:
+  server:
+    build:
+      context: .
+      dockerfile: ./server/Dockerfile
+    env_file:
+      - ./server/.env.production.local
+    ports:
+      - "5175:5175"
+    depends_on:
+      - redis
+    networks:
+      - garden-network
+
+  client:
+    build:
+      context: .
+      args:
+        VITE_API_BASE_URL: http://localhost:5175/api
+      dockerfile: ./client/Dockerfile
+    env_file:
+      - ./client/.env
+    ports:
+      - "5173:5173"
+    networks:
+      - garden-network
+
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    environment:
+      - REDIS_ARGS=--requirepass ${REDIS_PASSWORD} --appendonly yes
+    networks:
+      - garden-network
+
+networks:
+  garden-network:
+
+volumes:
+  redis_data:

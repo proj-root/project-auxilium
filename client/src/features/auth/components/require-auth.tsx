@@ -29,7 +29,7 @@ export function RequireAuth({ children, allowedRoles }: RequireAuthProps) {
       navigate('/auth/login', { replace: true });
     } else if (!isPending && data?.session && data?.user && !isAuthorized()) {
       // User authenticated but unauthorized
-      navigate('/auth/unauthorized', { replace: true });
+      navigate('/unauthorized', { replace: true });
     }
   }, [data, isPending, navigate]);
 

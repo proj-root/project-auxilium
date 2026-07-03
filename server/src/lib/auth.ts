@@ -17,7 +17,8 @@ export const auth = betterAuth({
   baseURL: process.env.AUTH_BASE_URL || 'http://localhost:5175',
   basePath: '/api/auth',
   trustedOrigins: [
-    process.env.CLIENT_URL || 'http://localhost:5173',
+    process.env.CLIENT_URL || '',
+    'http://localhost:5173',
     `http://localhost:${port}`,
   ],
 
@@ -41,10 +42,13 @@ export const auth = betterAuth({
   // HOOKS & MIDDLEWARE
   hooks: {
     after: createAuthMiddleware(async (ctx) => {
-      // if (ctx.path.startsWith('/sign-up')) {
-      //   // await setupUserDetails(ctx);
-      //   return null;
-      // }
+      if (ctx.path.startsWith('/sign-up')) {
+        await setupUserDetails(ctx);
+        return {
+          message: 'User registered successfully.',
+          status: 'success',
+        };
+      }
       if (ctx.path.startsWith('/get-session') && ctx.context.session?.user) {
         const userId = ctx.context.session.user.id;
         const extra = await enrichSessionUserDetails(userId);

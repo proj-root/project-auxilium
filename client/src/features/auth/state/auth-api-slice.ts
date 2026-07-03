@@ -3,34 +3,32 @@ import type {
   LoginRequestDTO,
   LoginResponseDTO,
   RefreshResponseDTO,
+  VerifyIdentityRequestDTO,
+  VerifyIdentityResponseDTO,
+  CompleteProfileLinkRequestDTO,
+  CompleteProfileLinkResponseDTO,
 } from '../auth.dto';
 
 export const authApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    login: builder.mutation<LoginResponseDTO, LoginRequestDTO>({
+    verifyIdentity: builder.mutation<VerifyIdentityResponseDTO, VerifyIdentityRequestDTO>({
       query: (data) => ({
-        url: '/auth/login',
+        url: '/user/verify',
         method: 'POST',
-        data: data,
+        body: data,
       }),
       invalidatesTags: ['User'],
     }),
-    refresh: builder.mutation<RefreshResponseDTO, void>({
-      query: () => ({
-        url: '/auth/refresh',
+    completeProfileLink: builder.mutation<CompleteProfileLinkResponseDTO, CompleteProfileLinkRequestDTO>({
+      query: ({ otp, ...data }) => ({
+        url: `/user/verify/${otp}`,
         method: 'POST',
-      }),
-      invalidatesTags: ['User'],
-    }),
-    logout: builder.mutation<void, void>({
-      query: () => ({
-        url: '/auth/logout',
-        method: 'POST',
+        body: data,
       }),
       invalidatesTags: ['User'],
     }),
   }),
 });
 
-export const { useRefreshMutation, useLoginMutation, useLogoutMutation } =
+export const { useVerifyIdentityMutation, useCompleteProfileLinkMutation } =
   authApiSlice;

@@ -5,6 +5,8 @@ import { AppController } from './app.controller';
 import { EventsModule } from './modules/events/event.module';
 import { UserModule } from './modules/user/user.module';
 import { TasksModule } from './modules/tasks/task.module';
+import { MailModule } from './modules/mail/mail.module';
+import { RedisModule } from './modules/redis/redis.module';
 
 @Module({
   imports: [
@@ -12,6 +14,8 @@ import { TasksModule } from './modules/tasks/task.module';
     EventsModule,
     UserModule,
     TasksModule,
+    MailModule,
+    RedisModule,
   ],
   controllers: [AppController],
   providers: [],

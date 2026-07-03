@@ -8,6 +8,7 @@ import { apiSlice } from './api-slice';
 import eventReportPaginationSlice from '@/features/events/state/event-report-pagination-slice';
 import userPaginationSlice from '@/features/user/components/user-pagination-table/user-pagination-slice';
 import userProfilePaginationSlice from '@/features/user/components/user-profile-pagination-table/user-profile-pagination-slice';
+import linkProfileSlice from '@/features/auth/state/link-profile-slice';
 
 export const makeStore = () => {
   return configureStore({
@@ -15,6 +16,7 @@ export const makeStore = () => {
       eventReportPaginationSlice,
       userPaginationSlice,
       userProfilePaginationSlice,
+      linkProfileSlice,
       [apiSlice.reducerPath]: apiSlice.reducer,
     },
     middleware: (getDefaultMiddleware) =>
