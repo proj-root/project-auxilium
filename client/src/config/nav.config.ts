@@ -31,7 +31,7 @@ export const SideBarNavFooterItems: NavItem[] = [
   },
   {
     title: 'Feedback',
-    url: '/feedback',
+    url: 'https://forms.gle/8RYR5G9XzgkzeNHD7',
     icon: 'feedback',
   },
 ];

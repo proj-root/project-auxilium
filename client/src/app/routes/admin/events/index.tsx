@@ -21,16 +21,16 @@ export default function AllEventsPage() {
         <div className='w-full border-b bg-transparent'>
           <TabsList className='inline-flex flex-row justify-start gap-2 rounded-none border-0 bg-transparent p-0'>
             <TabsTrigger
-              value={'gallery'}
-              className='data-[state=active]:border-primary dark:data-[state=active]:border-primary h-full rounded-none border-0 border-b-2 border-transparent bg-transparent! px-3 hover:px-4 data-[state=active]:shadow-none!'
-            >
-              <LayoutGrid /> Gallery
-            </TabsTrigger>
-            <TabsTrigger
               value={'table'}
               className='data-[state=active]:border-primary dark:data-[state=active]:border-primary h-full rounded-none border-0 border-b-2 border-transparent bg-transparent! px-3 hover:px-4 data-[state=active]:shadow-none!'
             >
               <Table2 /> Table
+            </TabsTrigger>
+            <TabsTrigger
+              value={'gallery'}
+              className='data-[state=active]:border-primary dark:data-[state=active]:border-primary h-full rounded-none border-0 border-b-2 border-transparent bg-transparent! px-3 hover:px-4 data-[state=active]:shadow-none!'
+            >
+              <LayoutGrid /> Gallery
             </TabsTrigger>
             <TabsTrigger
               value={'calendar'}

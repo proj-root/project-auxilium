@@ -95,6 +95,8 @@ export class EventsController {
       year: year ? Number(year) : undefined,
     });
 
+    this.logger.verbose(`Retrieved ${events.length} events sucessfully.`);
+
     return {
       status: 'success',
       message: 'Events retrieved successfully',
@@ -312,10 +314,10 @@ export class EventsController {
       throw new NotFoundException(`Event with ID ${eventId} not found`);
     }
 
-    const { signupUrl, feedbackUrl, helpersUrl } = event;
-    if (!signupUrl || !feedbackUrl || !helpersUrl) {
+    const { signupUrl, feedbackUrl } = event;
+    if (!signupUrl || !feedbackUrl) {
       throw new BadRequestException(
-        'Missing form URLs. Please ensure signupUrl, feedbackUrl, and helpersUrl are all updated.',
+        'Missing form URLs. Please ensure signupUrl and feedbackUrl are all updated.',
       );
     }
 
@@ -332,7 +334,6 @@ export class EventsController {
         userId: session.user.id,
         signupUrl,
         feedbackUrl,
-        helpersUrl,
       },
     );
 
@@ -389,37 +390,6 @@ export class EventsController {
   //     status: 'success',
   //     message: 'Event reports retrieved successfully',
   //     data: eventReports,
-  //   };
-  // }
-
-  /**
-   * POST /api/events/:eventId/reports
-   * Create a new event report
-   */
-  // @Post(':eventId/reports')
-  // @HttpCode(201)
-  // @UsePipes(new ZodValidationPipe(CreateEventReportSchema))
-  // async createEventReport(
-  //   @Param('eventId') eventId: string,
-  //   @Body() createReportDto: Partial<CreateEventReportDTO>,
-  //   @Req() req: Request,
-  // ) {
-  //   const userId = (req as any).session?.user?.id;
-
-  //   if (!userId) {
-  //     throw new BadRequestException('User not authenticated');
-  //   }
-
-  //   const eventReport = await this.eventsService.createEventReport({
-  //     eventId,
-  //     ...createReportDto,
-  //     createdBy: userId,
-  //   });
-
-  //   return {
-  //     status: 'success',
-  //     message: 'Event report created successfully',
-  //     data: eventReport,
   //   };
   // }
 

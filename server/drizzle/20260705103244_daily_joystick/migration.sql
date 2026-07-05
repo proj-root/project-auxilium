@@ -1,0 +1,1 @@
+ALTER TABLE "event" ADD COLUMN "venue" varchar(50);

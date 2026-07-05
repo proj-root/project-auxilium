@@ -19,7 +19,7 @@ export function GenerateEventReportButton({
   const [generateReport, { isLoading }] = useGenerateEventReportMutation();
 
   // Frontend validation
-  const canGenerate = event.signupUrl && event.feedbackUrl && event.helpersUrl;
+  const canGenerate = event.signupUrl && event.feedbackUrl;
 
   const handleGenerate = async () => {
     try {

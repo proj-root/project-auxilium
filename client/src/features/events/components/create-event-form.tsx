@@ -90,9 +90,9 @@ const formSchema = z.object({
   startDate: z.date().optional(),
   endDate: z.date().optional(),
   platform: z.string().optional(),
+  venue: z.string().optional(),
   signupUrl: z.string().optional(),
   feedbackUrl: z.string().optional(),
-  helpersUrl: z.string().optional(),
 });
 
 type CreateEventFormValues = z.infer<typeof formSchema>;
@@ -235,6 +235,27 @@ export function CreateEventForm({ className }: { className?: string }) {
                   <SelectItem value='Offline'>Offline</SelectItem>
                 </SelectContent>
               </Select>
+            </Field>
+          )}
+        />
+
+        {/* Venue */}
+        <Controller
+          name='venue'
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field>
+              <FieldLabel className='gap-0.5' htmlFor='venue'>Venue</FieldLabel>
+              <Input
+                {...field}
+                id={field.name}
+                type='text'
+                placeholder='e.g. MLT 12, leave empty if online'
+                autoComplete='off'
+                aria-invalid={fieldState.invalid}
+                required
+              />
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
             </Field>
           )}
         />
@@ -440,29 +461,6 @@ export function CreateEventForm({ className }: { className?: string }) {
               </FieldLabel>
               <FieldDescription>
                 Google Sheets URL to Form Responses for Feedback (optional)
-              </FieldDescription>
-              <Input
-                {...field}
-                id={field.name}
-                type='text'
-                placeholder='e.g. https://docs.google.com/spreadsheets/d/wSfAhwE293nMMFfjsnfkj23j243...'
-                autoComplete='off'
-                aria-invalid={fieldState.invalid}
-              />
-              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-            </Field>
-          )}
-        />
-
-        {/* Helpers URL */}
-        <Controller
-          name='helpersUrl'
-          control={form.control}
-          render={({ field, fieldState }) => (
-            <Field>
-              <FieldLabel htmlFor='signupUrl'>Helper Responses Link</FieldLabel>
-              <FieldDescription>
-                Google Sheets URL to Form Responses for Helpers (optional)
               </FieldDescription>
               <Input
                 {...field}

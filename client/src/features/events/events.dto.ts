@@ -46,12 +46,12 @@ export interface Event {
   eventId: string;
   name: string;
   description: string;
-  startDate: string;
-  endDate: string;
-  platform: string;
-  signupUrl: string;
-  feedbackUrl: string;
-  helpersUrl: string;
+  startDate: string | null;
+  endDate: string | null;
+  platform: string | null;
+  venue: string | null;
+  signupUrl: string | null;
+  feedbackUrl: string | null;
 
   eventReport: EventReport | null;
 
@@ -93,7 +93,6 @@ export type CreateEventRequest = {
   platform?: string;
   signupUrl?: string;
   feedbackUrl?: string;
-  helpersUrl?: string;
 };
 
 export type CreateEventResponse = BaseResponseDTO<void>;
@@ -108,7 +107,6 @@ export type UpdateEventRequest = {
   platform?: string;
   signupUrl?: string;
   feedbackUrl?: string;
-  helpersUrl?: string;
 };
 
 export type UpdateEventResponse = BaseResponseDTO<void>;

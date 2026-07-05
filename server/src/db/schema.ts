@@ -101,9 +101,9 @@ export const event = pgTable('event', {
   startDate: timestamp('start_date', { withTimezone: true, mode: 'date' }),
   endDate: timestamp('end_date', { withTimezone: true, mode: 'date' }),
   platform: varchar({ length: 20 }),
+  venue: varchar({ length: 50 }),
   signupUrl: varchar('signup_url', { length: 255 }),
   feedbackUrl: varchar('feedback_url', { length: 255 }),
-  helpersUrl: varchar('helpers_url', { length: 255 }),
   createdBy: uuid('created_by').references(() => user.id, {
     onDelete: 'set null',
     onUpdate: 'cascade',

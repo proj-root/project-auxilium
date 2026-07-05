@@ -16,9 +16,9 @@ export const CreateEventSchema = z.object({
   startDate: z.string().optional(),
   endDate: z.string().optional(),
   platform: z.string().optional(),
+  venue: z.string().optional(),
   signupUrl: z.string().optional(),
   feedbackUrl: z.string().optional(),
-  helpersUrl: z.string().optional(),
 });
 
 export type CreateEventDTO = z.infer<typeof CreateEventSchema> & {
@@ -32,9 +32,9 @@ export const UpdateEventSchema = z.object({
   startDate: z.string().optional(),
   endDate: z.string().optional(),
   platform: z.string().optional(),
+  venue: z.string().optional(),
   signupUrl: z.string().optional(),
   feedbackUrl: z.string().optional(),
-  helpersUrl: z.string().optional(),
 }).refine(
   (data) => Object.values(data).some(value => value !== undefined && value !== ''),
   { message: 'At least one field must be provided for update' }

@@ -15,10 +15,13 @@ import { Link } from 'react-router';
 function EventGalleryItem({ event }: { event: Omit<Event, 'eventReports'> }) {
   const [isHovered, setIsHovered] = useState(false);
 
-  const isSameDay = isEqual(
-    startOfDay(new Date(event.startDate)),
-    startOfDay(new Date(event.endDate)),
-  );
+  const isSameDay =
+    event.startDate && event.endDate
+      ? isEqual(
+          startOfDay(new Date(event.startDate)),
+          startOfDay(new Date(event.endDate)),
+        )
+      : false;
 
   return (
     <div
@@ -71,9 +74,13 @@ function EventGalleryItem({ event }: { event: Omit<Event, 'eventReports'> }) {
           <Badge className='bg-accent text-accent-foreground'>
             {event.eventType.name}
           </Badge>
-          {event.platform && (
-            <Badge className='bg-accent text-accent-foreground'>
+          {event.platform ? (
+            <Badge variant={'secondary'}>
               {event.platform}
+            </Badge>
+          ) : (
+            <Badge variant={'outline'} className='outline-dashed outline-1 text-muted-foreground'>
+              No platform
             </Badge>
           )}
         </div>

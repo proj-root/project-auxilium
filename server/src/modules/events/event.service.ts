@@ -477,4 +477,22 @@ export class EventsService {
 
     return userEventRole;
   }
+
+  async getEventHelpersByEventId(args: { eventId: string }) {
+    const helpers = await db.query.userEventRole.findMany({
+      where: {
+        eventId: args.eventId
+      },
+      with: {
+        eventRole: true,
+        user: {
+          with: {
+            userProfile: true
+          }
+        }
+      }
+    });
+
+    return helpers;
+  }
 }
