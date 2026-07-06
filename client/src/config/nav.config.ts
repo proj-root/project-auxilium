@@ -34,4 +34,9 @@ export const SideBarNavFooterItems: NavItem[] = [
     url: 'https://forms.gle/8RYR5G9XzgkzeNHD7',
     icon: 'feedback',
   },
+  {
+    title: 'Report a Bug',
+    url: 'https://forms.gle/M4mgnc5xQX7hfx9x5',
+    icon: 'bug',
+  },
 ];

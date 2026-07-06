@@ -8,6 +8,7 @@ import {
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import {
+  Bug,
   Calendar,
   HelpCircle,
   Home,
@@ -23,6 +24,7 @@ const iconMap: Record<string, React.ElementType> = {
   users: Users,
   help: HelpCircle,
   feedback: MessageSquareText,
+  bug: Bug
 };
 
 export function NavGroup({
