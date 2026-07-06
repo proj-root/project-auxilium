@@ -68,7 +68,7 @@ export function EventDetailsCard({
           <MapPin className='size-4' />
           Venue
         </p>
-        <p className={cn('w-full', !event.platform && 'text-muted-foreground')}>
+        <p className={cn('w-full', !event.venue && 'text-muted-foreground')}>
           {event.venue ?? '-'}
         </p>
       </div>

@@ -13,7 +13,7 @@ export function NavBar() {
 
   return (
     <div className='bg-background flex flex-row items-center   justify-between px-6 py-3'>
-      <img src={resolvedTheme === 'dark' ? './logo-dark.png' : './logo-light.png'} className='w-45 h-15 object-cover'/>
+      <img src={resolvedTheme === 'dark' ? '/logo-dark.png' : '/logo-light.png'} className='w-45 h-15 object-cover'/>
       <nav className='flex flex-row gap-4'>
         {/* TODO: Put navigation links here */}
       </nav>

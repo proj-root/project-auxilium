@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AssignUserDialog } from '@/features/events/components/assign-user-dialog';
 import { EditEventModal } from '@/features/events/components/edit-event-modal';
 import { EventReportDataTable } from '@/features/events/components/event-reports';
+import { EventSettings } from '@/features/events/components/event-settings';
 import { EventTeamList } from '@/features/events/components/event-team-list';
 import { GenerateEventReportButton } from '@/features/events/components/gen-event-report-btn';
 import { EventDetailsCard } from '@/features/events/components/single-event-details';
@@ -18,6 +19,7 @@ import {
   ChartArea,
   Edit2,
   FileText,
+  Settings,
   TableOfContents,
   Target,
 } from 'lucide-react';
@@ -105,6 +107,12 @@ export default function SingleEventDetailsPage() {
               >
                 <ChartArea /> Analytics
               </TabsTrigger>
+              <TabsTrigger
+                value={'settings'}
+                className='data-[state=active]:border-primary dark:data-[state=active]:border-primary h-full rounded-none border-0 border-b-2 border-transparent bg-transparent! px-3 hover:px-4 data-[state=active]:shadow-none!'
+              >
+                <Settings /> Settings
+              </TabsTrigger>
             </TabsList>
           </div>
           {/* Overview */}
@@ -112,7 +120,7 @@ export default function SingleEventDetailsPage() {
             value={'overview'}
             className='flex w-full flex-row justify-center gap-16 p-3'
           >
-            <div className='flex w-full flex-col gap-2 md:w-1/2 2xl:w-1/3'>
+            <div className='flex h-full w-full flex-col gap-2 md:w-1/2 2xl:w-1/3'>
               {/* <h1 className='text-xl font-medium'>Event Details</h1> */}
               <EventDetailsCard
                 event={data?.data}
@@ -161,6 +169,13 @@ export default function SingleEventDetailsPage() {
             className='flex flex-col items-center justify-center'
           >
             <ComingSoonEmpty />
+          </TabsContent>
+
+          <TabsContent
+            value={'settings'}
+            className='flex flex-col p-3 items-center'
+          >
+            <EventSettings eventId={data.data.eventId}/>
           </TabsContent>
         </Tabs>
       </div>

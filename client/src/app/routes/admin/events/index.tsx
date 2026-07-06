@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { EventsCalendarView } from '@/features/events/components/event-calendar';
 import { EventsGalleryView } from '@/features/events/components/event-gallery';
+import { EventDataTable } from '@/features/events/components/event-pagination-table/table';
 import { Calendar, LayoutGrid, MoreHorizontal, Table2 } from 'lucide-react';
 import { useSearchParams } from 'react-router';
 
@@ -17,7 +18,7 @@ export default function AllEventsPage() {
           View all event information and the overall timeline.
         </p>
       </div> */}
-      <Tabs defaultValue={'gallery'} className='flex h-full flex-col gap-4'>
+      <Tabs defaultValue={'table'} className='flex h-full flex-col gap-4'>
         <div className='w-full border-b bg-transparent'>
           <TabsList className='inline-flex flex-row justify-start gap-2 rounded-none border-0 bg-transparent p-0'>
             <TabsTrigger
@@ -49,14 +50,14 @@ export default function AllEventsPage() {
           </TabsList>
         </div>
 
-        <TabsContent value={'gallery'}>
-          <EventsGalleryView />
-        </TabsContent>
         <TabsContent
           value={'table'}
           className='flex h-full flex-col items-center justify-center'
         >
-          <ComingSoonEmpty />
+          <EventDataTable />
+        </TabsContent>
+        <TabsContent value={'gallery'}>
+          <EventsGalleryView />
         </TabsContent>
         <TabsContent value={'calendar'}>
           <EventsCalendarView />

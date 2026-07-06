@@ -21,7 +21,7 @@ export function EventItemDrawer({
 }: {
   children: React.ReactNode;
   className?: string;
-  event: Omit<Event, 'eventReports'>;
+  event: Omit<Event, 'eventReport'>;
 }) {
   const [isOpen, setIsOpen] = useState(false);
 

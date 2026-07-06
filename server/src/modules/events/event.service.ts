@@ -53,7 +53,7 @@ export class EventsService {
           },
           orderBy: {
             createdAt: 'desc',
-          }
+          },
         },
       },
     });
@@ -148,6 +148,12 @@ export class EventsService {
       });
     }
 
+    const count = await db.query.event
+      .findMany({
+        where: andConditions.length > 0 ? { AND: andConditions } : undefined,
+      })
+      .then((events) => events.length);
+
     const events = await db.query.event.findMany({
       where: andConditions.length > 0 ? { AND: andConditions } : undefined,
       with: {
@@ -161,7 +167,11 @@ export class EventsService {
       },
     });
 
-    return events;
+    return {
+      total: count,
+      pageCount: Math.ceil(count / pageSize),
+      events,
+    };
   }
 
   async updateEvent(args: UpdateEventDTO) {
@@ -481,16 +491,16 @@ export class EventsService {
   async getEventHelpersByEventId(args: { eventId: string }) {
     const helpers = await db.query.userEventRole.findMany({
       where: {
-        eventId: args.eventId
+        eventId: args.eventId,
       },
       with: {
         eventRole: true,
         user: {
           with: {
-            userProfile: true
-          }
-        }
-      }
+            userProfile: true,
+          },
+        },
+      },
     });
 
     return helpers;

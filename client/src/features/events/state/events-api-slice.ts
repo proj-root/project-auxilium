@@ -98,6 +98,20 @@ export const eventsApiSlice = apiSlice.injectEndpoints({
       }),
       providesTags: ['Events'],
     }),
+    deleteEventById: builder.mutation<void, { eventId: string }>({
+      query: ({ eventId }) => ({
+        url: `/events/${eventId}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['Events']
+    }),
+    hardDeleteEventById: builder.mutation<void, { eventId: string }>({
+      query: ({ eventId }) => ({
+        url: `/events/${eventId}/hard`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['Events']
+    }),
     assignUserToEvent: builder.mutation<
       AssignUserToEventResponse,
       AssignUserToEventRequest
@@ -140,4 +154,6 @@ export const {
   useAssignUserToEventMutation,
   useGetAllEventRolesQuery,
   useUnassignUserFromEventMutation,
+  useDeleteEventByIdMutation,
+  useHardDeleteEventByIdMutation
 } = eventsApiSlice;

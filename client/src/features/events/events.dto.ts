@@ -123,9 +123,11 @@ export interface GetAllEventsRequest extends PaginationOptions {
   search?: string;
 }
 
-export type GetAllEventsResponse = BaseResponseDTO<
-  Omit<Event, 'eventReports'>[]
->;
+export type GetAllEventsResponse = BaseResponseDTO<{
+  total: number;
+  pageCount: number;
+  events: Omit<Event, 'eventReport'>[];
+}>;
 
 export type GetAllEventTypesResponse = BaseResponseDTO<EventType[]>;
 
@@ -154,6 +156,6 @@ export interface AssignUserToEventRequest {
   eventId: string;
   eventRoleId: string;
   userId: string;
-};
+}
 
 export type AssignUserToEventResponse = BaseResponseDTO<void>;

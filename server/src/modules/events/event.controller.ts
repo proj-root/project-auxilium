@@ -80,7 +80,7 @@ export class EventsController {
       year,
     } = query;
 
-    const events = await this.eventsService.getAllEvents({
+    const result = await this.eventsService.getAllEvents({
       page: Number(page),
       pageSize: Number(pageSize),
       sortBy:
@@ -95,12 +95,12 @@ export class EventsController {
       year: year ? Number(year) : undefined,
     });
 
-    this.logger.verbose(`Retrieved ${events.length} events sucessfully.`);
+    this.logger.verbose(`Retrieved ${result.events.length} events sucessfully.`);
 
     return {
       status: 'success',
       message: 'Events retrieved successfully',
-      data: events,
+      data: result,
     };
   }
 
@@ -399,22 +399,6 @@ export class EventsController {
   // }
 
   /**
-   * DELETE /api/events/:id
-   * Soft delete an event (mark as deleted)
-   */
-  @Delete(':id')
-  @UseGuards(RoleGuard)
-  @Roles(RolesConfig.ADMIN, RolesConfig.SUPERADMIN)
-  async deleteEvent(@Param('id') eventId: string) {
-    await this.eventsService.deleteEvent({ eventId });
-
-    return {
-      status: 'success',
-      message: 'Event deleted successfully',
-    };
-  }
-
-  /**
    * DELETE /api/events/:id/hard
    * Permanently delete an event
    */
@@ -427,6 +411,22 @@ export class EventsController {
     return {
       status: 'success',
       message: 'Event permanently deleted successfully',
+    };
+  }
+
+  /**
+   * DELETE /api/events/:id
+   * Soft delete an event (mark as deleted)
+   */
+  @Delete(':id')
+  @UseGuards(RoleGuard)
+  @Roles(RolesConfig.ADMIN, RolesConfig.SUPERADMIN)
+  async deleteEvent(@Param('id') eventId: string) {
+    await this.eventsService.deleteEvent({ eventId });
+
+    return {
+      status: 'success',
+      message: 'Event deleted successfully',
     };
   }
 

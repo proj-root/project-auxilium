@@ -5,6 +5,7 @@ import { BadgeCheck } from 'lucide-react';
 import { UserRoleBadge } from '../role-badge';
 import { Link } from 'react-router';
 import { Badge } from '@/components/ui/badge';
+import { format } from 'date-fns';
 
 export const columns: ColumnDef<UserDTO>[] = [
   {
@@ -91,6 +92,15 @@ export const columns: ColumnDef<UserDTO>[] = [
           )}
         </div>
       );
+    },
+  },
+  {
+    accessorKey: 'createdAt',
+    header: ({ column }) => (
+      <DataTableColumnHeader title='Created At' column={column} />
+    ),
+    cell: ({ row }) => {
+      return <p>{format(row.original.createdAt, 'PPP hh:mm a')}</p>;
     },
   },
 ];

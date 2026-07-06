@@ -1,14 +1,15 @@
-// DEPRECATED
-
 import type { RootState } from '@/state/store';
 import type { PaginationOptions } from '@auxilium/types/pagination';
 import { createSlice } from '@reduxjs/toolkit';
 
-export interface EventReportPaginationState extends PaginationOptions {
-  eventReportId?: string;
+export interface EventPaginationState extends PaginationOptions {
+  sortBy?: 'name' | 'startDate' | 'endDate' | 'createdAt';
+  day?: number;
+  month?: number;
+  year?: number;
 }
 
-const initialState: EventReportPaginationState = {
+const initialState: EventPaginationState = {
   page: 1,
   pageSize: 10,
   sortBy: 'createdAt',
@@ -16,8 +17,8 @@ const initialState: EventReportPaginationState = {
   search: '',
 };
 
-const eventReportPaginationSlice = createSlice({
-  name: 'event-report-pagination',
+const eventPaginationSlice = createSlice({
+  name: 'user-profile-pagination',
   initialState,
   reducers: {
     setPage: (state, action) => {
@@ -56,9 +57,9 @@ export const {
   setSortBy,
   setSortOrder,
   setSearch,
-} = eventReportPaginationSlice.actions;
+} = eventPaginationSlice.actions;
 
-export const selectEventReportPaginationState = (state: RootState) =>
-  state.eventReportPaginationSlice;
+export const selectEventPaginationState = (state: RootState) =>
+  state.eventPaginationSlice;
 
-export default eventReportPaginationSlice.reducer;
+export default eventPaginationSlice.reducer;
