@@ -36,7 +36,7 @@ export const UpdateEventSchema = z.object({
   signupUrl: z.string().optional(),
   feedbackUrl: z.string().optional(),
 }).refine(
-  (data) => Object.values(data).some(value => value !== undefined && value !== ''),
+  (data) => Object.values(data).some(value => value !== undefined),
   { message: 'At least one field must be provided for update' }
 );
 

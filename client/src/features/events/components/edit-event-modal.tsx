@@ -107,7 +107,7 @@ export function EditEventModal({
     // Filter out empty strings and undefined values to prevent overwriting existing data
     const cleanedData = Object.fromEntries(
       Object.entries(data).filter(
-        ([, value]) => value !== '' && value !== undefined,
+        ([, value]) => value !== undefined,
       ),
     );
 

@@ -276,10 +276,15 @@ export class EventsController {
     body: Partial<CreateEventDTO>,
   ) {
     const cleanedData = Object.fromEntries(
-      Object.entries(body).filter(
-        ([, value]) => value !== '' && value !== undefined,
-      ),
+      Object.entries(body)
+        .filter(([, value]) => value !== undefined)
+        .map(([key, value]) => {
+          if (value === '') return [key, null];
+          return [key, value];
+        }),
     );
+
+    this.logger.debug(cleanedData)
 
     const updatedEvent = await this.eventsService.updateEvent({
       eventId,
