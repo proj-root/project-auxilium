@@ -14,10 +14,11 @@ import {
 import { NavGroup, NavGroupSecondary } from './nav-group';
 import { SideBarNavFooterItems, SideBarNavItems } from '@/config/nav.config';
 import { cn } from '@/lib/utils';
-import { Plus } from 'lucide-react';
 import { Link } from 'react-router';
+import { useTheme } from 'next-themes';
 
 export function AppSidebarHeader() {
+  const { resolvedTheme } = useTheme();
   const { state } = useSidebar();
 
   return (
@@ -25,17 +26,21 @@ export function AppSidebarHeader() {
       <div className='flex aspect-square size-8 items-center justify-center rounded-lg'>
         <SidebarTrigger />
       </div>
-      <div
-        className={cn(
-          'flex flex-col text-left text-lg leading-tight',
-          state === 'collapsed' && 'hidden',
-        )}
-      >
-        <h1 className='font-medium'>G.A.R.D.E.N.</h1>
-        <span className='text-muted-foreground/50 text-xs'>
-          All-in-One Terminal
-        </span>
-      </div>
+      <Link to={'/'}>
+        <div
+          className={cn(
+            'flex flex-row text-left text-lg tracking-widest items-center',
+            state === 'collapsed' && 'hidden',
+          )}
+        >
+          {/* <h1 className='font-medium'>G.A.R.D.E.N.</h1>
+          <span className='text-muted-foreground/50 text-xs'>
+            All-in-One Terminal
+          </span> */}
+          <img src={resolvedTheme === 'dark' ? './logo-dark.png' : './logo-light.png'} className='w-30 h-10 object-cover'/>
+          <h1 className='font-semibold'>ADMIN</h1>
+        </div>
+      </Link>
     </div>
   );
 }
