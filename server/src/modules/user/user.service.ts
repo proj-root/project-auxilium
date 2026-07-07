@@ -540,4 +540,15 @@ export class UserService {
       throw new APIError('Failed to link profile to user', 500);
     }
   }
+
+  async getAllRoles() {
+    try {
+      const roles = await db.query.role.findMany();
+
+      return roles
+    } catch (error) {
+      this.logger.error('Error reading all roles:', error);
+      throw new APIError('Failed to fetch all system roles', 500);
+    }
+  }
 }

@@ -402,4 +402,15 @@ export class UserController {
       data: user,
     };
   }
+
+  @Get('/roles')
+  async getAllRoles() {
+    const roles = await this.userService.getAllRoles();
+
+    return {
+      message: `Fetched ${roles.length} roles successfully.`,
+      status: 'success',
+      data: roles
+    }
+  }
 }

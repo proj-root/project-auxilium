@@ -1,11 +1,13 @@
 import { apiSlice } from '@/state/api-slice';
 import type {
+  GetAllRolesResponse,
   GetAllUserProfilesResponse,
   GetAllUsersRequest,
   GetAllUsersResponse,
   GetPersonalDetailsResponse,
   GetSingleUserRequest,
   GetSingleUserResponse,
+  UpdateUserByIdRequest,
 } from '../user.dto';
 import type { PaginationOptions } from '@auxilium/types/pagination';
 
@@ -44,6 +46,21 @@ export const userApiSlice = apiSlice.injectEndpoints({
       }),
       providesTags: ['User-Profile-Pagination'],
     }),
+    updateUserById: builder.mutation<void, UpdateUserByIdRequest>({
+      query: ({ userId, ...data }) => ({
+        url: `/user/${userId}`,
+        method: 'PUT',
+        body: data,
+      }),
+      invalidatesTags: ['User', 'User-Pagination', 'User-Profile-Pagination'],
+    }),
+    getAllRoles: builder.query<GetAllRolesResponse, void>({
+      query: () => ({
+        url: `/user/roles`,
+        method: 'GET',
+      }),
+      providesTags: ['Roles']
+    })
   }),
 });
 
@@ -52,4 +69,6 @@ export const {
   useGetAllUsersQuery,
   useGetAllUserProfilesQuery,
   useGetSingleUserQuery,
+  useUpdateUserByIdMutation,
+  useGetAllRolesQuery
 } = userApiSlice;
