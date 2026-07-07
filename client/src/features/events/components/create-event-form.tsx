@@ -253,7 +253,6 @@ export function CreateEventForm({ className }: { className?: string }) {
                 placeholder='e.g. MLT 12, leave empty if online'
                 autoComplete='off'
                 aria-invalid={fieldState.invalid}
-                required
               />
               {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
             </Field>

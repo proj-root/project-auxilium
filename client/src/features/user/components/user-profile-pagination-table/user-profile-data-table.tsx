@@ -44,10 +44,12 @@ export function UserProfileDataTable() {
 
       {/* Error state */}
       {!isLoading && isError && (
-        <div className='flex h-full w-full items-center justify-center'>
-          <h1 className='text-muted-foreground rounded-md border border-dashed p-6 font-medium'>
-            Something went wrong while fetching users. Please try again.
-          </h1>
+        <div className='flex h-full flex-col w-full items-center justify-center'>
+          <img src={'/not-found.png'} className='w-72 mb-6'/>
+          <h1 className='text-2xl'>It&apos;s kinda empty in here...</h1>
+          <p className='text-muted-foreground font-medium'>
+            Something went wrong while fetching user profiles. Please try again.
+          </p>
         </div>
       )}
 
