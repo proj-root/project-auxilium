@@ -22,7 +22,7 @@ export const links: Route.LinksFunction = () => [
   },
   {
     rel: 'stylesheet',
-    href: 'https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap',
+    href: 'https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Ubuntu+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap',
   },
 ];
 
@@ -44,7 +44,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             enableSystem
             enableColorScheme
           >
-            <main className='bg-background flex max-h-screen overflow-hidden max-w-screen flex-col items-center justify-center'>
+            <main className='bg-background flex max-h-screen max-w-screen flex-col items-center justify-center overflow-hidden'>
               {children}
               <ScrollRestoration />
             </main>
@@ -78,7 +78,7 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   }
 
   return (
-    <main className='container mx-auto p-4 pt-16 h-screen'>
+    <main className='container mx-auto h-screen p-4 pt-16'>
       <h1>{message}</h1>
       <p>{details}</p>
       {stack && (

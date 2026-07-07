@@ -56,7 +56,7 @@ export function EventDataTable() {
             ContextMenu={EventItemContextMenu}
           />
           <div className='flex flex-row justify-between px-2'>
-            <p className='text-muted-foreground w-full text-sm'>
+            <p className='text-muted-foreground w-full text-sm font-mono antialiased'>
               Showing {paginationState.page} -{' '}
               {Math.min(
                 Number(paginationState.page) * Number(paginationState.pageSize),

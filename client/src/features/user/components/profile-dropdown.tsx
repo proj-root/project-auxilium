@@ -91,7 +91,7 @@ export function UserProfileDropdown() {
         {isOpen ? (
           <ChevronUp className='size-5' />
         ) : (
-          <ChevronDown className='mt-1 size-5' />
+          <ChevronDown className='size-5' />
         )}
       </DropdownMenuTrigger>
       <DropdownMenuContent
