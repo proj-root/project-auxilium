@@ -51,9 +51,11 @@ export default function SingleEventDetailsPage() {
   }
   const canAssign =
     data?.data.userEventRoles.find(
-      (r) => r.user.userProfile.userId === authData?.session.id,
+      (r) => r.user.id === authData?.user.id,
       // @ts-expect-error - role is a custom attribute
     ) || authData?.user.role?.roleId === RolesConfig.SUPERADMIN;
+
+  console.log("event roles:", data.data.userEventRoles)
 
   return (
     <div className='flex h-full w-full flex-col gap-4'>

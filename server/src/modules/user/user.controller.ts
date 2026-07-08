@@ -238,9 +238,10 @@ export class UserController {
     };
   }
 
+  // Get all users in the system
   @Get('/all')
   @UseGuards(RoleGuard)
-  @Roles(RolesConfig.ADMIN, RolesConfig.SUPERADMIN)
+  @Roles(RolesConfig.SUPERADMIN)
   async getAllUsers(@Query() query: Partial<GetAllUsersQueryDTO>) {
     const {
       page = 1,
@@ -288,7 +289,7 @@ export class UserController {
   // Get all user profiles in the system, which includes records not associated with a user account
   @Get('/profile/all')
   @UseGuards(RoleGuard)
-  @Roles(RolesConfig.ADMIN, RolesConfig.SUPERADMIN)
+  @Roles(RolesConfig.SUPERADMIN)
   async getAllUserProfiles(
     @Query() query: Partial<GetAllUserProfilesQueryDTO>,
   ) {
@@ -342,7 +343,7 @@ export class UserController {
   // Get single user data by user profile ID, which includes user account details if it exists
   @Get('profile/:userProfileId')
   @UseGuards(RoleGuard)
-  @Roles(RolesConfig.ADMIN, RolesConfig.SUPERADMIN)
+  @Roles(RolesConfig.SUPERADMIN)
   async getSingleUser(@Param('userProfileId') userProfileId: string) {
     const user = await this.userService.getUserByProfileId({ userProfileId });
 
@@ -375,9 +376,10 @@ export class UserController {
     };
   }
 
+  // Updates another user's information
   @Put(':userId')
   @UseGuards(RoleGuard)
-  @Roles(RolesConfig.ADMIN, RolesConfig.SUPERADMIN)
+  @Roles(RolesConfig.SUPERADMIN)
   async updateUserByUserId(
     @Session() session: UserSession,
     @Param('userId') userId: string,

@@ -47,7 +47,11 @@ export class EventsService {
                 image: true,
               },
               with: {
-                userProfile: true,
+                userProfile: {
+                  columns: {
+                    adminNumber: false,
+                  }
+                },
               },
             },
           },
