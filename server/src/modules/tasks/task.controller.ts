@@ -26,9 +26,6 @@ import { RolesConfig } from '@auxilium/configs/roles';
 import { ZodValidationPipe } from '@/common/zod-validation.pipe';
 import { Session, type UserSession } from '@thallesp/nestjs-better-auth';
 import { EventsService } from '../events/event.service';
-import { EventRoleGuard } from '@/common/guards/event-role.guard';
-import { EventRoles } from '@/common/decorators/event-roles.decorator';
-import { EventRolesConfig } from '@/config/system.config';
 import { GetAllEventsQueryDTO } from '../events/events.dto';
 
 const ROUTE_NAME = 'api/events';

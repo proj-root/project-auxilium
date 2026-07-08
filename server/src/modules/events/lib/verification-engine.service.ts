@@ -3,8 +3,8 @@ import { EventsService } from '../event.service';
 import { UserService } from '@/modules/user/user.service';
 import { SheetsService } from './sheets.service';
 import { capitalizeFirst } from '@/lib/formatters';
-import { EventRolesConfig } from '@/config/system.config';
 import { UserProfileDTO } from '@/modules/user/user.dto';
+import { EventRolesConfig } from '@auxilium/configs/roles';
 
 export interface VerifyParticipantsInput {
   eventId: string;

@@ -115,7 +115,7 @@ export function SingleTaskDialog({
                     <>
                       <p>{data?.data.assignee?.name}</p>
                       <p className='text-muted-foreground text-xs'>
-                        {data?.data.assignee?.email}
+                        {data?.data.assignee?.userProfile?.ichat}
                       </p>
                     </>
                   ) : (

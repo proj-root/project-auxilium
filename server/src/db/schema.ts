@@ -1,7 +1,7 @@
 import { date, index, uuid } from 'drizzle-orm/pg-core';
 import { timestamps } from './column.helpers';
 import { integer, pgTable, varchar } from 'drizzle-orm/pg-core';
-import { RolesConfig } from '@auxilium/configs/roles';
+import { EventRolesConfig, RolesConfig } from '@auxilium/configs/roles';
 import { primaryKey } from 'drizzle-orm/pg-core';
 import { StatusConfig } from '@auxilium/configs/status';
 import { pgEnum } from 'drizzle-orm/pg-core';
@@ -9,7 +9,6 @@ import { text } from 'drizzle-orm/pg-core';
 import { timestamp } from 'drizzle-orm/pg-core';
 import { boolean } from 'drizzle-orm/pg-core';
 import type { AnyPgColumn } from 'drizzle-orm/pg-core';
-import { EventRolesConfig } from '@/config/system.config';
 
 // export const eventRole = pgEnum('event_role', [
 //   'ORGANIZER',

@@ -14,6 +14,8 @@ import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { SingleTaskDialog } from './single-task-dialog';
+import { useState } from 'react';
+import { CreateTaskForm } from './create-task-form';
 
 function TaskItem({ task }: { task: TaskDTO }) {
   return (
@@ -78,7 +80,7 @@ function TaskItem({ task }: { task: TaskDTO }) {
 }
 
 export function EventTaskList({ eventId }: { eventId: string }) {
-  const { data, isLoading } = useGetAllTasksQuery({ eventId });
+  const { data, isLoading, startedTimeStamp, fulfilledTimeStamp } = useGetAllTasksQuery({ eventId });
 
   // Empty State
   if (!isLoading && data?.data && data?.data.length === 0) {
@@ -102,10 +104,10 @@ export function EventTaskList({ eventId }: { eventId: string }) {
           </div>
         ))}
         {/* Add Task button */}
-        <button className='hover:text-primary text-muted-foreground flex cursor-pointer flex-row items-center gap-1 text-left text-sm font-medium'>
-          <PlusCircle className='size-4' />
-          Add Task
-        </button>
+        <CreateTaskForm />
+        {/* <p className='text-sm font-mono text-muted-foreground'>
+          Fetched {data.data.length} tasks in {(fulfilledTimeStamp || 0) - (startedTimeStamp || 0)} ms
+        </p> */}
       </div>
     );
   }

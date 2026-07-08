@@ -39,9 +39,9 @@ import {
   UnassignUserFromEventSchema,
 } from './events.dto';
 import { Session, type UserSession } from '@thallesp/nestjs-better-auth';
-import { EventRolesConfig, SystemConfig } from '@/config/system.config';
+import { SystemConfig } from '@/config/system.config';
 import { RoleGuard } from '@/common/guards/role.guard';
-import { RolesConfig } from '@auxilium/configs/roles';
+import { EventRolesConfig, RolesConfig } from '@auxilium/configs/roles';
 import { Roles } from '@/common/decorators/roles.decorator';
 import { EventRoleGuard } from '@/common/guards/event-role.guard';
 import { EventRoles } from '@/common/decorators/event-roles.decorator';
@@ -95,7 +95,9 @@ export class EventsController {
       year: year ? Number(year) : undefined,
     });
 
-    this.logger.verbose(`Retrieved ${result.events.length} events sucessfully.`);
+    this.logger.verbose(
+      `Retrieved ${result.events.length} events sucessfully.`,
+    );
 
     return {
       status: 'success',
@@ -219,29 +221,25 @@ export class EventsController {
     };
   }
 
-  /**
-   * POST /api/events/reports/:reportId/participants
-   * Create a participation record
-   */
-  // @Post('reports/:reportId/participants')
-  // @HttpCode(201)
-  // @UsePipes(new ZodValidationPipe(CreateEventParticipationSchema))
-  // async createParticipationRecord(
-  //   @Param('reportId') reportId: string,
-  //   @Body() participationDto: Partial<CreateEventParticipationDTO>,
-  // ) {
-  //   const participationRecord =
-  //     await this.eventsService.createEventParticipationRecord({
-  //       eventReportId: reportId,
-  //       ...participationDto,
-  //     } as CreateEventParticipationDTO);
+  @Get(':id/check-eventrole')
+  @UseGuards(RoleGuard)
+  @Roles(RolesConfig.ADMIN, RolesConfig.SUPERADMIN)
+  async checkUserEventRole(
+    @Param('id') eventId: string,
+    @Session() session: UserSession,
+  ) {
+    const userId = session.user.id;
+    const userEventRole = await this.eventsService.getUserEventRole({
+      eventId,
+      userId,
+    });
 
-  //   return {
-  //     status: 'success',
-  //     message: 'Participation record created successfully',
-  //     data: participationRecord,
-  //   };
-  // }
+    return {
+      status: 'success',
+      message: 'User event role retrieved successfully',
+      data: userEventRole,
+    };
+  }
 
   /**
    * GET /api/events/:id
@@ -284,7 +282,7 @@ export class EventsController {
         }),
     );
 
-    this.logger.debug(cleanedData)
+    this.logger.debug(cleanedData);
 
     const updatedEvent = await this.eventsService.updateEvent({
       eventId,
@@ -404,7 +402,7 @@ export class EventsController {
    */
   @Delete(':id/hard')
   @UseGuards(RoleGuard)
-  @Roles(RolesConfig.ADMIN, RolesConfig.SUPERADMIN)
+  @Roles(RolesConfig.SUPERADMIN)
   async hardDeleteEvent(@Param('id') eventId: string) {
     await this.eventsService.hardDeleteEvent({ eventId });
 

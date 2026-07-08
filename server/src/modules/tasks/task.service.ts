@@ -16,8 +16,24 @@ export class TaskService {
         taskId,
       },
       with: {
-        creator: true,
-        assignee: true,
+        creator: {
+          with: {
+            userProfile: {
+              columns: {
+                ichat: true
+              }
+            }
+          }
+        },
+        assignee: {
+          with: {
+            userProfile: {
+              columns: {
+                ichat: true
+              }
+            }
+          }
+        },
         department: true,
         comments: {
           with: {

@@ -133,7 +133,7 @@ export default function SingleEventDetailsPage() {
             </div>
 
             <div className='flex h-full w-full flex-col gap-2'>
-              <h1 className='mb-2 text-xl font-medium'>Tasks</h1>
+              <h1 className='text-xl font-medium'>Tasks</h1>
               <EventTaskList eventId={data.data.eventId} />
             </div>
           </TabsContent>
