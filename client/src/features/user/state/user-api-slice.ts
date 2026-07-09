@@ -1,5 +1,6 @@
 import { apiSlice } from '@/state/api-slice';
 import type {
+  GetAllDepartmentsResponse,
   GetAllRolesResponse,
   GetAllUserProfilesResponse,
   GetAllUsersRequest,
@@ -60,6 +61,13 @@ export const userApiSlice = apiSlice.injectEndpoints({
         method: 'GET',
       }),
       providesTags: ['Roles']
+    }),
+    getAllDepartments: builder.query<GetAllDepartmentsResponse, void>({
+      query: () => ({
+        url: `/user/departments`,
+        method: 'GET',
+      }),
+      providesTags: ['Departments']
     })
   }),
 });
@@ -70,5 +78,6 @@ export const {
   useGetAllUserProfilesQuery,
   useGetSingleUserQuery,
   useUpdateUserByIdMutation,
-  useGetAllRolesQuery
+  useGetAllRolesQuery,
+  useGetAllDepartmentsQuery
 } = userApiSlice;

@@ -19,6 +19,7 @@ export interface TaskDTO {
   eventId: string;
   assigneeId: string | null;
   assignee: UserDTO | null;
+  creator: UserDTO | null;
   createdBy: string;
   title: string;
   description: string | null;
@@ -67,3 +68,18 @@ export type GetTaskByIdResponnse = BaseResponseDTO<
     comments: TaskCommentDTO[];
   }
 >;
+
+export interface UpdateTaskRequest {
+  taskId: string;
+  title?: string;
+  description?: string;
+  assigneeId?: string;
+  status?: TaskStatusEnum;
+  priority?: TaskPriorityEnum;
+  department?: number;
+  deadline?: Date;
+}
+
+export type UpdateTaskResponse = BaseResponseDTO<void>;
+
+export type DeleteTaskResponse = BaseResponseDTO<void>;

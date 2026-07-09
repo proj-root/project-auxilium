@@ -551,4 +551,26 @@ export class UserService {
       throw new APIError('Failed to fetch all system roles', 500);
     }
   }
+
+  async getAllDepartments() {
+    try {
+      const departments = await db.query.department.findMany();
+
+      return departments
+    } catch (error) {
+      this.logger.error('Error reading all departments:', error);
+      throw new APIError('Failed to fetch all departments', 500);
+    }
+  }
+
+  async getAllCourses() {
+    try {
+      const courses = await db.query.course.findMany();
+
+      return courses
+    } catch (error) {
+      this.logger.error('Error reading all courses:', error);
+      throw new APIError('Failed to fetch all courses', 500);
+    }
+  }
 }

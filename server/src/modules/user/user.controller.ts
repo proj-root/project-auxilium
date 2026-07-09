@@ -415,4 +415,26 @@ export class UserController {
       data: roles
     }
   }
+
+  @Get('/departments')
+  async getAllDepartments() {
+    const departments = await this.userService.getAllDepartments();
+
+    return {
+      message: `Fetched ${departments.length} departments successfully.`,
+      status: 'success',
+      data: departments
+    }
+  }
+
+  @Get('/departments')
+  async getAllCoursess() {
+    const courses = await this.userService.getAllCourses();
+
+    return {
+      message: `Fetched ${courses.length} courses successfully.`,
+      status: 'success',
+      data: courses
+    }
+  }
 }

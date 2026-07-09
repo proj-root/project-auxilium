@@ -53,6 +53,7 @@ export class TasksController {
     @Body(new ZodValidationPipe(CreateTaskSchema)) body: CreateTaskDTO,
   ) {
     const userId = session.user.id;
+    const userRole = (session.user as any)?.role?.roleId;
 
     // Implement logic where only people part of the event can create tasks.
     // TODO: Make this more reusable
@@ -61,7 +62,7 @@ export class TasksController {
       eventId,
     });
 
-    if (!userEventRole) {
+     if (!userEventRole || userRole !== RolesConfig.SUPERADMIN) {
       throw new ForbiddenException(
         `User with ID ${userId} does not have a role in event ${eventId}`,
       );
@@ -151,6 +152,7 @@ export class TasksController {
     @Body(new ZodValidationPipe(UpdateTaskSchema)) body: UpdateTaskDTO,
   ) {
     const userId = session.user.id;
+    const userRole = (session.user as any)?.role?.roleId;
     const task = await this.tasksService.getTaskById({ taskId });
 
     if (!task) {
@@ -164,7 +166,7 @@ export class TasksController {
       eventId: task.eventId,
     });
 
-    if (!userEventRole) {
+    if (!userEventRole || userRole !== RolesConfig.SUPERADMIN) {
       throw new ForbiddenException(
         `User with ID ${userId} does not have a role in event ${task.eventId}`,
       );

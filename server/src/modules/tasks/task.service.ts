@@ -71,6 +71,7 @@ export class TaskService {
       },
       with: {
         assignee: true,
+        creator: true,
         department: true,
       },
       limit: pageSize,

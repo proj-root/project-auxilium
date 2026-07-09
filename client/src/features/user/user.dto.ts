@@ -84,3 +84,5 @@ export interface UpdateUserByIdRequest {
 }
 
 export type GetAllRolesResponse = BaseResponseDTO<RoleDTO[]>;
+
+export type GetAllDepartmentsResponse = BaseResponseDTO<DepartmentDTO[]>;

@@ -20,6 +20,7 @@ export const apiSlice = createApi({
     'User-Pagination',
     'User-Profile-Pagination',
     'Roles',
+    'Departments',
     'Events',
     'EventReports',
     'EventTypes',

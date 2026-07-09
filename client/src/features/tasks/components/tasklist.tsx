@@ -1,10 +1,4 @@
-import {
-  CalendarClock,
-  Circle,
-  MoreHorizontal,
-  PlusCircle,
-  User2,
-} from 'lucide-react';
+import { CalendarClock, Circle, MoreHorizontal, User2 } from 'lucide-react';
 import { useGetAllTasksQuery } from '../state/tasks-api-slice';
 import { TaskPriorityEnum, TaskStatusEnum, type TaskDTO } from '../tasks.dto';
 import { Badge } from '@/components/ui/badge';
@@ -16,71 +10,80 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { SingleTaskDialog } from './single-task-dialog';
 import { useState } from 'react';
 import { CreateTaskForm } from './create-task-form';
+import { TaskContextMenu } from './task-context-menu';
+import { AssignTaskPopover } from './assign-task-popover';
 
 function TaskItem({ task }: { task: TaskDTO }) {
   return (
-    <div className='flex flex-row justify-between gap-2'>
-      <div className='flex flex-row items-center gap-2 w-full'>
-        <button className='cursor-pointer'>
-          <Circle
-            className={cn(
-              'text-muted-foreground size-5',
-              task.priority === TaskPriorityEnum.LOW && 'text-green-400',
-              task.priority === TaskPriorityEnum.MEDIUM && 'text-yellow-400',
-              task.priority === TaskPriorityEnum.HIGH && 'text-red-400',
-            )}
-          />
-        </button>
-        <SingleTaskDialog taskId={task.taskId}>
-          <span className='w-full'>{task.title}</span>
-        </SingleTaskDialog>
-      </div>
-      <div className='flex flex-row items-center gap-2'>
-        <Avatar className='size-6'>
-          <AvatarImage src={task.assignee?.image} alt={task.assignee?.name} />
-          <AvatarFallback>
-            {task.assignee ? (
-              <p>{task.assignee?.name.charAt(0).toUpperCase()}</p>
-            ) : (
-              <User2 className='size-4' />
-            )}
-          </AvatarFallback>
-        </Avatar>
-        {task.deadline && (
-          <div className='flex flex-row items-center gap-2'>
-            <CalendarClock className='text-muted-foreground size-4' />
-            <span className='text-muted-foreground text-sm'>
-              {format(new Date(task.deadline), 'dd/MM/yyyy')}
-            </span>
-          </div>
-        )}
-        <Badge
-          variant={'outline'}
-          className={cn(
-            task.status === TaskStatusEnum.NOT_STARTED &&
-              'text-muted-foreground',
-            task.status === TaskStatusEnum.IN_PROGRESS &&
-              'border-blue-400 text-blue-400',
-            task.status === TaskStatusEnum.COMPLETED &&
-              'border-green-400 text-green-400',
+    <TaskContextMenu task={task}>
+      <div className='flex flex-row justify-between gap-2'>
+        <div className='flex w-full flex-row items-center gap-2'>
+          <button className='cursor-pointer'>
+            <Circle
+              className={cn(
+                'text-muted-foreground size-5',
+                task.priority === TaskPriorityEnum.LOW && 'text-green-400',
+                task.priority === TaskPriorityEnum.MEDIUM && 'text-yellow-400',
+                task.priority === TaskPriorityEnum.HIGH && 'text-red-400',
+              )}
+            />
+          </button>
+          <SingleTaskDialog taskId={task.taskId}>
+            <span className='w-full'>{task.title}</span>
+          </SingleTaskDialog>
+        </div>
+        <div className='flex flex-row items-center gap-2'>
+          <AssignTaskPopover task={task}>
+            <Avatar className='size-6'>
+              <AvatarImage
+                src={task.assignee?.image}
+                alt={task.assignee?.name}
+              />
+              <AvatarFallback>
+                {task.assignee ? (
+                  <p>{task.assignee?.name.charAt(0).toUpperCase()}</p>
+                ) : (
+                  <User2 className='size-4' />
+                )}
+              </AvatarFallback>
+            </Avatar>
+          </AssignTaskPopover>
+          {task.deadline && (
+            <div className='flex flex-row items-center gap-2'>
+              <CalendarClock className='text-muted-foreground size-4' />
+              <span className='text-muted-foreground text-sm'>
+                {format(new Date(task.deadline), 'dd/MM/yyyy')}
+              </span>
+            </div>
           )}
-        >
-          {task.status}
-        </Badge>
-        <Button
-          variant={'ghost'}
-          size={'icon-xs'}
-          className='hover:bg-transparent'
-        >
-          <MoreHorizontal className='size-4' />
-        </Button>
+          <Badge
+            variant={'outline'}
+            className={cn(
+              task.status === TaskStatusEnum.NOT_STARTED &&
+                'text-muted-foreground',
+              task.status === TaskStatusEnum.IN_PROGRESS &&
+                'border-blue-400 text-blue-400',
+              task.status === TaskStatusEnum.COMPLETED &&
+                'border-green-400 text-green-400',
+            )}
+          >
+            {task.status}
+          </Badge>
+          <Button
+            variant={'ghost'}
+            size={'icon-xs'}
+            className='hover:bg-transparent'
+          >
+            <MoreHorizontal className='size-4' />
+          </Button>
+        </div>
       </div>
-    </div>
+    </TaskContextMenu>
   );
 }
 
 export function EventTaskList({ eventId }: { eventId: string }) {
-  const { data, isLoading, startedTimeStamp, fulfilledTimeStamp } = useGetAllTasksQuery({ eventId });
+  const { data, isLoading } = useGetAllTasksQuery({ eventId });
 
   // Empty State
   if (!isLoading && data?.data && data?.data.length === 0) {
@@ -104,10 +107,7 @@ export function EventTaskList({ eventId }: { eventId: string }) {
           </div>
         ))}
         {/* Add Task button */}
-        <CreateTaskForm />
-        {/* <p className='text-sm font-mono text-muted-foreground'>
-          Fetched {data.data.length} tasks in {(fulfilledTimeStamp || 0) - (startedTimeStamp || 0)} ms
-        </p> */}
+        <CreateTaskForm eventId={eventId} />
       </div>
     );
   }
