@@ -15,70 +15,67 @@ import { AssignTaskPopover } from './assign-task-popover';
 
 function TaskItem({ task }: { task: TaskDTO }) {
   return (
-    <TaskContextMenu task={task}>
-      <div className='flex flex-row justify-between gap-2'>
-        <div className='flex w-full flex-row items-center gap-2'>
-          <button className='cursor-pointer'>
-            <Circle
-              className={cn(
-                'text-muted-foreground size-5',
-                task.priority === TaskPriorityEnum.LOW && 'text-green-400',
-                task.priority === TaskPriorityEnum.MEDIUM && 'text-yellow-400',
-                task.priority === TaskPriorityEnum.HIGH && 'text-red-400',
-              )}
-            />
-          </button>
-          <SingleTaskDialog taskId={task.taskId}>
-            <span className='w-full'>{task.title}</span>
-          </SingleTaskDialog>
-        </div>
-        <div className='flex flex-row items-center gap-2'>
-          <AssignTaskPopover task={task}>
-            <Avatar className='size-6'>
-              <AvatarImage
-                src={task.assignee?.image}
-                alt={task.assignee?.name}
-              />
-              <AvatarFallback>
-                {task.assignee ? (
-                  <p>{task.assignee?.name.charAt(0).toUpperCase()}</p>
-                ) : (
-                  <User2 className='size-4' />
-                )}
-              </AvatarFallback>
-            </Avatar>
-          </AssignTaskPopover>
-          {task.deadline && (
-            <div className='flex flex-row items-center gap-2'>
-              <CalendarClock className='text-muted-foreground size-4' />
-              <span className='text-muted-foreground text-sm'>
-                {format(new Date(task.deadline), 'dd/MM/yyyy')}
-              </span>
-            </div>
-          )}
-          <Badge
-            variant={'outline'}
+    <div className='flex w-full flex-row justify-between gap-2'>
+      <div className='flex w-full flex-row items-center gap-2'>
+        <button className='cursor-pointer'>
+          <Circle
             className={cn(
-              task.status === TaskStatusEnum.NOT_STARTED &&
-                'text-muted-foreground',
-              task.status === TaskStatusEnum.IN_PROGRESS &&
-                'border-blue-400 text-blue-400',
-              task.status === TaskStatusEnum.COMPLETED &&
-                'border-green-400 text-green-400',
+              'text-muted-foreground size-5',
+              task.priority === TaskPriorityEnum.LOW && 'text-green-400',
+              task.priority === TaskPriorityEnum.MEDIUM && 'text-yellow-400',
+              task.priority === TaskPriorityEnum.HIGH && 'text-red-400',
             )}
-          >
-            {task.status}
-          </Badge>
-          <Button
-            variant={'ghost'}
-            size={'icon-xs'}
-            className='hover:bg-transparent'
-          >
-            <MoreHorizontal className='size-4' />
-          </Button>
-        </div>
+          />
+        </button>
+        <TaskContextMenu task={task}>
+          <SingleTaskDialog task={task}>
+            <p>{task.title}</p>
+          </SingleTaskDialog>
+        </TaskContextMenu>
       </div>
-    </TaskContextMenu>
+      <div className='flex flex-row items-center gap-2'>
+        <AssignTaskPopover task={task}>
+          <Avatar className='size-6'>
+            <AvatarImage src={task.assignee?.image} alt={task.assignee?.name} />
+            <AvatarFallback>
+              {task.assignee ? (
+                <p>{task.assignee?.name.charAt(0).toUpperCase()}</p>
+              ) : (
+                <User2 className='size-4' />
+              )}
+            </AvatarFallback>
+          </Avatar>
+        </AssignTaskPopover>
+        {task.deadline && (
+          <div className='flex flex-row items-center gap-2'>
+            <CalendarClock className='text-muted-foreground size-4' />
+            <span className='text-muted-foreground text-sm'>
+              {format(new Date(task.deadline), 'dd/MM/yyyy')}
+            </span>
+          </div>
+        )}
+        <Badge
+          variant={'outline'}
+          className={cn(
+            task.status === TaskStatusEnum.NOT_STARTED &&
+              'text-muted-foreground',
+            task.status === TaskStatusEnum.IN_PROGRESS &&
+              'border-blue-400 text-blue-400',
+            task.status === TaskStatusEnum.COMPLETED &&
+              'border-green-400 text-green-400',
+          )}
+        >
+          {task.status}
+        </Badge>
+        <Button
+          variant={'ghost'}
+          size={'icon-xs'}
+          className='hover:bg-transparent'
+        >
+          <MoreHorizontal className='size-4' />
+        </Button>
+      </div>
+    </div>
   );
 }
 

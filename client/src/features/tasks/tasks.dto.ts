@@ -63,7 +63,7 @@ export interface GetTaskByIdRequest {
   taskId: string;
 }
 
-export type GetTaskByIdResponnse = BaseResponseDTO<
+export type GetTaskByIdResponse = BaseResponseDTO<
   TaskDTO & {
     comments: TaskCommentDTO[];
   }

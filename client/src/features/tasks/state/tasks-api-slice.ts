@@ -6,7 +6,7 @@ import type {
   GetAllTasksRequest,
   GetAllTasksResponse,
   GetTaskByIdRequest,
-  GetTaskByIdResponnse,
+  GetTaskByIdResponse,
   UpdateTaskRequest,
   UpdateTaskResponse,
 } from '../tasks.dto';
@@ -29,7 +29,7 @@ export const tasksApiSlice = apiSlice.injectEndpoints({
       }),
       providesTags: ['Tasks'],
     }),
-    getTaskById: builder.query<GetTaskByIdResponnse, GetTaskByIdRequest>({
+    getTaskById: builder.query<GetTaskByIdResponse, GetTaskByIdRequest>({
       query: ({ taskId }) => ({
         url: `/events/tasks/${taskId}`,
         method: 'GET',

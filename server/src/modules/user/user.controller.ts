@@ -250,6 +250,7 @@ export class UserController {
       sortOrder = 'desc',
       search,
       statusId,
+      eventId,
     } = query;
 
     let { roleIds } = query;
@@ -277,6 +278,7 @@ export class UserController {
       search: search as string,
       statusId: statusId ? Number(statusId) : undefined,
       roleIds: roleIds ? roleIds.map(Number) : undefined,
+      eventId
     });
 
     return {

@@ -250,6 +250,7 @@ export class UserService {
     return updatedProfile;
   }
 
+  // Get all users in the system
   async getAllUsers(args: GetAllUsersQueryDTO) {
     try {
       const {
@@ -260,6 +261,7 @@ export class UserService {
         search,
         roleIds,
         statusId,
+        eventId,
       } = args;
 
       // Build AND conditions for all filters
@@ -279,6 +281,14 @@ export class UserService {
 
       if (statusId !== undefined) {
         conditions.push({ statusId: { eq: statusId } });
+      }
+
+      if (eventId !== undefined) {
+        conditions.push({
+          userEventRoles: {
+            eventId,
+          },
+        });
       }
 
       const count = await db.query.user
@@ -545,7 +555,7 @@ export class UserService {
     try {
       const roles = await db.query.role.findMany();
 
-      return roles
+      return roles;
     } catch (error) {
       this.logger.error('Error reading all roles:', error);
       throw new APIError('Failed to fetch all system roles', 500);
@@ -556,7 +566,7 @@ export class UserService {
     try {
       const departments = await db.query.department.findMany();
 
-      return departments
+      return departments;
     } catch (error) {
       this.logger.error('Error reading all departments:', error);
       throw new APIError('Failed to fetch all departments', 500);
@@ -567,7 +577,7 @@ export class UserService {
     try {
       const courses = await db.query.course.findMany();
 
-      return courses
+      return courses;
     } catch (error) {
       this.logger.error('Error reading all courses:', error);
       throw new APIError('Failed to fetch all courses', 500);

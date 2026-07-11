@@ -7,12 +7,28 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { useGetTaskByIdQuery } from '../state/tasks-api-slice';
+import {
+  useDeleteTaskMutation,
+  useGetTaskByIdQuery,
+} from '../state/tasks-api-slice';
 import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Flag, Plus, User2 } from 'lucide-react';
+import {
+  CheckCircle,
+  Circle,
+  CircleDashed,
+  Flag,
+  Plus,
+  Trash2,
+  User2,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { TaskPriorityEnum, type TaskCommentDTO } from '../tasks.dto';
+import {
+  TaskPriorityEnum,
+  TaskStatusEnum,
+  type TaskCommentDTO,
+  type TaskDTO,
+} from '../tasks.dto';
 import { Badge } from '@/components/ui/badge';
 import { format, formatDistanceToNowStrict } from 'date-fns';
 import {
@@ -20,6 +36,8 @@ import {
   useGetSingleUserQuery,
 } from '@/features/user/state/user-api-slice';
 import { authClient } from '@/lib/auth-client';
+import { AssignTaskPopover } from './assign-task-popover';
+import { toast } from 'sonner';
 
 function TaskComment({ comment }: { comment: TaskCommentDTO }) {
   return (
@@ -42,21 +60,34 @@ function TaskComment({ comment }: { comment: TaskCommentDTO }) {
 }
 
 export function SingleTaskDialog({
-  taskId,
+  task,
   children,
 }: {
-  taskId: string;
+  task: TaskDTO;
   children: React.ReactNode;
 }) {
   const { data: userData } = useGetPersonalDetailsQuery();
-  const { data, isLoading } = useGetTaskByIdQuery({ taskId });
+  const { data, isLoading } = useGetTaskByIdQuery({ taskId: task.taskId });
+  const [deleteTask] = useDeleteTaskMutation();
+
+  const handleDelete = async () => {
+    try {
+      await deleteTask({ taskId: task.taskId }).unwrap();
+    } catch (error: any) {
+      console.error(error.data.message);
+      toast.error(error.data.message);
+    }
+  };
 
   return (
     <Dialog>
-      <DialogTrigger className='cursor-pointer' asChild>
+      <DialogTrigger className='flex w-full cursor-pointer flex-row'>
         {children}
       </DialogTrigger>
-      <DialogContent className='flex h-[60vh] min-w-4xl flex-col'>
+      <DialogContent
+        onContextMenu={(e) => e.stopPropagation()}
+        className='flex h-[60vh] min-w-4xl flex-col'
+      >
         <div className='flex h-full flex-row'>
           <div className='flex w-full flex-col gap-2'>
             {/* Header */}
@@ -71,7 +102,7 @@ export function SingleTaskDialog({
             <div className='pe-4'>
               <h1 className=''>Comments</h1>
               {data?.data.comments && data?.data.comments.length > 0 && (
-                <div className='my-4 flex flex-col gap-2 overflow-y-auto scrollbar-none'>
+                <div className='my-4 flex scrollbar-none flex-col gap-2 overflow-y-auto'>
                   {data?.data.comments.map((comment) => (
                     <TaskComment
                       comment={comment}
@@ -90,81 +121,131 @@ export function SingleTaskDialog({
                 </Avatar>
                 <input
                   placeholder='Comment'
-                  className='w-full placeholder:text-muted-foreground text-sm rounded-full border px-3 py-1.5 focus:outline-none'
+                  className='placeholder:text-muted-foreground w-full rounded-full border px-3 py-1.5 text-sm focus:outline-none'
                 />
               </div>
             </div>
           </div>
           <Separator orientation='vertical' />
-          <div className='ml-3 flex w-1/3 flex-col gap-4 px-2 text-sm'>
-            {/* Assignee */}
-            <div className='flex flex-col gap-2'>
-              <p className='text-muted-foreground'>Assigned to</p>
-              {/* TODO: Interactive user card */}
-              <div className='flex flex-row items-center gap-2'>
-                <Avatar className='size-8'>
-                  <AvatarImage src={data?.data.assignee?.image} />
-                  <AvatarFallback>
-                    {data?.data.assignee?.name.charAt(0) || (
-                      <User2 className='size-5' />
-                    )}
-                  </AvatarFallback>
-                </Avatar>
-                <div>
-                  {data?.data.assignee?.name ? (
-                    <>
-                      <p>{data?.data.assignee?.name}</p>
-                      <p className='text-muted-foreground text-xs'>
-                        {data?.data.assignee?.userProfile?.ichat}
-                      </p>
-                    </>
-                  ) : (
-                    'Unassigned'
+          <div className='ml-3 flex w-1/3 flex-col justify-between px-2 text-sm'>
+            <div className='flex flex-col gap-4'>
+              {/* Assignee */}
+              <div className='flex flex-col gap-2'>
+                <p className='text-muted-foreground font-mono'>Assigned to</p>
+                {/* TODO: Interactive user card */}
+                <AssignTaskPopover task={task}>
+                  <div className='flex flex-row items-center gap-2'>
+                    <Avatar className='size-8'>
+                      <AvatarImage src={data?.data.assignee?.image} />
+                      <AvatarFallback>
+                        {data?.data.assignee?.name.charAt(0) || (
+                          <User2 className='size-5' />
+                        )}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className='flex flex-col text-left'>
+                      {data?.data.assignee?.name ? (
+                        <>
+                          <p>{data?.data.assignee?.name}</p>
+                          <p className='text-muted-foreground text-xs'>
+                            {data?.data.assignee?.userProfile?.ichat}
+                          </p>
+                        </>
+                      ) : (
+                        'Unassigned'
+                      )}
+                    </div>
+                  </div>
+                </AssignTaskPopover>
+              </div>
+              {/* Status */}
+              <div className='flex flex-col gap-1'>
+                <p className='text-muted-foreground font-mono'>Status</p>
+                <p
+                  className={cn(
+                    'flex flex-row items-center gap-2',
+                    data?.data.status === TaskStatusEnum.NOT_STARTED &&
+                      'text-muted-foreground',
+                    data?.data.status === TaskStatusEnum.IN_PROGRESS &&
+                      'text-blue-400',
+                    data?.data.status === TaskStatusEnum.COMPLETED &&
+                      'text-green-400',
                   )}
-                </div>
+                >
+                  {data?.data.status === TaskStatusEnum.NOT_STARTED && (
+                    <CircleDashed className='size-4' />
+                  )}
+                  {data?.data.status === TaskStatusEnum.IN_PROGRESS && (
+                    <Circle className='size-4' />
+                  )}
+                  {data?.data.status === TaskStatusEnum.COMPLETED && (
+                    <CheckCircle className='size-4' />
+                  )}
+
+                  {data?.data.status}
+                </p>
+              </div>
+              {/* Priority */}
+              <div className='flex flex-col gap-1'>
+                <p className='text-muted-foreground font-mono'>Priority</p>
+                <p
+                  className={cn(
+                    'flex flex-row items-center gap-2',
+                    data?.data.priority === TaskPriorityEnum.HIGH &&
+                      'text-red-400',
+                    data?.data.priority === TaskPriorityEnum.MEDIUM &&
+                      'text-yellow-400',
+                    data?.data.priority === TaskPriorityEnum.LOW &&
+                      'text-green-400',
+                  )}
+                >
+                  <Flag className='size-4' />
+                  {data?.data.priority}
+                </p>
+              </div>
+              {/* Department */}
+              <div className='flex flex-col gap-1'>
+                <p className='text-muted-foreground font-mono'>Department</p>
+                {data?.data.department ? (
+                  <Badge variant={'secondary'} className='font-normal'>
+                    {data?.data.department.name}
+                  </Badge>
+                ) : (
+                  <p>No department</p>
+                )}
+              </div>
+              {/* Deadline */}
+              <div className='flex flex-col gap-1'>
+                <p className='text-muted-foreground flex flex-row items-center justify-between font-mono'>
+                  Deadline
+                </p>
+                {data?.data.deadline ? (
+                  <p>{format(data?.data.deadline, 'dd MMM yyyy')}</p>
+                ) : (
+                  <button className='text-muted-foreground hover:bg-muted flex cursor-pointer flex-row items-center gap-2 rounded-md p-1 text-left'>
+                    <Plus className='size-4' /> Set deadline...
+                  </button>
+                )}
               </div>
             </div>
-            {/* Priority */}
-            <div className='flex flex-col gap-1'>
-              <p className='text-muted-foreground'>Priority</p>
-              <p
-                className={cn(
-                  'flex flex-row items-center gap-2',
-                  data?.data.priority === TaskPriorityEnum.HIGH &&
-                    'text-red-400',
-                  data?.data.priority === TaskPriorityEnum.MEDIUM &&
-                    'text-yellow-400',
-                  data?.data.priority === TaskPriorityEnum.LOW &&
-                    'text-green-400',
-                )}
-              >
-                <Flag className='size-4' />
-                {data?.data.priority}
-              </p>
-            </div>
-            {/* Department */}
-            <div className='flex flex-col gap-1'>
-              <p className='text-muted-foreground'>Department</p>
-              {data?.data.department ? (
-                <Badge variant={'secondary'} className='font-normal'>
-                  {data?.data.department.name}
-                </Badge>
-              ) : (
-                <p>No department</p>
-              )}
-            </div>
-            {/* Deadline */}
-            <div className='flex flex-col gap-1'>
-              <p className='text-muted-foreground flex flex-row items-center justify-between'>
-                Deadline
-              </p>
-              {data?.data.deadline ? (
-                <p>{format(data?.data.deadline, 'dd MMM yyyy')}</p>
-              ) : (
-                <button className='text-muted-foreground hover:bg-muted flex cursor-pointer flex-row items-center gap-2 rounded-md p-1 text-left'>
-                  <Plus className='size-4' /> Set deadline...
-                </button>
-              )}
+            {/* Footer */}
+            <div className='mb-4 flex flex-col gap-3'>
+              <div className='text-muted-foreground font-mono text-xs'>
+                <p>
+                  Last edited{' '}
+                  {data?.data &&
+                    format(data?.data.updatedAt, 'dd/MM/yyyy hh:mm a')}
+                </p>
+                <p>
+                  Created at{' '}
+                  {data?.data &&
+                    format(data?.data.createdAt, 'dd/MM/yyyy hh:mm a')}{' '}
+                  by {data?.data.creator?.name}
+                </p>
+              </div>
+              <Button variant={'destructive'} size={'sm'} onClick={() => handleDelete()}>
+                <Trash2 /> Delete task
+              </Button>
             </div>
           </div>
         </div>

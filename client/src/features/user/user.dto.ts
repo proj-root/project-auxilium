@@ -43,6 +43,7 @@ export type GetPersonalDetailsResponse = BaseResponseDTO<UserDTO>;
 
 export interface GetAllUsersRequest extends PaginationOptions {
   roleIds?: number[];
+  eventId?: string;
 }
 
 export type GetAllUsersResponse = BaseResponseDTO<{

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import {
   CreateTaskDTO,
   GetAllEventTasksQueryDTO,
@@ -20,25 +20,25 @@ export class TaskService {
           with: {
             userProfile: {
               columns: {
-                ichat: true
-              }
-            }
-          }
+                ichat: true,
+              },
+            },
+          },
         },
         assignee: {
           with: {
             userProfile: {
               columns: {
-                ichat: true
-              }
-            }
-          }
+                ichat: true,
+              },
+            },
+          },
         },
         department: true,
         comments: {
           with: {
-            creator: true
-          }
+            creator: true,
+          },
         },
       },
     });
@@ -87,7 +87,7 @@ export class TaskService {
   // Create a new task
   async createTask(args: CreateTaskDTO) {
     // TODO: Check that assignee is a member of the event + ADMIN
-    
+
     const { deadline, ...rest } = args;
 
     const newTask = await db.transaction(async (tx) => {
@@ -99,7 +99,7 @@ export class TaskService {
           ...rest,
         })
         .returning();
-      
+
       if (!task) {
         throw new Error('Failed to create task');
       }
@@ -127,14 +127,37 @@ export class TaskService {
   async updateTask(args: UpdateTaskDTO) {
     const { taskId, deadline, ...rest } = args;
 
-    const [updatedTask] = await db
-      .update(schema.task)
-      .set({
-        deadline: deadline ? new Date(deadline) : undefined,
-        ...rest,
-      })
-      .where(eq(schema.task.taskId, taskId))
-      .returning();
+    const updatedTask = await db.transaction(async (tx) => {
+      const task = await tx.query.task.findFirst({
+        where: {
+          taskId,
+        },
+      });
+
+      // Check if assignee is part of the event
+      if (rest.assigneeId) {
+        const assignee = await tx.query.userEventRole.findFirst({
+          where: {
+            eventId: task?.eventId,
+            userId: rest.assigneeId,
+          },
+        });
+
+        if (!assignee)
+          throw new BadRequestException(
+            'Assignee must be involved in event. Share the event with the assignee first.',
+          );
+      }
+
+      return await tx
+        .update(schema.task)
+        .set({
+          deadline: deadline ? new Date(deadline) : undefined,
+          ...rest,
+        })
+        .where(eq(schema.task.taskId, taskId))
+        .returning();
+    });
 
     return updatedTask;
   }

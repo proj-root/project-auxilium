@@ -56,13 +56,14 @@ export function AssignTaskPopover({
     isError,
   } = useGetAllUsersQuery({
     roleIds: [RolesConfig.ADMIN, RolesConfig.SUPERADMIN],
+    eventId: task.eventId,
     search: inputValue,
   });
 
   const handleAssign = async ({ userId }: { userId: string }) => {
     try {
       await updateTask({ taskId: task.taskId, assigneeId: userId }).unwrap();
-      toast.success('Assigned task successfully');
+      toast.success(userId === '' ? 'Successfully unassigned task' : 'Assigned task successfully');
     } catch (error: any) {
       console.error(error.data.message);
       toast.error(error.data.message);

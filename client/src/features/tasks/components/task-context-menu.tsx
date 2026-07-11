@@ -31,7 +31,7 @@ export function TaskContextMenu({
 
   return (
     <ContextMenu>
-      <ContextMenuTrigger>{children}</ContextMenuTrigger>
+      <ContextMenuTrigger className='w-full'>{children}</ContextMenuTrigger>
       <ContextMenuContent className='min-w-50'>
         <ContextMenuItem variant='destructive' onClick={() => handleDelete()}>
           <Trash2 /> Delete task
