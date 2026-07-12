@@ -63,7 +63,11 @@ export function AssignTaskPopover({
   const handleAssign = async ({ userId }: { userId: string }) => {
     try {
       await updateTask({ taskId: task.taskId, assigneeId: userId }).unwrap();
-      toast.success(userId === '' ? 'Successfully unassigned task' : 'Assigned task successfully');
+      toast.success(
+        userId === ''
+          ? 'Successfully unassigned task'
+          : 'Assigned task successfully',
+      );
     } catch (error: any) {
       console.error(error.data.message);
       toast.error(error.data.message);
@@ -75,7 +79,11 @@ export function AssignTaskPopover({
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger className='cursor-pointer'>{children}</PopoverTrigger>
-      <PopoverContent align='end' className='min-w-60 p-3'>
+      <PopoverContent
+        align='end'
+        className='min-w-60 p-3'
+        onWheel={(e) => e.stopPropagation()}
+      >
         <div className='flex flex-col gap-2'>
           {task.assignee && (
             <div className='flex flex-row items-center gap-2 py-1.5 text-sm'>
@@ -91,12 +99,12 @@ export function AssignTaskPopover({
             </div>
           )}
           <Input
-            placeholder='Search...'
+            placeholder='Search name or email...'
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             className='h-8'
           />
-          <div className='flex max-h-40 w-full scrollbar-none flex-col gap-1 overflow-y-scroll'>
+          <div className='flex max-h-40 w-full scrollbar-none flex-col gap-1 overflow-y-auto'>
             {userSearchData?.data &&
               userSearchData.data.users.map((user) => (
                 <div

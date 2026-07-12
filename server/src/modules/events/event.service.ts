@@ -163,6 +163,16 @@ export class EventsService {
       with: {
         eventType: true,
         creator: true,
+        userEventRoles: {
+          with: {
+            user: {
+              columns: {
+                name: true,
+                image: true
+              }
+            }
+          },
+        }
       },
       limit: pageSize,
       offset: (page - 1) * pageSize,

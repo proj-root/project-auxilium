@@ -12,6 +12,7 @@ import { useState } from 'react';
 import { CreateTaskForm } from './create-task-form';
 import { TaskContextMenu } from './task-context-menu';
 import { AssignTaskPopover } from './assign-task-popover';
+import { DeadlinePopover } from './deadline-popover';
 
 function TaskItem({ task }: { task: TaskDTO }) {
   return (
@@ -46,14 +47,16 @@ function TaskItem({ task }: { task: TaskDTO }) {
             </AvatarFallback>
           </Avatar>
         </AssignTaskPopover>
-        {task.deadline && (
-          <div className='flex flex-row items-center gap-2'>
+        <DeadlinePopover taskId={task.taskId} deadline={task.deadline ?? undefined}>
+          <div className='flex flex-row items-center gap-1.5'>
             <CalendarClock className='text-muted-foreground size-4' />
-            <span className='text-muted-foreground text-sm'>
-              {format(new Date(task.deadline), 'dd/MM/yyyy')}
+            <span className='text-muted-foreground text-sm text-nowrap'>
+              {task.deadline
+                ? format(new Date(task.deadline), 'do MMM yyyy')
+                : 'No deadline'}
             </span>
           </div>
-        )}
+        </DeadlinePopover>
         <Badge
           variant={'outline'}
           className={cn(

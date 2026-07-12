@@ -5,6 +5,14 @@ import { Link } from 'react-router';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { format, isSameDay } from 'date-fns';
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarGroup,
+  AvatarGroupCount,
+  AvatarImage,
+} from '@/components/ui/avatar';
+import { createUserInitials } from '@/lib/formatters';
 
 export const columns: ColumnDef<Omit<Event, 'eventReport'>>[] = [
   // Put checkbox here next time for bulk actions
@@ -52,6 +60,37 @@ export const columns: ColumnDef<Omit<Event, 'eventReport'>>[] = [
     },
   },
   // TODO: Show task progress here
+  {
+    id: 'members',
+    header: ({ column }) => (
+      <DataTableColumnHeader title='Members' column={column} />
+    ),
+    cell: ({ row }) => {
+      const members = row.original.userEventRoles;
+
+      if (!members || members.length === 0) {
+        return <p>-</p>;
+      }
+
+      return (
+        <AvatarGroup>
+          {members.slice(0, 3).map((member) => (
+            <Avatar className='size-7'>
+              <AvatarImage src={member.user.image} alt='@shadcn' />
+              <AvatarFallback className='text-xs'>
+                {createUserInitials(member.user.name)}
+              </AvatarFallback>
+            </Avatar>
+          ))}
+          {members.length > 3 && (
+            <AvatarGroupCount className='size-7'>
+              +{members.length - 3}
+            </AvatarGroupCount>
+          )}
+        </AvatarGroup>
+      );
+    },
+  },
   {
     id: 'eventType',
     header: ({ column }) => (
