@@ -23,7 +23,7 @@ import type {
   AssignUserToEventDTO,
   UnassignUserFromEventDTO,
 } from './events.dto';
-import { RolesConfig } from '@auxilium/configs/roles';
+import { EventRolesConfig, RolesConfig } from '@auxilium/configs/roles';
 
 @Injectable()
 export class EventsService {
@@ -50,7 +50,7 @@ export class EventsService {
                 userProfile: {
                   columns: {
                     adminNumber: false,
-                  }
+                  },
                 },
               },
             },
@@ -87,18 +87,29 @@ export class EventsService {
       throw new APIError('Unauthorized; missing user information', 401);
     }
 
-    const [newEvent] = await db
-      .insert(eventTable)
-      .values({
-        name,
-        eventTypeId,
-        description,
-        createdBy,
-        startDate: startDate ? new Date(startDate) : undefined,
-        endDate: endDate ? new Date(endDate) : undefined,
-        ...rest,
-      })
-      .returning();
+    const newEvent = await db.transaction(async (tx) => {
+      const [event] = await tx
+        .insert(eventTable)
+        .values({
+          name,
+          eventTypeId,
+          description,
+          createdBy,
+          startDate: startDate ? new Date(startDate) : undefined,
+          endDate: endDate ? new Date(endDate) : undefined,
+          ...rest,
+        })
+        .returning();
+
+      if (!event) throw new APIError('Failed to create new event', 500);
+
+      // Initialise user event role
+      await tx.insert(schema.userEventRole).values({
+        eventId: event?.eventId,
+        userId: createdBy,
+        eventRoleId: EventRolesConfig.COORDINATOR,
+      });
+    });
 
     return newEvent;
   }
@@ -168,11 +179,11 @@ export class EventsService {
             user: {
               columns: {
                 name: true,
-                image: true
-              }
-            }
+                image: true,
+              },
+            },
           },
-        }
+        },
       },
       limit: pageSize,
       offset: (page - 1) * pageSize,
@@ -197,6 +208,7 @@ export class EventsService {
         ...updateData,
         startDate: startDate ? new Date(startDate) : undefined,
         endDate: endDate ? new Date(endDate) : undefined,
+        updatedAt: new Date().toISOString()
       })
       .where(eq(eventTable.eventId, eventId))
       .returning();

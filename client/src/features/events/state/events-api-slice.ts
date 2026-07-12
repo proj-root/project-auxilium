@@ -1,20 +1,22 @@
 import { apiSlice } from '@/state/api-slice';
-import type {
-  AssignUserToEventRequest,
-  AssignUserToEventResponse,
-  CreateEventRequest,
-  CreateEventResponse,
-  GenerateEventReportResponse,
-  GetAllEventRolesResponse,
-  GetAllEventsRequest,
-  GetAllEventsResponse,
-  GetAllEventTypesResponse,
-  GetEventByIdResponse,
-  GetEventReportByIdResponse,
-  GetParticipationsByReportIdRequest,
-  GetParticipationsByReportIdResponse,
-  UpdateEventRequest,
-  UpdateEventResponse,
+import {
+  type CheckUserEventRoleResponse,
+  type AssignUserToEventRequest,
+  type AssignUserToEventResponse,
+  type CheckUserEventRoleRequest,
+  type CreateEventRequest,
+  type CreateEventResponse,
+  type GenerateEventReportResponse,
+  type GetAllEventRolesResponse,
+  type GetAllEventsRequest,
+  type GetAllEventsResponse,
+  type GetAllEventTypesResponse,
+  type GetEventByIdResponse,
+  type GetEventReportByIdResponse,
+  type GetParticipationsByReportIdRequest,
+  type GetParticipationsByReportIdResponse,
+  type UpdateEventRequest,
+  type UpdateEventResponse,
 } from '../events.dto';
 
 export const eventsApiSlice = apiSlice.injectEndpoints({
@@ -139,6 +141,13 @@ export const eventsApiSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ['Events', 'User'],
     }),
+    checkUserEventRole: builder.query<CheckUserEventRoleResponse, CheckUserEventRoleRequest>({
+      query: ({ eventId }) => ({
+        url: `/events/${eventId}/check-eventrole`,
+        method: 'GET',
+      }),
+      providesTags: ['User']
+    })
   }),
 });
 
@@ -155,5 +164,6 @@ export const {
   useGetAllEventRolesQuery,
   useUnassignUserFromEventMutation,
   useDeleteEventByIdMutation,
-  useHardDeleteEventByIdMutation
+  useHardDeleteEventByIdMutation,
+  useCheckUserEventRoleQuery
 } = eventsApiSlice;

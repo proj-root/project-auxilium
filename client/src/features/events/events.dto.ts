@@ -159,3 +159,9 @@ export interface AssignUserToEventRequest {
 }
 
 export type AssignUserToEventResponse = BaseResponseDTO<void>;
+
+export interface CheckUserEventRoleRequest {
+  eventId: string;
+}
+
+export type CheckUserEventRoleResponse = BaseResponseDTO<UserEventRole>;

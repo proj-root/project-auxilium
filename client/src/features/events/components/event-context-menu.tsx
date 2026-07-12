@@ -27,7 +27,7 @@ export function EventItemContextMenu({
       <ContextMenuTrigger className={cn('', className)}>
         {trigger}
       </ContextMenuTrigger>
-      <ContextMenuContent className='w-64'>
+      <ContextMenuContent className='w-72'>
         <h1 className='text-semibold text-muted-foreground px-2 py-1 text-xs'>
           {row.name}
         </h1>
@@ -55,9 +55,9 @@ export function EventItemContextMenu({
         </ContextMenuItem>
         <ContextMenuSeparator className='my-1' />
         {/* TODO: Include tooltip with user profile info */}
-        <div className='text-muted-foreground px-2 py-1 text-xs'>
-          <p>Last edited by {row.creator.email}</p>
-          <p>{format(row.createdAt, 'MMM do yyyy, hh:mm a')}</p>
+        <div className='text-muted-foreground px-2 py-1 text-xs font-mono'>
+          <p>Last edited by {row.creator.email} on {format(row.updatedAt, 'MMM do yyyy, hh:mm a')}</p>
+          <p>Created on {format(row.createdAt, 'MMM do yyyy, hh:mm a')}</p>
         </div>
       </ContextMenuContent>
 

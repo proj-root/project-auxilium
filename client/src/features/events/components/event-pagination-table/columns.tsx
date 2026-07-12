@@ -1,4 +1,4 @@
-import type { ColumnDef } from '@tanstack/react-table';
+import { useReactTable, type ColumnDef } from '@tanstack/react-table';
 import type { Event } from '../../events.dto';
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
 import { Link } from 'react-router';

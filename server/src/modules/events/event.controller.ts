@@ -282,14 +282,10 @@ export class EventsController {
         }),
     );
 
-    this.logger.debug(cleanedData);
-
     const updatedEvent = await this.eventsService.updateEvent({
       eventId,
       ...cleanedData,
     });
-
-    // TODO: Add updated by who
 
     return {
       status: 'success',
