@@ -25,7 +25,7 @@ export function DeadlinePopover({
     if (!value) return;
 
     try {
-      const { data } = await updateTask({ taskId, deadline: value }).unwrap();
+      await updateTask({ taskId, deadline: value }).unwrap();
       toast.success('Successfully updated deadline.');
     } catch (error: any) {
       console.error(error);
@@ -37,7 +37,7 @@ export function DeadlinePopover({
 
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
-      <PopoverTrigger>{children}</PopoverTrigger>
+      <PopoverTrigger className='cursor-pointer'>{children}</PopoverTrigger>
       <PopoverContent className='w-auto p-0' align='end'>
         <Calendar
           mode='single'

@@ -177,6 +177,7 @@ export class TasksController {
     const updatedTask = await this.tasksService.updateTask({
       ...body,
       taskId,
+      userId,
     });
 
     return {

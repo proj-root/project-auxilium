@@ -10,6 +10,7 @@ import {
 import {
   useDeleteTaskMutation,
   useGetTaskByIdQuery,
+  useUpdateTaskMutation,
 } from '../state/tasks-api-slice';
 import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -38,6 +39,9 @@ import {
 import { authClient } from '@/lib/auth-client';
 import { AssignTaskPopover } from './assign-task-popover';
 import { toast } from 'sonner';
+import { StatusPopover } from './status-popover';
+import { DeadlinePopover } from './deadline-popover';
+import { InlineTextEdit } from '@/components/inline-text-edit';
 
 function TaskComment({ comment }: { comment: TaskCommentDTO }) {
   return (
@@ -68,6 +72,7 @@ export function SingleTaskDialog({
 }) {
   const { data: userData } = useGetPersonalDetailsQuery();
   const { data, isLoading } = useGetTaskByIdQuery({ taskId: task.taskId });
+  const [updateTask] = useUpdateTaskMutation();
   const [deleteTask] = useDeleteTaskMutation();
 
   const handleDelete = async () => {
@@ -75,6 +80,21 @@ export function SingleTaskDialog({
       await deleteTask({ taskId: task.taskId }).unwrap();
     } catch (error: any) {
       console.error(error.data.message);
+      toast.error(error.data.message);
+    }
+  };
+
+  const handleUpdate = async ({
+    title,
+    description,
+  }: {
+    title?: string;
+    description?: string;
+  }) => {
+    try {
+      await updateTask({ taskId: task.taskId, title, description }).unwrap();
+    } catch (error: any) {
+      console.error(error);
       toast.error(error.data.message);
     }
   };
@@ -88,21 +108,28 @@ export function SingleTaskDialog({
         onContextMenu={(e) => e.stopPropagation()}
         className='flex h-[60vh] min-w-4xl flex-col'
       >
-        <div className='flex h-full flex-row'>
-          <div className='flex w-full flex-col gap-2'>
+        <div className='flex h-full min-h-0 flex-row'>
+          <div className='flex min-h-0 w-full flex-col gap-2'>
             {/* Header */}
             <div className='flex flex-col'>
-              <h1 className='text-xl'>{data?.data.title}</h1>
-              <p className='text-muted-foreground'>
-                {data?.data.description || 'No Description'}
-              </p>
+              {/* <h1 className='text-xl'>{data?.data.title}</h1> */}
+              <InlineTextEdit
+                value={data?.data.title as string}
+                onSave={(value) => handleUpdate({ title: value })}
+                className='text-xl mr-4 mb-1'
+              />
+              <InlineTextEdit
+                value={data?.data.description || 'No Description'}
+                onSave={(value) => handleUpdate({ description: value })}
+                className='mr-4 text-muted-foreground'
+              />
             </div>
             <Separator className='my-1' />
             {/* Comments */}
-            <div className='pe-4'>
-              <h1 className=''>Comments</h1>
+            <div className='flex h-full min-h-0 flex-1 flex-col pe-4'>
+              <h1 className=''>Comments ({data?.data.comments.length})</h1>
               {data?.data.comments && data?.data.comments.length > 0 && (
-                <div className='my-4 flex scrollbar-none flex-col gap-2 overflow-y-auto'>
+                <div className='my-4 flex max-h-full scrollbar-none flex-col gap-6 overflow-y-scroll'>
                   {data?.data.comments.map((comment) => (
                     <TaskComment
                       comment={comment}
@@ -112,7 +139,7 @@ export function SingleTaskDialog({
                 </div>
               )}
               {!data?.data.comments && <p>No comments</p>}
-              <div className='flex flex-row items-center gap-4 px-1'>
+              <div className='mt-2 flex flex-row items-center gap-4 px-1'>
                 <Avatar>
                   <AvatarImage src={userData?.data.image} />
                   <AvatarFallback>
@@ -120,7 +147,8 @@ export function SingleTaskDialog({
                   </AvatarFallback>
                 </Avatar>
                 <input
-                  placeholder='Comment'
+                  placeholder='Say something... (WIP)'
+                  disabled
                   className='placeholder:text-muted-foreground w-full rounded-full border px-3 py-1.5 text-sm focus:outline-none'
                 />
               </div>
@@ -161,29 +189,31 @@ export function SingleTaskDialog({
               {/* Status */}
               <div className='flex flex-col gap-1'>
                 <p className='text-muted-foreground font-mono'>Status</p>
-                <p
-                  className={cn(
-                    'flex flex-row items-center gap-2',
-                    data?.data.status === TaskStatusEnum.NOT_STARTED &&
-                      'text-muted-foreground',
-                    data?.data.status === TaskStatusEnum.IN_PROGRESS &&
-                      'text-blue-400',
-                    data?.data.status === TaskStatusEnum.COMPLETED &&
-                      'text-green-400',
-                  )}
-                >
-                  {data?.data.status === TaskStatusEnum.NOT_STARTED && (
-                    <CircleDashed className='size-4' />
-                  )}
-                  {data?.data.status === TaskStatusEnum.IN_PROGRESS && (
-                    <Circle className='size-4' />
-                  )}
-                  {data?.data.status === TaskStatusEnum.COMPLETED && (
-                    <CheckCircle className='size-4' />
-                  )}
+                <StatusPopover taskId={task.taskId} status={task.status}>
+                  <p
+                    className={cn(
+                      'hover:bg-muted flex flex-row items-center gap-2 rounded-md px-1.5 py-1',
+                      data?.data.status === TaskStatusEnum.NOT_STARTED &&
+                        'text-muted-foreground',
+                      data?.data.status === TaskStatusEnum.IN_PROGRESS &&
+                        'text-blue-400',
+                      data?.data.status === TaskStatusEnum.COMPLETED &&
+                        'text-green-400',
+                    )}
+                  >
+                    {data?.data.status === TaskStatusEnum.NOT_STARTED && (
+                      <CircleDashed className='size-4' />
+                    )}
+                    {data?.data.status === TaskStatusEnum.IN_PROGRESS && (
+                      <Circle className='size-4' />
+                    )}
+                    {data?.data.status === TaskStatusEnum.COMPLETED && (
+                      <CheckCircle className='size-4' />
+                    )}
 
-                  {data?.data.status}
-                </p>
+                    {data?.data.status}
+                  </p>
+                </StatusPopover>
               </div>
               {/* Priority */}
               <div className='flex flex-col gap-1'>
@@ -219,13 +249,20 @@ export function SingleTaskDialog({
                 <p className='text-muted-foreground flex flex-row items-center justify-between font-mono'>
                   Deadline
                 </p>
-                {data?.data.deadline ? (
-                  <p>{format(data?.data.deadline, 'dd MMM yyyy')}</p>
-                ) : (
-                  <button className='text-muted-foreground hover:bg-muted flex cursor-pointer flex-row items-center gap-2 rounded-md p-1 text-left'>
-                    <Plus className='size-4' /> Set deadline...
-                  </button>
-                )}
+                <DeadlinePopover
+                  taskId={task.taskId}
+                  deadline={task.deadline ?? undefined}
+                >
+                  <div className='hover:bg-muted cursor-pointer rounded-md px-1.5 py-1 text-left'>
+                    {data?.data.deadline ? (
+                      <p>{format(data?.data.deadline, 'dd MMM yyyy')}</p>
+                    ) : (
+                      <p className='text-muted-foreground flex flex-row items-center gap-2'>
+                        <Plus className='size-4' /> Set deadline...
+                      </p>
+                    )}
+                  </div>
+                </DeadlinePopover>
               </div>
             </div>
             {/* Footer */}
@@ -243,7 +280,12 @@ export function SingleTaskDialog({
                   by {data?.data.creator?.name}
                 </p>
               </div>
-              <Button variant={'destructive'} size={'sm'} onClick={() => handleDelete()}>
+              <Button
+                variant={'ghost'}
+                size={'sm'}
+                onClick={() => handleDelete()}
+                className='w-fit text-red-400 hover:text-red-400'
+              >
                 <Trash2 /> Delete task
               </Button>
             </div>

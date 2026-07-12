@@ -7,6 +7,7 @@ import {
 import db from '@/db';
 import * as schema from '@/db/schema';
 import { eq } from 'drizzle-orm';
+import { format } from 'date-fns';
 
 @Injectable()
 export class TaskService {
@@ -39,6 +40,9 @@ export class TaskService {
           with: {
             creator: true,
           },
+          orderBy: {
+            createdAt: 'desc'
+          }
         },
       },
     });
@@ -125,7 +129,7 @@ export class TaskService {
 
   // Update an existing task
   async updateTask(args: UpdateTaskDTO) {
-    const { taskId, deadline, ...rest } = args;
+    const { taskId, userId, deadline, ...rest } = args;
 
     const updatedTask = await db.transaction(async (tx) => {
       const task = await tx.query.task.findFirst({
@@ -135,12 +139,20 @@ export class TaskService {
       });
 
       // Check if assignee is part of the event
+      let assignee;
       if (rest.assigneeId) {
-        const assignee = await tx.query.userEventRole.findFirst({
+        assignee = await tx.query.userEventRole.findFirst({
           where: {
             eventId: task?.eventId,
             userId: rest.assigneeId,
           },
+          with: {
+            user: {
+              columns: {
+                name: true
+              }
+            }
+          }
         });
 
         if (!assignee)
@@ -149,7 +161,7 @@ export class TaskService {
           );
       }
 
-      return await tx
+      const updatedTask = await tx
         .update(schema.task)
         .set({
           deadline: deadline ? new Date(deadline) : undefined,
@@ -157,6 +169,25 @@ export class TaskService {
         })
         .where(eq(schema.task.taskId, taskId))
         .returning();
+
+      let message = '';
+      if (deadline)
+        message = `Set deadline to ${format(new Date(deadline), 'do MM yyyy')}`;
+      if (rest.priority) message = `Set priority to ${rest.priority}`;
+      if (rest.status) message = `Set status to "${rest.status}"`;
+      if (assignee) message = `Assigned task to ${assignee.user.name}`;
+      if (rest.title) message = `Changed title to "${rest.title}"`;
+      if (rest.description) message = `Changed description to "${rest.description}"`;
+
+      if (message !== '') {
+        await tx.insert(schema.taskComment).values({
+          taskId,
+          text: message,
+          createdBy: userId,
+        });
+      }
+
+      return updatedTask;
     });
 
     return updatedTask;

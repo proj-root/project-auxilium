@@ -304,16 +304,6 @@ export class EventsService {
     return eventReport;
   }
 
-  // async getEventReportsByEventId({ eventId }: { eventId: string }) {
-  //   const eventReports = await db.query.eventReport.findMany({
-  //     where: {
-  //       eventId,
-  //     },
-  //   });
-
-  //   return eventReports;
-  // }
-
   async getEventReportById({ eventReportId }: { eventReportId: string }) {
     const eventReport = await db.query.eventReport.findFirst({
       where: {
@@ -337,8 +327,6 @@ export class EventsService {
 
     return eventReport;
   }
-
-  // TODO: Allow users to delete reports
 
   // Event Participation
   async createEventParticipationRecord(args: CreateEventParticipationDTO) {

@@ -55,6 +55,7 @@ export const UpdateTaskSchema = z.object({
 
 export type UpdateTaskDTO = z.infer<typeof UpdateTaskSchema> & {
   taskId: string;
+  userId: string;
 };
 
 export type GetAllEventTasksQueryDTO = PaginationOptions & {
