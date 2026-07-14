@@ -71,29 +71,6 @@ export function StatusPopover({
               </li>
             );
           })}
-
-          {/* <li
-            onClick={() => handleUpdate(TaskStatusEnum.IN_PROGRESS)}
-            className='hover:bg-muted w-full cursor-pointer rounded-md px-1.5 py-0.5'
-          >
-            <Badge
-              variant={'outline'}
-              className='border-blue-400 text-blue-400'
-            >
-              In progress
-            </Badge>
-          </li>
-          <li
-            onClick={() => handleUpdate(TaskStatusEnum.COMPLETED)}
-            className='hover:bg-muted w-full cursor-pointer rounded-md px-1.5 py-0.5'
-          >
-            <Badge
-              variant={'outline'}
-              className='border-green-400 text-green-400'
-            >
-              Completed
-            </Badge>
-          </li> */}
         </ul>
       </PopoverContent>
     </Popover>

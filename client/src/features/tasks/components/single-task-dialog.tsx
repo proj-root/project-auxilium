@@ -1,12 +1,5 @@
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import {
   useDeleteTaskMutation,
   useGetTaskByIdQuery,
@@ -32,16 +25,13 @@ import {
 } from '../tasks.dto';
 import { Badge } from '@/components/ui/badge';
 import { format, formatDistanceToNowStrict } from 'date-fns';
-import {
-  useGetPersonalDetailsQuery,
-  useGetSingleUserQuery,
-} from '@/features/user/state/user-api-slice';
-import { authClient } from '@/lib/auth-client';
+import { useGetPersonalDetailsQuery } from '@/features/user/state/user-api-slice';
 import { AssignTaskPopover } from './assign-task-popover';
 import { toast } from 'sonner';
 import { StatusPopover } from './status-popover';
 import { DeadlinePopover } from './deadline-popover';
 import { InlineTextEdit } from '@/components/inline-text-edit';
+import { PriorityPopover } from './priority-popover';
 
 function TaskComment({ comment }: { comment: TaskCommentDTO }) {
   return (
@@ -116,12 +106,12 @@ export function SingleTaskDialog({
               <InlineTextEdit
                 value={data?.data.title as string}
                 onSave={(value) => handleUpdate({ title: value })}
-                className='text-xl mr-4 mb-1'
+                className='mr-4 mb-1 text-xl'
               />
               <InlineTextEdit
                 value={data?.data.description || 'No Description'}
                 onSave={(value) => handleUpdate({ description: value })}
-                className='mr-4 text-muted-foreground'
+                className='text-muted-foreground mr-4'
               />
             </div>
             <Separator className='my-1' />
@@ -218,20 +208,22 @@ export function SingleTaskDialog({
               {/* Priority */}
               <div className='flex flex-col gap-1'>
                 <p className='text-muted-foreground font-mono'>Priority</p>
-                <p
-                  className={cn(
-                    'flex flex-row items-center gap-2',
-                    data?.data.priority === TaskPriorityEnum.HIGH &&
-                      'text-red-400',
-                    data?.data.priority === TaskPriorityEnum.MEDIUM &&
-                      'text-yellow-400',
-                    data?.data.priority === TaskPriorityEnum.LOW &&
-                      'text-green-400',
-                  )}
-                >
-                  <Flag className='size-4' />
-                  {data?.data.priority}
-                </p>
+                <PriorityPopover taskId={task.taskId} priority={task.priority}>
+                  <p
+                    className={cn(
+                      'hover:bg-muted flex flex-row items-center gap-2 rounded-md px-1.5 py-1',
+                      data?.data.priority === TaskPriorityEnum.HIGH &&
+                        'text-red-400',
+                      data?.data.priority === TaskPriorityEnum.MEDIUM &&
+                        'text-yellow-400',
+                      data?.data.priority === TaskPriorityEnum.LOW &&
+                        'text-green-400',
+                    )}
+                  >
+                    <Flag className='size-4' />
+                    {data?.data.priority}
+                  </p>
+                </PriorityPopover>
               </div>
               {/* Department */}
               <div className='flex flex-col gap-1'>
