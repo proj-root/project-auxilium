@@ -29,12 +29,12 @@ const HOURS = Array.from(
 
 // TODO: Don't do filtering on frontend?
 function getEventsForHour(
-  events: Omit<Event, 'eventReports'>[],
+  events: Omit<Event, 'eventReport'>[],
   day: Date,
   hour: number,
 ) {
   return events.filter((event) => {
-    const start = parseISO(event.startDate);
+    const start = parseISO(event.startDate || '');
     return isSameDay(start, day) && getHours(start) === hour;
   });
 }
@@ -50,7 +50,7 @@ export function EventsCalendarView() {
   const year = currentDate.getFullYear();
 
   const { data, isLoading, isError } = useGetAllEventsQuery({ month, year });
-  const allEvents = data?.data || [];
+  const allEvents = data?.data.events || [];
 
   const weekDays = useMemo(() => {
     const start = startOfWeek(currentDate, { weekStartsOn: 0 });
@@ -61,7 +61,7 @@ export function EventsCalendarView() {
   // TODO: Make a filter for weeks as well
   const weekEvents = useMemo(() => {
     return allEvents.filter((event) => {
-      const start = parseISO(event.startDate);
+      const start = parseISO(event.startDate || '');
       return weekDays.some((day) => isSameDay(start, day));
     });
   }, [allEvents, weekDays]);
@@ -147,7 +147,7 @@ export function EventsCalendarView() {
             {/* Days */}
             {monthDays.map((day, idx) => {
               const dayEvents = allEvents.filter((event) =>
-                isSameDay(parseISO(event.startDate), day),
+                isSameDay(parseISO(event.startDate || ''), day),
               );
               return (
                 <div
@@ -174,8 +174,8 @@ export function EventsCalendarView() {
                           </Badge>
                         </div>
                         <div className='text-muted-foreground text-xs'>
-                          {format(parseISO(event.startDate), 'MMM d, h:mm a')} -{' '}
-                          {format(parseISO(event.endDate), 'h:mm a')}
+                          {format(parseISO(event.startDate || ''), 'MMM d, h:mm a')} -{' '}
+                          {format(parseISO(event.endDate || ''), 'h:mm a')}
                         </div>
                       </Card>
                     ))}
@@ -226,8 +226,8 @@ export function EventsCalendarView() {
                             </Badge>
                           </div>
                           <div className='text-muted-foreground text-xs'>
-                            {format(parseISO(event.startDate), 'h:mm a')} -{' '}
-                            {format(parseISO(event.endDate), 'h:mm a')}
+                            {format(parseISO(event.startDate || ''), 'h:mm a')} -{' '}
+                            {format(parseISO(event.endDate || ''), 'h:mm a')}
                           </div>
                         </Card>
                       ))}

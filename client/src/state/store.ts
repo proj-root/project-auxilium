@@ -9,11 +9,13 @@ import eventReportPaginationSlice from '@/features/events/state/event-report-pag
 import userPaginationSlice from '@/features/user/components/user-pagination-table/user-pagination-slice';
 import userProfilePaginationSlice from '@/features/user/components/user-profile-pagination-table/user-profile-pagination-slice';
 import linkProfileSlice from '@/features/auth/state/link-profile-slice';
+import eventPaginationSlice from '@/features/events/state/event-pagination-slice';
 
 export const makeStore = () => {
   return configureStore({
     reducer: {
       eventReportPaginationSlice,
+      eventPaginationSlice,
       userPaginationSlice,
       userProfilePaginationSlice,
       linkProfileSlice,

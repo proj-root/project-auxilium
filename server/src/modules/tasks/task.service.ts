@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import {
   CreateTaskDTO,
   GetAllEventTasksQueryDTO,
@@ -7,6 +7,7 @@ import {
 import db from '@/db';
 import * as schema from '@/db/schema';
 import { eq } from 'drizzle-orm';
+import { format } from 'date-fns';
 
 @Injectable()
 export class TaskService {
@@ -16,12 +17,31 @@ export class TaskService {
         taskId,
       },
       with: {
-        creator: true,
-        assignee: true,
+        creator: {
+          with: {
+            userProfile: {
+              columns: {
+                ichat: true,
+              },
+            },
+          },
+        },
+        assignee: {
+          with: {
+            userProfile: {
+              columns: {
+                ichat: true,
+              },
+            },
+          },
+        },
         department: true,
         comments: {
           with: {
-            creator: true
+            creator: true,
+          },
+          orderBy: {
+            createdAt: 'desc'
           }
         },
       },
@@ -55,6 +75,7 @@ export class TaskService {
       },
       with: {
         assignee: true,
+        creator: true,
         department: true,
       },
       limit: pageSize,
@@ -70,7 +91,7 @@ export class TaskService {
   // Create a new task
   async createTask(args: CreateTaskDTO) {
     // TODO: Check that assignee is a member of the event + ADMIN
-    
+
     const { deadline, ...rest } = args;
 
     const newTask = await db.transaction(async (tx) => {
@@ -82,7 +103,7 @@ export class TaskService {
           ...rest,
         })
         .returning();
-      
+
       if (!task) {
         throw new Error('Failed to create task');
       }
@@ -108,16 +129,66 @@ export class TaskService {
 
   // Update an existing task
   async updateTask(args: UpdateTaskDTO) {
-    const { taskId, deadline, ...rest } = args;
+    const { taskId, userId, deadline, ...rest } = args;
 
-    const [updatedTask] = await db
-      .update(schema.task)
-      .set({
-        deadline: deadline ? new Date(deadline) : undefined,
-        ...rest,
-      })
-      .where(eq(schema.task.taskId, taskId))
-      .returning();
+    const updatedTask = await db.transaction(async (tx) => {
+      const task = await tx.query.task.findFirst({
+        where: {
+          taskId,
+        },
+      });
+
+      // Check if assignee is part of the event
+      let assignee;
+      if (rest.assigneeId) {
+        assignee = await tx.query.userEventRole.findFirst({
+          where: {
+            eventId: task?.eventId,
+            userId: rest.assigneeId,
+          },
+          with: {
+            user: {
+              columns: {
+                name: true
+              }
+            }
+          }
+        });
+
+        if (!assignee)
+          throw new BadRequestException(
+            'Assignee must be involved in event. Share the event with the assignee first.',
+          );
+      }
+
+      const updatedTask = await tx
+        .update(schema.task)
+        .set({
+          deadline: deadline ? new Date(deadline) : undefined,
+          ...rest,
+        })
+        .where(eq(schema.task.taskId, taskId))
+        .returning();
+
+      let message = '';
+      if (deadline)
+        message = `Set deadline to ${format(new Date(deadline), 'do MM yyyy')}`;
+      if (rest.priority) message = `Set priority to ${rest.priority}`;
+      if (rest.status) message = `Set status to "${rest.status}"`;
+      if (assignee) message = `Assigned task to ${assignee.user.name}`;
+      if (rest.title) message = `Changed title to "${rest.title}"`;
+      if (rest.description) message = `Changed description to "${rest.description}"`;
+
+      if (message !== '') {
+        await tx.insert(schema.taskComment).values({
+          taskId,
+          text: message,
+          createdBy: userId,
+        });
+      }
+
+      return updatedTask;
+    });
 
     return updatedTask;
   }

@@ -1,7 +1,7 @@
 import { date, index, uuid } from 'drizzle-orm/pg-core';
 import { timestamps } from './column.helpers';
 import { integer, pgTable, varchar } from 'drizzle-orm/pg-core';
-import { RolesConfig } from '@auxilium/configs/roles';
+import { EventRolesConfig, RolesConfig } from '@auxilium/configs/roles';
 import { primaryKey } from 'drizzle-orm/pg-core';
 import { StatusConfig } from '@auxilium/configs/status';
 import { pgEnum } from 'drizzle-orm/pg-core';
@@ -9,7 +9,6 @@ import { text } from 'drizzle-orm/pg-core';
 import { timestamp } from 'drizzle-orm/pg-core';
 import { boolean } from 'drizzle-orm/pg-core';
 import type { AnyPgColumn } from 'drizzle-orm/pg-core';
-import { EventRolesConfig } from '@/config/system.config';
 
 // export const eventRole = pgEnum('event_role', [
 //   'ORGANIZER',
@@ -101,9 +100,9 @@ export const event = pgTable('event', {
   startDate: timestamp('start_date', { withTimezone: true, mode: 'date' }),
   endDate: timestamp('end_date', { withTimezone: true, mode: 'date' }),
   platform: varchar({ length: 20 }),
+  venue: varchar({ length: 50 }),
   signupUrl: varchar('signup_url', { length: 255 }),
   feedbackUrl: varchar('feedback_url', { length: 255 }),
-  helpersUrl: varchar('helpers_url', { length: 255 }),
   createdBy: uuid('created_by').references(() => user.id, {
     onDelete: 'set null',
     onUpdate: 'cascade',

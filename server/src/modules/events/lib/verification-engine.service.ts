@@ -3,14 +3,14 @@ import { EventsService } from '../event.service';
 import { UserService } from '@/modules/user/user.service';
 import { SheetsService } from './sheets.service';
 import { capitalizeFirst } from '@/lib/formatters';
-import { EventRolesConfig } from '@/config/system.config';
+import { UserProfileDTO } from '@/modules/user/user.dto';
+import { EventRolesConfig } from '@auxilium/configs/roles';
 
 export interface VerifyParticipantsInput {
   eventId: string;
   userId: string;
   signupUrl: string;
   feedbackUrl: string;
-  helpersUrl: string;
 }
 
 export interface VerifyParticipantsResult {
@@ -18,7 +18,6 @@ export interface VerifyParticipantsResult {
   stats: {
     signupCount: number;
     feedbackCount: number;
-    helperCount: number;
     invalidCount: number;
     overallTurnupRate: string;
     courseTurnup: Record<string, number>;
@@ -53,12 +52,12 @@ export class VerificationEngineService {
   async verifyParticipants(
     args: VerifyParticipantsInput,
   ): Promise<VerifyParticipantsResult> {
-    const { eventId, userId, signupUrl, feedbackUrl, helpersUrl } = args;
+    const { eventId, userId, signupUrl, feedbackUrl } = args;
 
     // Validate URLs and extract spreadsheet IDs
-    if (!signupUrl || !feedbackUrl || !helpersUrl) {
+    if (!signupUrl || !feedbackUrl) {
       throw new BadRequestException(
-        'Missing required URLs: signupUrl, feedbackUrl, helpersUrl',
+        'Missing required URLs: signupUrl, feedbackUrl',
       );
     }
 
@@ -67,8 +66,6 @@ export class VerificationEngineService {
       this.sheetsService.extractSpreadsheetId(signupUrl);
     const feedbackSpreadsheetId =
       this.sheetsService.extractSpreadsheetId(feedbackUrl);
-    const helperSpreadsheetId =
-      this.sheetsService.extractSpreadsheetId(helpersUrl);
 
     // Get responses from each form
     this.logger.debug('Fetching data from spreadsheets...');
@@ -78,9 +75,14 @@ export class VerificationEngineService {
     const feedbackData = await this.sheetsService.getSheetData({
       spreadsheetId: feedbackSpreadsheetId,
     });
-    const helperData = await this.sheetsService.getSheetData({
-      spreadsheetId: helperSpreadsheetId,
-    });
+
+    // Fetch all helpers and extract their profile
+    const helperData = (
+      await this.eventsService.getEventHelpersByEventId({ eventId })
+    ).map((helper) => ({
+      ...(helper.user?.userProfile as UserProfileDTO),
+      eventRole: helper.eventRole,
+    }));
 
     this.logger.debug(
       '✅ Data loaded from spreadsheets. Preparing to verify participants...',
@@ -89,7 +91,6 @@ export class VerificationEngineService {
     // Exclude header row
     const signupCount = signupData.length - 1;
     const feedbackCount = feedbackData.length - 1;
-    const helperCount = helperData.length - 1;
 
     // Create event report
     this.logger.debug('Creating event report...');
@@ -174,7 +175,7 @@ export class VerificationEngineService {
         (entry) => entry[2] === studentAdminNum,
       );
       const helperEntry = helperData.find(
-        (entry) => entry[2] === studentAdminNum,
+        (entry) => entry?.adminNumber === studentAdminNum,
       );
 
       // Handle invalid cases
@@ -229,15 +230,15 @@ export class VerificationEngineService {
     }
 
     // Process helper entries
-    for (const helper of helperData.slice(1)) {
-      const helperFullName = helper[1];
-      const helperAdminNum = helper[2];
-      const helperIchat = helper[3];
-      const helperClass = helper[4];
-      const helperCourse = helper[5];
-      const isEventIC = helper[6]?.toLowerCase().includes('[event ic]');
+    for (const helper of helperData) {
+      const helperFullName = helper?.firstName + helper?.lastName;
+      const helperAdminNum = helper.adminNumber;
+      const helperIchat = helper.ichat;
+      const helperClass = helper.studentClass;
+      const helperCourse = helper.course;
+      const isEventIC = helper.eventRole?.eventRoleId === EventRolesConfig.COORDINATOR;
       const eventRole = isEventIC ? 'ORGANIZER' : 'HELPER';
-      const points = isEventIC ? 2 : 1;
+      const points = helper.eventRole?.pointsAwarded;
 
       if (
         !helperFullName ||
@@ -251,38 +252,39 @@ export class VerificationEngineService {
         );
       }
 
-      let existingProfile = await this.userService.getProfileByAdminNumber({
-        adminNumber: helperAdminNum,
-      });
+      // Assume admins have profiles already
+      // let existingProfile = await this.userService.getProfileByAdminNumber({
+      //   adminNumber: helperAdminNum,
+      // });
 
-      if (!existingProfile) {
-        this.logger.debug(
-          `Creating new profile for helper admin number: ${helperAdminNum}`,
-        );
-        existingProfile = await this.userService.createUserProfile({
-          ...this.splitName(helperFullName),
-          course: helperCourse?.split('/')[0]?.trim() || '',
-          ichat: helperIchat,
-          studentClass: helperClass,
-          adminNumber: helperAdminNum,
-        });
-      } else if (
-        existingProfile &&
-        existingProfile.studentClass !== helperClass
-      ) {
-        this.logger.warn(
-          `Class mismatch for helper ${helperAdminNum}. Updating...`,
-        );
-        await this.userService.updateUserProfile({
-          profileId: existingProfile.profileId,
-          studentClass: helperClass,
-        });
-      }
+      // if (!existingProfile) {
+      //   this.logger.debug(
+      //     `Creating new profile for helper admin number: ${helperAdminNum}`,
+      //   );
+      //   existingProfile = await this.userService.createUserProfile({
+      //     ...this.splitName(helperFullName),
+      //     course: helperCourse?.split('/')[0]?.trim() || '',
+      //     ichat: helperIchat,
+      //     studentClass: helperClass,
+      //     adminNumber: helperAdminNum,
+      //   });
+      // } else if (
+      //   existingProfile &&
+      //   existingProfile.studentClass !== helperClass
+      // ) {
+      //   this.logger.warn(
+      //     `Class mismatch for helper ${helperAdminNum}. Updating...`,
+      //   );
+      //   await this.userService.updateUserProfile({
+      //     profileId: existingProfile.profileId,
+      //     studentClass: helperClass,
+      //   });
+      // }
 
       // Record helper participation
       const participationRecord =
         await this.eventsService.createEventParticipationRecord({
-          profileId: existingProfile.profileId,
+          profileId: helper.profileId,
           eventReportId: eventReport.eventReportId,
           attended: true,
           eventRoleId: EventRolesConfig.COORDINATOR, // TODO: Assuming helpers get coordinator points, will be assigned in the future
@@ -293,9 +295,9 @@ export class VerificationEngineService {
       // Format for points sheet
       pointsRecordsArray.push([
         serialCount.toString(),
-        `${existingProfile.firstName} ${existingProfile.lastName}`,
-        existingProfile.adminNumber,
-        existingProfile.studentClass,
+        `${helper.firstName} ${helper.lastName}`,
+        helper.adminNumber,
+        helper.studentClass,
         `${capitalizeFirst(participationRecord?.eventRole?.pointsType || '')}(${participationRecord?.eventRole?.pointsType?.charAt(0) || ''})`,
         'one week',
         'Organising Committee',
@@ -318,7 +320,6 @@ export class VerificationEngineService {
       stats: {
         signupCount,
         feedbackCount,
-        helperCount,
         invalidCount,
         overallTurnupRate,
         courseTurnup,

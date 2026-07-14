@@ -2,6 +2,7 @@ import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } 
 import type { DataTableContextMenuProps } from "@/components/ui/data-table";
 import type { UserDTO } from "../../user.dto";
 import { Copy, Edit2, Trash2 } from "lucide-react";
+import { copyToClipboard } from "@/lib/clipboard";
 
 export function UserPaginationContextMenu({
   row,
@@ -13,13 +14,13 @@ export function UserPaginationContextMenu({
         {trigger}
       </ContextMenuTrigger>
       <ContextMenuContent className="w-48">
-        <ContextMenuItem onClick={() => navigator.clipboard.writeText(row.id)} className="gap-2 cursor-pointer">
+        <ContextMenuItem onClick={() => copyToClipboard(row.id)} className="gap-2 cursor-pointer">
           <Copy /> Copy ID
         </ContextMenuItem>
-        <ContextMenuItem className="gap-2 cursor-pointer">
+        <ContextMenuItem className="gap-2 cursor-pointer" disabled={true}>
           <Edit2 /> Edit
         </ContextMenuItem>
-        <ContextMenuItem className="gap-2 cursor-pointer" variant={'destructive'}>
+        <ContextMenuItem className="gap-2 cursor-pointer" variant={'destructive'} disabled={true}>
           <Trash2 /> Delete
         </ContextMenuItem>
       </ContextMenuContent>

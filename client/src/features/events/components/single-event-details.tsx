@@ -2,6 +2,7 @@ import {
   Building,
   Clock,
   List,
+  MapPin,
   SquareArrowOutUpRight,
   SquareChevronDown,
 } from 'lucide-react';
@@ -19,18 +20,16 @@ export function EventDetailsCard({
   event: Event;
   className?: string;
 }) {
-  const isSameDay = isEqual(
-    startOfDay(new Date(event.startDate)),
-    startOfDay(new Date(event.endDate)),
-  );
+  const isSameDay =
+    event.startDate && event.endDate
+      ? isEqual(
+          startOfDay(new Date(event.startDate)),
+          startOfDay(new Date(event.endDate)),
+        )
+      : false;
 
   return (
-    <div
-      className={cn(
-        'flex flex-col gap-2',
-        className,
-      )}
-    >
+    <div className={cn('flex flex-col gap-2', className)}>
       <div className='flex flex-row items-center gap-2'>
         <p className='flex w-full flex-row items-center gap-2'>
           <Clock className='size-4' />
@@ -44,7 +43,7 @@ export function EventDetailsCard({
                 : `${format(event.startDate, 'do MMM yyyy')} to ${format(event.endDate, 'do MMM yyyy')}`}
             </p>
           ) : (
-            <p className='text-muted-foreground'>No date information yet</p>
+            <p className='text-muted-foreground'>-</p>
           )}
         </div>
       </div>
@@ -61,39 +60,38 @@ export function EventDetailsCard({
           Platform
         </p>
         <p className={cn('w-full', !event.platform && 'text-muted-foreground')}>
-          {event.platform ?? 'Not Specified'}
+          {event.platform ?? '-'}
+        </p>
+      </div>
+      <div className='flex flex-row items-center gap-2'>
+        <p className='flex w-full flex-row items-center gap-2'>
+          <MapPin className='size-4' />
+          Venue
+        </p>
+        <p className={cn('w-full', !event.venue && 'text-muted-foreground')}>
+          {event.venue ?? '-'}
         </p>
       </div>
       <Separator className='my-1' />
       <div className='flex flex-row items-center gap-2'>
-        <Button variant={'outline'} size={'xs'}>
+        <Button variant={'outline'} size={'xs'} disabled={!event.signupUrl}>
           <Link
-            to={event.signupUrl}
+            to={event.signupUrl ?? ''}
             target='_blank'
             className='flex flex-row items-center gap-2'
           >
             <SquareArrowOutUpRight /> Signup Responses
           </Link>
         </Button>
-        <Button variant={'outline'} size={'xs'}>
+        <Button variant={'outline'} size={'xs'} disabled={!event.feedbackUrl}>
           <Link
-            to={event.feedbackUrl}
+            to={event.feedbackUrl ?? ''}
             target='_blank'
             className='flex flex-row items-center gap-2'
           >
             <SquareArrowOutUpRight /> Feedback Responses
           </Link>
         </Button>
-        {/* TODO: Deprecate this next time */}
-        {/* <Button variant={'outline'} size={'xs'}>
-          <Link
-            to={event.helpersUrl}
-            target='_blank'
-            className='flex flex-row items-center gap-2'
-          >
-            <SquareArrowOutUpRight /> Helper Responses
-          </Link>
-        </Button> */}
       </div>
       <div className='text-muted-foreground flex flex-col gap-1 text-xs'>
         <p>

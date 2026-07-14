@@ -8,6 +8,7 @@
 import * as z from 'zod';
 import {
   useGetAllEventTypesQuery,
+  useGetEventByIdQuery,
   useUpdateEventMutation,
 } from '../state/events-api-slice';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -59,9 +60,9 @@ const formSchema = z.object({
   startDate: z.date().optional(),
   endDate: z.date().optional(),
   platform: z.string().optional(),
+  venue: z.string().optional(),
   signupUrl: z.string().optional(),
   feedbackUrl: z.string().optional(),
-  helpersUrl: z.string().optional(),
 });
 
 type EditEventFormValues = z.infer<typeof formSchema>;
@@ -73,8 +74,7 @@ export function EditEventModal({
   eventId: string;
   className?: string;
 }) {
-  // TODO: Pre-fill all form fields with current event data
-
+  const { data: eventData } = useGetEventByIdQuery({ eventId });
   const [updateEvent, { isLoading }] = useUpdateEventMutation();
   const { data: eventTypes } = useGetAllEventTypesQuery();
   const [isOpen, setIsOpen] = useState(false);
@@ -82,15 +82,33 @@ export function EditEventModal({
   const form = useForm<EditEventFormValues>({
     resolver: zodResolver(formSchema),
     mode: 'all',
+    // Pre-load all data for this event
     defaultValues: {
-      name: undefined
-    }
+      name: eventData?.data.name ?? undefined,
+      description: eventData?.data.description ?? undefined,
+      eventTypeId:
+        eventData?.data.eventType.eventTypeId.toString() ?? undefined,
+      startDate: eventData?.data.startDate
+        ? new Date(eventData?.data.startDate)
+        : undefined,
+      endDate: eventData?.data.endDate
+        ? new Date(eventData?.data.endDate)
+        : undefined,
+      platform: eventData?.data.platform ?? undefined,
+      venue: eventData?.data.venue ?? undefined,
+      signupUrl: eventData?.data.signupUrl ?? undefined,
+      feedbackUrl: eventData?.data.feedbackUrl ?? undefined,
+    },
   });
+
+  const dirtyFieldsCount = Object.keys(form.formState.dirtyFields).length;
 
   const onSubmit = async (data: EditEventFormValues) => {
     // Filter out empty strings and undefined values to prevent overwriting existing data
     const cleanedData = Object.fromEntries(
-      Object.entries(data).filter(([, value]) => value !== '' && value !== undefined)
+      Object.entries(data).filter(
+        ([, value]) => value !== undefined,
+      ),
     );
 
     // Don't send if no fields are actually being updated
@@ -124,9 +142,14 @@ export function EditEventModal({
             <DialogTitle className='flex flex-row items-center gap-2'>
               Edit Event <Edit2 className='size-4' />
             </DialogTitle>
-            <DialogDescription>Remember to save your changes!</DialogDescription>
+            {dirtyFieldsCount > 0 && (
+              <DialogDescription>
+                {dirtyFieldsCount} change(s) have been made. Please remember to{' '}
+                <strong>save</strong>!
+              </DialogDescription>
+            )}
           </DialogHeader>
-          <div className='mt-3 scrollbar-none flex max-h-[50vh] flex-col gap-4 overflow-y-scroll'>
+          <div className='mt-4 flex max-h-[50vh] scrollbar-none flex-col gap-4 overflow-y-scroll'>
             {/* Event Name */}
             <Controller
               name='name'
@@ -235,6 +258,28 @@ export function EditEventModal({
                       <SelectItem value='Offline'>Offline</SelectItem>
                     </SelectContent>
                   </Select>
+                </Field>
+              )}
+            />
+
+            {/* Venue */}
+            <Controller
+              name='venue'
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field>
+                  <FieldLabel htmlFor='venue'>Venue</FieldLabel>
+                  <Input
+                    {...field}
+                    id={field.name}
+                    type='text'
+                    placeholder='e.g. MLT 12, leave empty if online'
+                    autoComplete='off'
+                    aria-invalid={fieldState.invalid}
+                  />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
                 </Field>
               )}
             />
@@ -452,37 +497,15 @@ export function EditEventModal({
                 </Field>
               )}
             />
-
-            {/* Helpers URL */}
-            <Controller
-              name='helpersUrl'
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field>
-                  <FieldLabel htmlFor='signupUrl'>
-                    Helper Responses Link
-                  </FieldLabel>
-                  <Input
-                    {...field}
-                    id={field.name}
-                    type='text'
-                    placeholder='e.g. https://docs.google.com/spreadsheets/d/wSfAhwE293nMMFfjsnfkj23j243...'
-                    autoComplete='off'
-                    aria-invalid={fieldState.invalid}
-                  />
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
-            />
           </div>
           <DialogFooter className='pt-4'>
             <Button
               type='submit'
-              disabled={Boolean(isLoading || !form.formState.isValid)}
+              disabled={Boolean(
+                isLoading || !form.formState.isValid || !form.formState.isDirty,
+              )}
             >
-              Submit
+              Save Changes
             </Button>
             <DialogClose asChild>
               <Button variant='outline'>Close</Button>

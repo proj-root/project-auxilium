@@ -8,6 +8,7 @@ import {
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import {
+  Bug,
   Calendar,
   HelpCircle,
   Home,
@@ -23,6 +24,7 @@ const iconMap: Record<string, React.ElementType> = {
   users: Users,
   help: HelpCircle,
   feedback: MessageSquareText,
+  bug: Bug
 };
 
 export function NavGroup({
@@ -105,7 +107,7 @@ export function NavGroupSecondary({
                 tooltip={item.title}
                 className='hover:text-foreground text-muted-foreground hover:bg-transparent dark:hover:bg-transparent'
               >
-                <Link to={item.url}>
+                <Link to={item.url} target='_blank'>
                   {item.icon &&
                     (() => {
                       const Icon = iconMap[item.icon];

@@ -79,7 +79,7 @@ function UserSearchItem({ user, eventId }: { user: UserDTO; eventId: string }) {
           {isAlreadyAssigned && <span className='text-xs italic'>(added)</span>}
         </p>
         <p className='text-muted-foreground text-sm'>
-          {user.userProfile.ichat}
+          {user.userProfile?.ichat}
         </p>
       </div>
     </div>

@@ -43,7 +43,8 @@ export type GetPersonalDetailsResponse = BaseResponseDTO<UserDTO>;
 
 export interface GetAllUsersRequest extends PaginationOptions {
   roleIds?: number[];
-};
+  eventId?: string;
+}
 
 export type GetAllUsersResponse = BaseResponseDTO<{
   total: number;
@@ -61,14 +62,28 @@ export type GetAllUserProfilesResponse = BaseResponseDTO<{
   userProfiles: UserProfileDTO[];
 }>;
 
-export type GetSingleUserResponse = BaseResponseDTO<UserProfileDTO & {
-  email: string;
-  emailVerified: string;
-  image: string;
-  role: RoleDTO;
-  departments: DepartmentDTO[];
-}>;
+export type GetSingleUserResponse = BaseResponseDTO<
+  UserProfileDTO & {
+    email: string;
+    emailVerified: string;
+    image: string;
+    role: RoleDTO;
+    departments: DepartmentDTO[];
+  }
+>;
 
 export interface GetSingleUserRequest {
   userProfileId: string;
 }
+
+export interface UpdateUserByIdRequest {
+  userId: string;
+  course?: string;
+  studentClass?: string;
+  roleId?: number;
+  departmentIds?: number[];
+}
+
+export type GetAllRolesResponse = BaseResponseDTO<RoleDTO[]>;
+
+export type GetAllDepartmentsResponse = BaseResponseDTO<DepartmentDTO[]>;

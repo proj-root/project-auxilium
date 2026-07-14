@@ -26,9 +26,6 @@ import { RolesConfig } from '@auxilium/configs/roles';
 import { ZodValidationPipe } from '@/common/zod-validation.pipe';
 import { Session, type UserSession } from '@thallesp/nestjs-better-auth';
 import { EventsService } from '../events/event.service';
-import { EventRoleGuard } from '@/common/guards/event-role.guard';
-import { EventRoles } from '@/common/decorators/event-roles.decorator';
-import { EventRolesConfig } from '@/config/system.config';
 import { GetAllEventsQueryDTO } from '../events/events.dto';
 
 const ROUTE_NAME = 'api/events';
@@ -56,6 +53,7 @@ export class TasksController {
     @Body(new ZodValidationPipe(CreateTaskSchema)) body: CreateTaskDTO,
   ) {
     const userId = session.user.id;
+    const userRole = (session.user as any)?.role?.roleId;
 
     // Implement logic where only people part of the event can create tasks.
     // TODO: Make this more reusable
@@ -64,7 +62,7 @@ export class TasksController {
       eventId,
     });
 
-    if (!userEventRole) {
+     if (!userEventRole || userRole !== RolesConfig.SUPERADMIN) {
       throw new ForbiddenException(
         `User with ID ${userId} does not have a role in event ${eventId}`,
       );
@@ -154,6 +152,7 @@ export class TasksController {
     @Body(new ZodValidationPipe(UpdateTaskSchema)) body: UpdateTaskDTO,
   ) {
     const userId = session.user.id;
+    const userRole = (session.user as any)?.role?.roleId;
     const task = await this.tasksService.getTaskById({ taskId });
 
     if (!task) {
@@ -167,7 +166,7 @@ export class TasksController {
       eventId: task.eventId,
     });
 
-    if (!userEventRole) {
+    if (!userEventRole || userRole !== RolesConfig.SUPERADMIN) {
       throw new ForbiddenException(
         `User with ID ${userId} does not have a role in event ${task.eventId}`,
       );
@@ -178,6 +177,7 @@ export class TasksController {
     const updatedTask = await this.tasksService.updateTask({
       ...body,
       taskId,
+      userId,
     });
 
     return {

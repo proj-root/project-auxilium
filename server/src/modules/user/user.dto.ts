@@ -37,8 +37,9 @@ export type CreateUserProfileDTO = z.infer<typeof CreateUserProfileSchema> & {
 
 export type GetAllUsersQueryDTO = PaginationOptions & {
   sortBy?: 'name' | 'createdAt';
-  statusId?: number;
   roleIds?: string | (number | string)[];
+  statusId?: number;
+  eventId?: string;
 };
 
 export type GetAllUserProfilesQueryDTO = PaginationOptions & {

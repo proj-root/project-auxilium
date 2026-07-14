@@ -1,20 +1,22 @@
 import { apiSlice } from '@/state/api-slice';
-import type {
-  AssignUserToEventRequest,
-  AssignUserToEventResponse,
-  CreateEventRequest,
-  CreateEventResponse,
-  GenerateEventReportResponse,
-  GetAllEventRolesResponse,
-  GetAllEventsRequest,
-  GetAllEventsResponse,
-  GetAllEventTypesResponse,
-  GetEventByIdResponse,
-  GetEventReportByIdResponse,
-  GetParticipationsByReportIdRequest,
-  GetParticipationsByReportIdResponse,
-  UpdateEventRequest,
-  UpdateEventResponse,
+import {
+  type CheckUserEventRoleResponse,
+  type AssignUserToEventRequest,
+  type AssignUserToEventResponse,
+  type CheckUserEventRoleRequest,
+  type CreateEventRequest,
+  type CreateEventResponse,
+  type GenerateEventReportResponse,
+  type GetAllEventRolesResponse,
+  type GetAllEventsRequest,
+  type GetAllEventsResponse,
+  type GetAllEventTypesResponse,
+  type GetEventByIdResponse,
+  type GetEventReportByIdResponse,
+  type GetParticipationsByReportIdRequest,
+  type GetParticipationsByReportIdResponse,
+  type UpdateEventRequest,
+  type UpdateEventResponse,
 } from '../events.dto';
 
 export const eventsApiSlice = apiSlice.injectEndpoints({
@@ -98,6 +100,20 @@ export const eventsApiSlice = apiSlice.injectEndpoints({
       }),
       providesTags: ['Events'],
     }),
+    deleteEventById: builder.mutation<void, { eventId: string }>({
+      query: ({ eventId }) => ({
+        url: `/events/${eventId}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['Events']
+    }),
+    hardDeleteEventById: builder.mutation<void, { eventId: string }>({
+      query: ({ eventId }) => ({
+        url: `/events/${eventId}/hard`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['Events']
+    }),
     assignUserToEvent: builder.mutation<
       AssignUserToEventResponse,
       AssignUserToEventRequest
@@ -125,6 +141,13 @@ export const eventsApiSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ['Events', 'User'],
     }),
+    checkUserEventRole: builder.query<CheckUserEventRoleResponse, CheckUserEventRoleRequest>({
+      query: ({ eventId }) => ({
+        url: `/events/${eventId}/check-eventrole`,
+        method: 'GET',
+      }),
+      providesTags: ['User']
+    })
   }),
 });
 
@@ -140,4 +163,7 @@ export const {
   useAssignUserToEventMutation,
   useGetAllEventRolesQuery,
   useUnassignUserFromEventMutation,
+  useDeleteEventByIdMutation,
+  useHardDeleteEventByIdMutation,
+  useCheckUserEventRoleQuery
 } = eventsApiSlice;

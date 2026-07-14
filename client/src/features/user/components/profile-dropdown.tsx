@@ -25,6 +25,7 @@ import { Link } from 'react-router';
 import { LogoutButton } from '@/features/auth/components/logout-button';
 import { createUserInitials } from '@/lib/formatters';
 import { RolesConfig } from '@auxilium/configs/roles';
+import { Skeleton } from '@/components/ui/skeleton';
 
 function UnlinkedProfileAlert() {
   return (
@@ -45,9 +46,18 @@ function UnlinkedProfileAlert() {
   );
 }
 
+function ProfileSkeleton() {
+  return (
+    <div className='flex flex-row items-center gap-3 outline-0'>
+      <Skeleton className='size-7 rounded-full' />
+      <Skeleton className='h-4 w-22 rounded-md' />
+    </div>
+  );
+}
+
 export function UserProfileDropdown() {
   const [isOpen, setIsOpen] = useState(false);
-  const { data } = useGetPersonalDetailsQuery();
+  const { data, isLoading } = useGetPersonalDetailsQuery();
 
   const showAvatarBadge = useCallback(() => {
     if (!data?.data.userProfile) {
@@ -56,6 +66,8 @@ export function UserProfileDropdown() {
 
     return false;
   }, [data]);
+
+  if (isLoading) return <ProfileSkeleton />;
 
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
@@ -79,7 +91,7 @@ export function UserProfileDropdown() {
         {isOpen ? (
           <ChevronUp className='size-5' />
         ) : (
-          <ChevronDown className='mt-1 size-5' />
+          <ChevronDown className='size-5' />
         )}
       </DropdownMenuTrigger>
       <DropdownMenuContent

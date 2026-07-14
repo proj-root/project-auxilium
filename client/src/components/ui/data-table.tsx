@@ -16,7 +16,8 @@ import {
 
 export interface DataTableContextMenuProps<T> {
   trigger: React.ReactNode;
-  row: T
+  row: T;
+  className?: string;
 }
 
 interface DataTableProps<TData, TValue> {
@@ -73,6 +74,7 @@ export function DataTable<TData, TValue>({
                           cell.column.columnDef.cell,
                           cell.getContext(),
                         )}
+                        className='flex h-full w-full p-2'
                       />
                     ) : (
                       <div className='p-2'>

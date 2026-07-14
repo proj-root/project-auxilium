@@ -11,6 +11,7 @@ export default [
 
   ...prefix('', [
     layout('routes/layout.tsx', [
+      route('*', 'routes/not-found.tsx'),
       route('/unauthorized', 'routes/unauthorized.tsx'),
       route('/about', 'routes/about.tsx'),
       route('/link-profile', 'routes/link-profile.tsx'),

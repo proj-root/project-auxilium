@@ -1,6 +1,6 @@
 {
   "name": "server",
-  "version": "0.0.1",
+  "version": "0.3.0-beta",
   "description": "",
   "author": "",
   "private": true,
@@ -34,7 +34,7 @@
     "better-auth": "^1.5.6",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
-    "date-fns": "^4.1.0",
+    "date-fns": "^4.4.0",
     "dotenv": "^17.4.2",
     "drizzle-orm": "^1.0.0-beta.22",
     "drizzle-seed": "^1.0.0-beta.22",

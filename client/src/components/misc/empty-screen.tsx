@@ -14,7 +14,7 @@ export function ComingSoonEmpty({ children, className }: { children?: React.Reac
       <Empty>
         <EmptyHeader>
           <EmptyMedia variant='default'>
-            <img src='/coming-soon.png' />
+            <img src='/coming-soon.png' className='w-5/6'/>
           </EmptyMedia>
           <EmptyTitle>Coming soon...</EmptyTitle>
           <EmptyDescription>

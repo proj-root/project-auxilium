@@ -23,7 +23,7 @@ import type {
   AssignUserToEventDTO,
   UnassignUserFromEventDTO,
 } from './events.dto';
-import { RolesConfig } from '@auxilium/configs/roles';
+import { EventRolesConfig, RolesConfig } from '@auxilium/configs/roles';
 
 @Injectable()
 export class EventsService {
@@ -47,13 +47,17 @@ export class EventsService {
                 image: true,
               },
               with: {
-                userProfile: true,
+                userProfile: {
+                  columns: {
+                    adminNumber: false,
+                  },
+                },
               },
             },
           },
           orderBy: {
             createdAt: 'desc',
-          }
+          },
         },
       },
     });
@@ -83,18 +87,29 @@ export class EventsService {
       throw new APIError('Unauthorized; missing user information', 401);
     }
 
-    const [newEvent] = await db
-      .insert(eventTable)
-      .values({
-        name,
-        eventTypeId,
-        description,
-        createdBy,
-        startDate: startDate ? new Date(startDate) : undefined,
-        endDate: endDate ? new Date(endDate) : undefined,
-        ...rest,
-      })
-      .returning();
+    const newEvent = await db.transaction(async (tx) => {
+      const [event] = await tx
+        .insert(eventTable)
+        .values({
+          name,
+          eventTypeId,
+          description,
+          createdBy,
+          startDate: startDate ? new Date(startDate) : undefined,
+          endDate: endDate ? new Date(endDate) : undefined,
+          ...rest,
+        })
+        .returning();
+
+      if (!event) throw new APIError('Failed to create new event', 500);
+
+      // Initialise user event role
+      await tx.insert(schema.userEventRole).values({
+        eventId: event?.eventId,
+        userId: createdBy,
+        eventRoleId: EventRolesConfig.COORDINATOR,
+      });
+    });
 
     return newEvent;
   }
@@ -148,11 +163,27 @@ export class EventsService {
       });
     }
 
+    const count = await db.query.event
+      .findMany({
+        where: andConditions.length > 0 ? { AND: andConditions } : undefined,
+      })
+      .then((events) => events.length);
+
     const events = await db.query.event.findMany({
       where: andConditions.length > 0 ? { AND: andConditions } : undefined,
       with: {
         eventType: true,
         creator: true,
+        userEventRoles: {
+          with: {
+            user: {
+              columns: {
+                name: true,
+                image: true,
+              },
+            },
+          },
+        },
       },
       limit: pageSize,
       offset: (page - 1) * pageSize,
@@ -161,7 +192,11 @@ export class EventsService {
       },
     });
 
-    return events;
+    return {
+      total: count,
+      pageCount: Math.ceil(count / pageSize),
+      events,
+    };
   }
 
   async updateEvent(args: UpdateEventDTO) {
@@ -173,6 +208,7 @@ export class EventsService {
         ...updateData,
         startDate: startDate ? new Date(startDate) : undefined,
         endDate: endDate ? new Date(endDate) : undefined,
+        updatedAt: new Date().toISOString()
       })
       .where(eq(eventTable.eventId, eventId))
       .returning();
@@ -280,16 +316,6 @@ export class EventsService {
     return eventReport;
   }
 
-  // async getEventReportsByEventId({ eventId }: { eventId: string }) {
-  //   const eventReports = await db.query.eventReport.findMany({
-  //     where: {
-  //       eventId,
-  //     },
-  //   });
-
-  //   return eventReports;
-  // }
-
   async getEventReportById({ eventReportId }: { eventReportId: string }) {
     const eventReport = await db.query.eventReport.findFirst({
       where: {
@@ -313,8 +339,6 @@ export class EventsService {
 
     return eventReport;
   }
-
-  // TODO: Allow users to delete reports
 
   // Event Participation
   async createEventParticipationRecord(args: CreateEventParticipationDTO) {
@@ -476,5 +500,23 @@ export class EventsService {
     });
 
     return userEventRole;
+  }
+
+  async getEventHelpersByEventId(args: { eventId: string }) {
+    const helpers = await db.query.userEventRole.findMany({
+      where: {
+        eventId: args.eventId,
+      },
+      with: {
+        eventRole: true,
+        user: {
+          with: {
+            userProfile: true,
+          },
+        },
+      },
+    });
+
+    return helpers;
   }
 }

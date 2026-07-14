@@ -5,14 +5,15 @@ import { Button } from '../ui/button';
 import { Link } from 'react-router';
 import { UserProfileDropdown } from '@/features/user/components/profile-dropdown';
 import { authClient } from '@/lib/auth-client';
+import { useTheme } from 'next-themes';
 
 export function NavBar() {
+  const { resolvedTheme } = useTheme();
   const { data, isPending, error } = authClient.useSession();
 
   return (
-    <div className='bg-background flex flex-row items-center justify-between'>
-      {/* TODO: Replace with actual logo next time */}
-      <h1 className='text-xl font-semibold'>G.A.R.D.E.N.</h1>
+    <div className='bg-background flex flex-row items-center   justify-between px-6 py-3'>
+      <img src={resolvedTheme === 'dark' ? '/logo-dark.png' : '/logo-light.png'} className='w-45 h-15 object-cover'/>
       <nav className='flex flex-row gap-4'>
         {/* TODO: Put navigation links here */}
       </nav>

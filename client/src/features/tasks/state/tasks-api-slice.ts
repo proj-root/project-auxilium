@@ -2,10 +2,13 @@ import { apiSlice } from '@/state/api-slice';
 import type {
   CreateTaskRequest,
   CreateTaskResponse,
+  DeleteTaskResponse,
   GetAllTasksRequest,
   GetAllTasksResponse,
   GetTaskByIdRequest,
-  GetTaskByIdResponnse,
+  GetTaskByIdResponse,
+  UpdateTaskRequest,
+  UpdateTaskResponse,
 } from '../tasks.dto';
 
 export const tasksApiSlice = apiSlice.injectEndpoints({
@@ -26,12 +29,27 @@ export const tasksApiSlice = apiSlice.injectEndpoints({
       }),
       providesTags: ['Tasks'],
     }),
-    getTaskById: builder.query<GetTaskByIdResponnse, GetTaskByIdRequest>({
+    getTaskById: builder.query<GetTaskByIdResponse, GetTaskByIdRequest>({
       query: ({ taskId }) => ({
         url: `/events/tasks/${taskId}`,
         method: 'GET',
       }),
       providesTags: ['Tasks'],
+    }),
+    updateTask: builder.mutation<UpdateTaskResponse, UpdateTaskRequest>({
+      query: ({ taskId, ...data }) => ({
+        url: `/events/tasks/${taskId}`,
+        method: 'PUT',
+        body: data
+      }),
+      invalidatesTags: ['Tasks'],
+    }),
+    deleteTask: builder.mutation<DeleteTaskResponse, { taskId: string; }>({
+      query: ({ taskId }) => ({
+        url: `/events/tasks/${taskId}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['Tasks'],
     }),
   }),
 });
@@ -40,4 +58,6 @@ export const {
   useCreateTaskMutation,
   useGetAllTasksQuery,
   useGetTaskByIdQuery,
+  useUpdateTaskMutation,
+  useDeleteTaskMutation
 } = tasksApiSlice;

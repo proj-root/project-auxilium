@@ -1,10 +1,21 @@
 import type { ColumnDef } from '@tanstack/react-table';
 import type { UserDTO } from '../../user.dto';
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
-import { BadgeCheck } from 'lucide-react';
+import { BadgeCheck, Edit2, User } from 'lucide-react';
 import { UserRoleBadge } from '../role-badge';
 import { Link } from 'react-router';
 import { Badge } from '@/components/ui/badge';
+import { format } from 'date-fns';
+import {
+  Popover,
+  PopoverContent,
+  PopoverDescription,
+  PopoverHeader,
+  PopoverTitle,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import { SelectUserRole } from './cell-helpers';
+import { RolesConfig } from '@auxilium/configs/roles';
 
 export const columns: ColumnDef<UserDTO>[] = [
   {
@@ -43,7 +54,7 @@ export const columns: ColumnDef<UserDTO>[] = [
       }
 
       return <span>{userProfile.adminNumber}</span>;
-    }
+    },
   },
   {
     accessorKey: 'email',
@@ -67,7 +78,16 @@ export const columns: ColumnDef<UserDTO>[] = [
       <DataTableColumnHeader title='Role' column={column} />
     ),
     cell: ({ row }) => {
-      return <UserRoleBadge role={row.original.role} />;
+      if (row.original.role.roleId === RolesConfig.SUPERADMIN) {
+        return <UserRoleBadge role={row.original.role} />;
+      }
+      
+      return (
+        <SelectUserRole
+          userId={row.original.id}
+          currentRole={row.original.role}
+        />
+      );
     },
   },
   {
@@ -79,10 +99,7 @@ export const columns: ColumnDef<UserDTO>[] = [
       return (
         <div className='flex flex-wrap gap-1'>
           {row.original.departments.map((dept) => (
-            <Badge
-              key={dept.departmentId}
-              variant='secondary'
-            >
+            <Badge key={dept.departmentId} variant='secondary'>
               {dept.name}
             </Badge>
           ))}
@@ -91,6 +108,15 @@ export const columns: ColumnDef<UserDTO>[] = [
           )}
         </div>
       );
+    },
+  },
+  {
+    accessorKey: 'createdAt',
+    header: ({ column }) => (
+      <DataTableColumnHeader title='Created At' column={column} />
+    ),
+    cell: ({ row }) => {
+      return <p>{format(row.original.createdAt, 'PPP hh:mm a')}</p>;
     },
   },
 ];

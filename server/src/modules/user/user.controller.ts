@@ -238,9 +238,10 @@ export class UserController {
     };
   }
 
+  // Get all users in the system
   @Get('/all')
   @UseGuards(RoleGuard)
-  @Roles(RolesConfig.ADMIN, RolesConfig.SUPERADMIN)
+  @Roles(RolesConfig.SUPERADMIN)
   async getAllUsers(@Query() query: Partial<GetAllUsersQueryDTO>) {
     const {
       page = 1,
@@ -249,6 +250,7 @@ export class UserController {
       sortOrder = 'desc',
       search,
       statusId,
+      eventId,
     } = query;
 
     let { roleIds } = query;
@@ -276,6 +278,7 @@ export class UserController {
       search: search as string,
       statusId: statusId ? Number(statusId) : undefined,
       roleIds: roleIds ? roleIds.map(Number) : undefined,
+      eventId
     });
 
     return {
@@ -288,7 +291,7 @@ export class UserController {
   // Get all user profiles in the system, which includes records not associated with a user account
   @Get('/profile/all')
   @UseGuards(RoleGuard)
-  @Roles(RolesConfig.ADMIN, RolesConfig.SUPERADMIN)
+  @Roles(RolesConfig.SUPERADMIN)
   async getAllUserProfiles(
     @Query() query: Partial<GetAllUserProfilesQueryDTO>,
   ) {
@@ -342,7 +345,7 @@ export class UserController {
   // Get single user data by user profile ID, which includes user account details if it exists
   @Get('profile/:userProfileId')
   @UseGuards(RoleGuard)
-  @Roles(RolesConfig.ADMIN, RolesConfig.SUPERADMIN)
+  @Roles(RolesConfig.SUPERADMIN)
   async getSingleUser(@Param('userProfileId') userProfileId: string) {
     const user = await this.userService.getUserByProfileId({ userProfileId });
 
@@ -375,9 +378,10 @@ export class UserController {
     };
   }
 
+  // Updates another user's information
   @Put(':userId')
   @UseGuards(RoleGuard)
-  @Roles(RolesConfig.ADMIN, RolesConfig.SUPERADMIN)
+  @Roles(RolesConfig.SUPERADMIN)
   async updateUserByUserId(
     @Session() session: UserSession,
     @Param('userId') userId: string,
@@ -401,5 +405,38 @@ export class UserController {
       status: 'success',
       data: user,
     };
+  }
+
+  @Get('/roles')
+  async getAllRoles() {
+    const roles = await this.userService.getAllRoles();
+
+    return {
+      message: `Fetched ${roles.length} roles successfully.`,
+      status: 'success',
+      data: roles
+    }
+  }
+
+  @Get('/departments')
+  async getAllDepartments() {
+    const departments = await this.userService.getAllDepartments();
+
+    return {
+      message: `Fetched ${departments.length} departments successfully.`,
+      status: 'success',
+      data: departments
+    }
+  }
+
+  @Get('/departments')
+  async getAllCoursess() {
+    const courses = await this.userService.getAllCourses();
+
+    return {
+      message: `Fetched ${courses.length} courses successfully.`,
+      status: 'success',
+      data: courses
+    }
   }
 }
