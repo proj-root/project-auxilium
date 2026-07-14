@@ -1,19 +1,11 @@
 import type { ColumnDef } from '@tanstack/react-table';
 import type { UserDTO } from '../../user.dto';
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
-import { BadgeCheck, Edit2, User } from 'lucide-react';
+import { BadgeCheck } from 'lucide-react';
 import { UserRoleBadge } from '../role-badge';
 import { Link } from 'react-router';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
-import {
-  Popover,
-  PopoverContent,
-  PopoverDescription,
-  PopoverHeader,
-  PopoverTitle,
-  PopoverTrigger,
-} from '@/components/ui/popover';
 import { SelectUserRole } from './cell-helpers';
 import { RolesConfig } from '@auxilium/configs/roles';
 

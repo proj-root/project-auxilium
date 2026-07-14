@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   ForbiddenException,
   Get,
   HttpException,
@@ -185,7 +186,8 @@ export class UserController {
     } else {
       // Check that all fields are accounted for
       const result = ProfileLinkSchema.safeParse(body);
-      if (!result.success) throw new HttpException('Missing fields in request', 400);
+      if (!result.success)
+        throw new HttpException('Missing fields in request', 400);
 
       // Create a new account based on the provided body
       userProfile = await this.userService.createUserProfile({
@@ -278,7 +280,7 @@ export class UserController {
       search: search as string,
       statusId: statusId ? Number(statusId) : undefined,
       roleIds: roleIds ? roleIds.map(Number) : undefined,
-      eventId
+      eventId,
     });
 
     return {
@@ -407,6 +409,61 @@ export class UserController {
     };
   }
 
+  @Delete()
+  async deleteSelf(@Session() session: UserSession) {
+    const userId = session.user.id;
+
+    await this.userService.deleteUser({ userId });
+
+    return {
+      message: `Successfully deleted user.`,
+      status: 'success',
+    };
+  }
+
+  @Delete('profile/:profileId')
+  @UseGuards(RoleGuard)
+  @Roles(RolesConfig.SUPERADMIN)
+  async deleteUserProfile(
+    @Session() session: UserSession,
+    @Param('profileId') profileId: string,
+  ) {
+    const user = await this.userService.getUserById({
+      userId: session.user.id,
+    });
+
+    if (profileId === user?.userProfile?.profileId) {
+      throw new ForbiddenException(
+        `You can't delete your own profile. (Why would you do that??)`,
+      );
+    }
+
+    await this.userService.deleteUserProfile({ profileId });
+
+    return {
+      message: `Successfully deleted user profile.`,
+      status: 'success',
+    };
+  }
+
+  @Delete(':userId')
+  @UseGuards(RoleGuard)
+  @Roles(RolesConfig.SUPERADMIN)
+  async deleteUser(@Session() session: UserSession, @Param('userId') userId: string) {
+    if (userId === session.user.id) {
+      throw new ForbiddenException(
+        'Use the /api/user endpoint to delete your own account.',
+      );
+    }
+
+    await this.userService.deleteUser({ userId });
+
+    return {
+      message: `Successfully deleted user.`,
+      status: 'success',
+    };
+  }
+
   @Get('/roles')
   async getAllRoles() {
     const roles = await this.userService.getAllRoles();
@@ -414,8 +471,8 @@ export class UserController {
     return {
       message: `Fetched ${roles.length} roles successfully.`,
       status: 'success',
-      data: roles
-    }
+      data: roles,
+    };
   }
 
   @Get('/departments')
@@ -425,8 +482,8 @@ export class UserController {
     return {
       message: `Fetched ${departments.length} departments successfully.`,
       status: 'success',
-      data: departments
-    }
+      data: departments,
+    };
   }
 
   @Get('/departments')
@@ -436,7 +493,7 @@ export class UserController {
     return {
       message: `Fetched ${courses.length} courses successfully.`,
       status: 'success',
-      data: courses
-    }
+      data: courses,
+    };
   }
 }

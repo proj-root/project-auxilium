@@ -1,5 +1,7 @@
 import { apiSlice } from '@/state/api-slice';
 import type {
+  DeleteUserByIdRequest,
+  DeleteUserProfileByIdRequest,
   GetAllDepartmentsResponse,
   GetAllRolesResponse,
   GetAllUserProfilesResponse,
@@ -55,20 +57,43 @@ export const userApiSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ['User', 'User-Pagination', 'User-Profile-Pagination'],
     }),
+    deleteSelf: builder.mutation<void, void>({
+      query: () => ({
+        url: `/user`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['User-Pagination', 'User'],
+    }),
+    deleteUserById: builder.mutation<void, DeleteUserByIdRequest>({
+      query: ({ userId }) => ({
+        url: `/user/${userId}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['User-Pagination', 'User'],
+    }),
+    deleteUserProfileById: builder.mutation<void, DeleteUserProfileByIdRequest>(
+      {
+        query: ({ profileId }) => ({
+          url: `/user/profile/${profileId}`,
+          method: 'DELETE',
+        }),
+        invalidatesTags: ['User-Pagination', 'User'],
+      },
+    ),
     getAllRoles: builder.query<GetAllRolesResponse, void>({
       query: () => ({
         url: `/user/roles`,
         method: 'GET',
       }),
-      providesTags: ['Roles']
+      providesTags: ['Roles'],
     }),
     getAllDepartments: builder.query<GetAllDepartmentsResponse, void>({
       query: () => ({
         url: `/user/departments`,
         method: 'GET',
       }),
-      providesTags: ['Departments']
-    })
+      providesTags: ['Departments'],
+    }),
   }),
 });
 
@@ -79,5 +104,8 @@ export const {
   useGetSingleUserQuery,
   useUpdateUserByIdMutation,
   useGetAllRolesQuery,
-  useGetAllDepartmentsQuery
+  useGetAllDepartmentsQuery,
+  useDeleteSelfMutation,
+  useDeleteUserByIdMutation,
+  useDeleteUserProfileByIdMutation,
 } = userApiSlice;

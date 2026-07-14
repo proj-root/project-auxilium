@@ -524,6 +524,32 @@ export class UserService {
     }
   }
 
+  async deleteUser({ userId }: { userId: string }) {
+    try {
+      await db.delete(schema.user).where(eq(schema.user.id, userId));
+    } catch (error) {
+      this.logger.error('Error deleting user:', error);
+      if (!(error instanceof APIError)) {
+        throw error;
+      }
+      throw new APIError('Failed to delete user', 500);
+    }
+  }
+
+  async deleteUserProfile({ profileId }: { profileId: string }) {
+    try {
+      await db
+        .delete(schema.userProfile)
+        .where(eq(schema.userProfile.profileId, profileId));
+    } catch (error) {
+      this.logger.error('Error deleting user profile:', error);
+      if (!(error instanceof APIError)) {
+        throw error;
+      }
+      throw new APIError('Failed to delete user profile', 500);
+    }
+  }
+
   async linkProfileToUser({
     userId,
     ichat,
