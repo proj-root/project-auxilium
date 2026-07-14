@@ -1,4 +1,4 @@
-import { drizzleAdapter } from 'better-auth/adapters/drizzle';
+import { drizzleAdapter } from '@better-auth/drizzle-adapter';
 import db from '@/db';
 import { createAuthMiddleware } from 'better-auth/api';
 import {
@@ -17,7 +17,8 @@ export const auth = betterAuth({
   baseURL: process.env.AUTH_BASE_URL || 'http://localhost:5175',
   basePath: '/api/auth',
   trustedOrigins: [
-    process.env.CLIENT_URL || 'http://localhost:5173',
+    process.env.CLIENT_URL || '',
+    'http://localhost:5173',
     `http://localhost:${port}`,
   ],
 
@@ -43,7 +44,10 @@ export const auth = betterAuth({
     after: createAuthMiddleware(async (ctx) => {
       if (ctx.path.startsWith('/sign-up')) {
         await setupUserDetails(ctx);
-        return null;
+        return {
+          message: 'User registered successfully.',
+          status: 'success',
+        };
       }
       if (ctx.path.startsWith('/get-session') && ctx.context.session?.user) {
         const userId = ctx.context.session.user.id;
@@ -64,6 +68,7 @@ export const auth = betterAuth({
   // EXTRA CONFIGS
   advanced: {
     disableOriginCheck: isDevEnv, // Disabled in dev for Postman
+    disableCSRFCheck: isDevEnv, // Disabled in dev for Postman
     database: {
       generateId: 'uuid',
     },

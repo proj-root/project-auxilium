@@ -13,6 +13,7 @@ import {
   HttpCode,
   BadRequestException,
   UsePipes,
+  UseGuards,
 } from '@nestjs/common';
 import { EventsService } from './event.service';
 import { VerificationEngineService } from './lib/verification-engine.service';
@@ -26,15 +27,24 @@ import type {
   CreateEventReportDTO,
   CreateEventParticipationDTO,
   GetParticipationRecordsQueryDTO,
+  AssignUserToEventDTO,
+  UnassignUserFromEventDTO,
 } from './events.dto';
 import {
   CreateEventSchema,
   UpdateEventSchema,
   CreateEventReportSchema,
   CreateEventParticipationSchema,
+  AssignUserToEventSchema,
+  UnassignUserFromEventSchema,
 } from './events.dto';
 import { Session, type UserSession } from '@thallesp/nestjs-better-auth';
 import { SystemConfig } from '@/config/system.config';
+import { RoleGuard } from '@/common/guards/role.guard';
+import { EventRolesConfig, RolesConfig } from '@auxilium/configs/roles';
+import { Roles } from '@/common/decorators/roles.decorator';
+import { EventRoleGuard } from '@/common/guards/event-role.guard';
+import { EventRoles } from '@/common/decorators/event-roles.decorator';
 
 const ROUTE_NAME = 'api/events';
 
@@ -54,6 +64,8 @@ export class EventsController {
    * Retrieve all events with pagination and filtering
    */
   @Get()
+  @UseGuards(RoleGuard)
+  @Roles(RolesConfig.ADMIN, RolesConfig.SUPERADMIN)
   async getAllEvents(@Query() query: Partial<GetAllEventsQueryDTO>) {
     const {
       page = 1,
@@ -68,7 +80,7 @@ export class EventsController {
       year,
     } = query;
 
-    const events = await this.eventsService.getAllEvents({
+    const result = await this.eventsService.getAllEvents({
       page: Number(page),
       pageSize: Number(pageSize),
       sortBy:
@@ -83,10 +95,14 @@ export class EventsController {
       year: year ? Number(year) : undefined,
     });
 
+    this.logger.verbose(
+      `Retrieved ${result.events.length} events sucessfully.`,
+    );
+
     return {
       status: 'success',
       message: 'Events retrieved successfully',
-      data: events,
+      data: result,
     };
   }
 
@@ -95,9 +111,12 @@ export class EventsController {
    * Create a new event
    */
   @Post()
+  @UseGuards(RoleGuard)
+  @Roles(RolesConfig.ADMIN, RolesConfig.SUPERADMIN)
   @HttpCode(201)
   async createEvent(
-    @Body(new ZodValidationPipe(CreateEventSchema)) createEventDto: CreateEventDTO,
+    @Body(new ZodValidationPipe(CreateEventSchema))
+    createEventDto: CreateEventDTO,
     @Session() session: UserSession,
   ) {
     // Extract user ID from better-auth session
@@ -131,10 +150,27 @@ export class EventsController {
   }
 
   /**
+   * GET /api/events/roles
+   * Get all event roles
+   */
+  @Get('roles')
+  async getAllEventRoles() {
+    const eventRoles = await this.eventsService.getAllEventRoles();
+
+    return {
+      status: 'success',
+      message: 'Event roles retrieved successfully',
+      data: eventRoles,
+    };
+  }
+
+  /**
    * GET /api/events/reports/:reportId/participants
    * Get participation records for an event report
    */
   @Get('reports/:reportId/participants')
+  @UseGuards(RoleGuard)
+  @Roles(RolesConfig.ADMIN, RolesConfig.SUPERADMIN)
   async getParticipationRecords(
     @Param('reportId') reportId: string,
     @Query() query: Partial<GetParticipationRecordsQueryDTO>,
@@ -171,6 +207,8 @@ export class EventsController {
    * Get a single event report
    */
   @Get('reports/:reportId')
+  @UseGuards(RoleGuard)
+  @Roles(RolesConfig.ADMIN, RolesConfig.SUPERADMIN)
   async getEventReportById(@Param('reportId') reportId: string) {
     const eventReport = await this.eventsService.getEventReportById({
       eventReportId: reportId,
@@ -183,35 +221,33 @@ export class EventsController {
     };
   }
 
-  /**
-   * POST /api/events/reports/:reportId/participants
-   * Create a participation record
-   */
-  // @Post('reports/:reportId/participants')
-  // @HttpCode(201)
-  // @UsePipes(new ZodValidationPipe(CreateEventParticipationSchema))
-  // async createParticipationRecord(
-  //   @Param('reportId') reportId: string,
-  //   @Body() participationDto: Partial<CreateEventParticipationDTO>,
-  // ) {
-  //   const participationRecord =
-  //     await this.eventsService.createEventParticipationRecord({
-  //       eventReportId: reportId,
-  //       ...participationDto,
-  //     } as CreateEventParticipationDTO);
+  @Get(':id/check-eventrole')
+  @UseGuards(RoleGuard)
+  @Roles(RolesConfig.ADMIN, RolesConfig.SUPERADMIN)
+  async checkUserEventRole(
+    @Param('id') eventId: string,
+    @Session() session: UserSession,
+  ) {
+    const userId = session.user.id;
+    const userEventRole = await this.eventsService.getUserEventRole({
+      eventId,
+      userId,
+    });
 
-  //   return {
-  //     status: 'success',
-  //     message: 'Participation record created successfully',
-  //     data: participationRecord,
-  //   };
-  // }
+    return {
+      status: 'success',
+      message: 'User event role retrieved successfully',
+      data: userEventRole,
+    };
+  }
 
   /**
    * GET /api/events/:id
    * Retrieve a single event by ID
    */
   @Get(':id')
+  @UseGuards(RoleGuard)
+  @Roles(RolesConfig.ADMIN, RolesConfig.SUPERADMIN)
   async getEventById(@Param('id') eventId: string) {
     const event = await this.eventsService.getEventById({ eventId });
 
@@ -230,16 +266,26 @@ export class EventsController {
    * Update an event
    */
   @Put(':id')
+  @UseGuards(RoleGuard)
+  @Roles(RolesConfig.ADMIN, RolesConfig.SUPERADMIN)
   async updateEvent(
     @Param('id') eventId: string,
-    @Body(new ZodValidationPipe(UpdateEventSchema)) updateEventDto: Partial<CreateEventDTO>,
+    @Body(new ZodValidationPipe(UpdateEventSchema))
+    body: Partial<CreateEventDTO>,
   ) {
+    const cleanedData = Object.fromEntries(
+      Object.entries(body)
+        .filter(([, value]) => value !== undefined)
+        .map(([key, value]) => {
+          if (value === '') return [key, null];
+          return [key, value];
+        }),
+    );
+
     const updatedEvent = await this.eventsService.updateEvent({
       eventId,
-      ...updateEventDto,
+      ...cleanedData,
     });
-
-    // TODO: Add updated by who
 
     return {
       status: 'success',
@@ -253,6 +299,8 @@ export class EventsController {
    * Generate points sheet by verifying participants across signup, feedback, and helper sheets
    */
   @Post(':id/generate')
+  @UseGuards(RoleGuard)
+  @Roles(RolesConfig.ADMIN, RolesConfig.SUPERADMIN)
   @HttpCode(201)
   async generatePointsSheet(
     @Param('id') eventId: string,
@@ -265,10 +313,10 @@ export class EventsController {
       throw new NotFoundException(`Event with ID ${eventId} not found`);
     }
 
-    const { signupUrl, feedbackUrl, helpersUrl } = event;
-    if (!signupUrl || !feedbackUrl || !helpersUrl) {
+    const { signupUrl, feedbackUrl } = event;
+    if (!signupUrl || !feedbackUrl) {
       throw new BadRequestException(
-        'Missing form URLs. Please ensure signupUrl, feedbackUrl, and helpersUrl are all updated.',
+        'Missing form URLs. Please ensure signupUrl and feedbackUrl are all updated.',
       );
     }
 
@@ -285,9 +333,14 @@ export class EventsController {
         userId: session.user.id,
         signupUrl,
         feedbackUrl,
-        helpersUrl,
       },
     );
+
+    // Clear the existing data in the temporary sheet before inserting new data
+    await this.sheetsService.clearSheet({
+      spreadsheetId: this.tempSheetId,
+      range: 'A2:G',
+    });
 
     // Insert the points data into the temporary sheet
     await this.sheetsService.insertIntoSheet({
@@ -310,6 +363,8 @@ export class EventsController {
    * Restore a soft-deleted event
    */
   @Post(':id/restore')
+  @UseGuards(RoleGuard)
+  @Roles(RolesConfig.ADMIN, RolesConfig.SUPERADMIN)
   async restoreEvent(@Param('id') eventId: string) {
     const restoredEvent = await this.eventsService.restoreEvent({ eventId });
 
@@ -324,55 +379,42 @@ export class EventsController {
    * GET /api/events/:eventId/reports
    * Get all reports for an event
    */
-  @Get(':eventId/reports')
-  async getEventReportsByEventId(@Param('eventId') eventId: string) {
-    const eventReports = await this.eventsService.getEventReportsByEventId({
-      eventId,
-    });
-
-    return {
-      status: 'success',
-      message: 'Event reports retrieved successfully',
-      data: eventReports,
-    };
-  }
-
-  /**
-   * POST /api/events/:eventId/reports
-   * Create a new event report
-   */
-  // @Post(':eventId/reports')
-  // @HttpCode(201)
-  // @UsePipes(new ZodValidationPipe(CreateEventReportSchema))
-  // async createEventReport(
-  //   @Param('eventId') eventId: string,
-  //   @Body() createReportDto: Partial<CreateEventReportDTO>,
-  //   @Req() req: Request,
-  // ) {
-  //   const userId = (req as any).session?.user?.id;
-
-  //   if (!userId) {
-  //     throw new BadRequestException('User not authenticated');
-  //   }
-
-  //   const eventReport = await this.eventsService.createEventReport({
+  // @Get(':eventId/reports')
+  // async getEventReportsByEventId(@Param('eventId') eventId: string) {
+  //   const eventReports = await this.eventsService.getEventReportsByEventId({
   //     eventId,
-  //     ...createReportDto,
-  //     createdBy: userId,
   //   });
 
   //   return {
   //     status: 'success',
-  //     message: 'Event report created successfully',
-  //     data: eventReport,
+  //     message: 'Event reports retrieved successfully',
+  //     data: eventReports,
   //   };
   // }
+
+  /**
+   * DELETE /api/events/:id/hard
+   * Permanently delete an event
+   */
+  @Delete(':id/hard')
+  @UseGuards(RoleGuard)
+  @Roles(RolesConfig.SUPERADMIN)
+  async hardDeleteEvent(@Param('id') eventId: string) {
+    await this.eventsService.hardDeleteEvent({ eventId });
+
+    return {
+      status: 'success',
+      message: 'Event permanently deleted successfully',
+    };
+  }
 
   /**
    * DELETE /api/events/:id
    * Soft delete an event (mark as deleted)
    */
   @Delete(':id')
+  @UseGuards(RoleGuard)
+  @Roles(RolesConfig.ADMIN, RolesConfig.SUPERADMIN)
   async deleteEvent(@Param('id') eventId: string) {
     await this.eventsService.deleteEvent({ eventId });
 
@@ -382,17 +424,43 @@ export class EventsController {
     };
   }
 
-  /**
-   * DELETE /api/events/:id/hard
-   * Permanently delete an event
-   */
-  @Delete(':id/hard')
-  async hardDeleteEvent(@Param('id') eventId: string) {
-    await this.eventsService.hardDeleteEvent({ eventId });
+  @Post(':id/assign')
+  @UseGuards(RoleGuard, EventRoleGuard)
+  @Roles(RolesConfig.ADMIN, RolesConfig.SUPERADMIN)
+  @EventRoles({ paramKey: ':id', roles: [EventRolesConfig.COORDINATOR] })
+  async assignUserToEvent(
+    @Param('id') eventId: string,
+    @Body(new ZodValidationPipe(AssignUserToEventSchema))
+    body: Partial<AssignUserToEventDTO>,
+  ) {
+    await this.eventsService.createUserEventRole({
+      eventId,
+      ...body,
+    } as AssignUserToEventDTO);
 
     return {
       status: 'success',
-      message: 'Event permanently deleted successfully',
+      message: 'User assigned to event successfully',
+    };
+  }
+
+  @Delete(':id/assign')
+  @UseGuards(RoleGuard, EventRoleGuard)
+  @Roles(RolesConfig.ADMIN, RolesConfig.SUPERADMIN)
+  @EventRoles({ paramKey: ':id', roles: [EventRolesConfig.COORDINATOR] })
+  async unassignUserFromEvent(
+    @Param('id') eventId: string,
+    @Body(new ZodValidationPipe(UnassignUserFromEventSchema))
+    body: Partial<UnassignUserFromEventDTO>,
+  ) {
+    await this.eventsService.deleteUserEventRole({
+      eventId,
+      ...body,
+    } as UnassignUserFromEventDTO);
+
+    return {
+      status: 'success',
+      message: 'User unassigned from event successfully',
     };
   }
 }

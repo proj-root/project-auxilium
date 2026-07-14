@@ -90,9 +90,9 @@ const formSchema = z.object({
   startDate: z.date().optional(),
   endDate: z.date().optional(),
   platform: z.string().optional(),
+  venue: z.string().optional(),
   signupUrl: z.string().optional(),
   feedbackUrl: z.string().optional(),
-  helpersUrl: z.string().optional(),
 });
 
 type CreateEventFormValues = z.infer<typeof formSchema>;
@@ -107,14 +107,13 @@ export function CreateEventForm({ className }: { className?: string }) {
   });
 
   const onSubmit = async (data: CreateEventFormValues) => {
+    console.log('Form Data:', data);
     try {
       await createEvent(data).unwrap();
       toast.success('Event created succesfully!');
     } catch (error: any) {
       console.error('CreateEventForm Error:', error);
       toast.error(error.data.message);
-    } finally {
-      return;
     }
   };
 
@@ -122,7 +121,7 @@ export function CreateEventForm({ className }: { className?: string }) {
     <form
       onSubmit={form.handleSubmit(onSubmit)}
       className={cn(
-        'flex grid h-fit w-full grid-cols-2 grid-rows-1 gap-4',
+        'grid h-fit w-full grid-cols-2 grid-rows-1 gap-4',
         className,
       )}
     >
@@ -133,7 +132,7 @@ export function CreateEventForm({ className }: { className?: string }) {
           control={form.control}
           render={({ field, fieldState }) => (
             <Field>
-              <FieldLabel htmlFor='name'>Event Name</FieldLabel>
+              <FieldLabel className='gap-0.5' htmlFor='name'>Event Name<p className='text-red-400'>*</p></FieldLabel>
               <FieldDescription>A cool event name!</FieldDescription>
               <Input
                 {...field}
@@ -155,7 +154,9 @@ export function CreateEventForm({ className }: { className?: string }) {
           control={form.control}
           render={({ field, fieldState }) => (
             <Field>
-              <FieldLabel htmlFor='description'>Description</FieldLabel>
+              <FieldLabel className='gap-0.5' htmlFor='description'>
+                Description<p className='text-red-400'>*</p>
+              </FieldLabel>
               <Textarea
                 {...field}
                 id={field.name}
@@ -176,7 +177,9 @@ export function CreateEventForm({ className }: { className?: string }) {
           render={({ field, fieldState }) => (
             <Field orientation={'responsive'} data-invalid={fieldState.invalid}>
               <FieldContent>
-                <FieldLabel htmlFor='eventTypeId'>Event Type</FieldLabel>
+                <FieldLabel className='gap-0.5' htmlFor='eventTypeId'>
+                  Event Type<p className='text-red-400'>*</p>
+                </FieldLabel>
               </FieldContent>
               <Select
                 name={field.name}
@@ -232,6 +235,26 @@ export function CreateEventForm({ className }: { className?: string }) {
                   <SelectItem value='Offline'>Offline</SelectItem>
                 </SelectContent>
               </Select>
+            </Field>
+          )}
+        />
+
+        {/* Venue */}
+        <Controller
+          name='venue'
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field>
+              <FieldLabel className='gap-0.5' htmlFor='venue'>Venue</FieldLabel>
+              <Input
+                {...field}
+                id={field.name}
+                type='text'
+                placeholder='e.g. MLT 12, leave empty if online'
+                autoComplete='off'
+                aria-invalid={fieldState.invalid}
+              />
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
             </Field>
           )}
         />
@@ -437,29 +460,6 @@ export function CreateEventForm({ className }: { className?: string }) {
               </FieldLabel>
               <FieldDescription>
                 Google Sheets URL to Form Responses for Feedback (optional)
-              </FieldDescription>
-              <Input
-                {...field}
-                id={field.name}
-                type='text'
-                placeholder='e.g. https://docs.google.com/spreadsheets/d/wSfAhwE293nMMFfjsnfkj23j243...'
-                autoComplete='off'
-                aria-invalid={fieldState.invalid}
-              />
-              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-            </Field>
-          )}
-        />
-
-        {/* Helpers URL */}
-        <Controller
-          name='helpersUrl'
-          control={form.control}
-          render={({ field, fieldState }) => (
-            <Field>
-              <FieldLabel htmlFor='signupUrl'>Helper Responses Link</FieldLabel>
-              <FieldDescription>
-                Google Sheets URL to Form Responses for Helpers (optional)
               </FieldDescription>
               <Input
                 {...field}

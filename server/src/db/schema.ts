@@ -1,7 +1,7 @@
-import { index, uuid } from 'drizzle-orm/pg-core';
+import { date, index, uuid } from 'drizzle-orm/pg-core';
 import { timestamps } from './column.helpers';
 import { integer, pgTable, varchar } from 'drizzle-orm/pg-core';
-import { Roles } from '@auxilium/configs/roles';
+import { EventRolesConfig, RolesConfig } from '@auxilium/configs/roles';
 import { primaryKey } from 'drizzle-orm/pg-core';
 import { StatusConfig } from '@auxilium/configs/status';
 import { pgEnum } from 'drizzle-orm/pg-core';
@@ -10,11 +10,11 @@ import { timestamp } from 'drizzle-orm/pg-core';
 import { boolean } from 'drizzle-orm/pg-core';
 import type { AnyPgColumn } from 'drizzle-orm/pg-core';
 
-export const eventRole = pgEnum('event_role', [
-  'ORGANIZER',
-  'HELPER',
-  'PARTICIPANT',
-]);
+// export const eventRole = pgEnum('event_role', [
+//   'ORGANIZER',
+//   'HELPER',
+//   'PARTICIPANT',
+// ]);
 
 export const eventPointsType = pgEnum('event_points_type', [
   'LEADERSHIP',
@@ -22,6 +22,14 @@ export const eventPointsType = pgEnum('event_points_type', [
   'SERVICE',
   'COMMUNITY SERVICE',
 ]);
+
+export const taskStatus = pgEnum('task_status', [
+  'Not started',
+  'In progress',
+  'Completed',
+]);
+
+export const taskPriority = pgEnum('task_priority', ['High', 'Medium', 'Low']);
 
 // Status Table
 export const status = pgTable('status', {
@@ -42,12 +50,19 @@ export const eventType = pgTable('event_type', {
   name: varchar({ length: 100 }).notNull().unique(),
 });
 
-export const user = pgTable("user", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  name: text("name").notNull(),
-  email: text("email").notNull().unique(),
-  emailVerified: boolean("email_verified").default(false).notNull(),
-  image: text("image"),
+export const eventRole = pgTable('event_role', {
+  eventRoleId: integer('event_role_id').primaryKey().unique(),
+  name: varchar('name', { length: 20 }).unique(),
+  pointsType: eventPointsType('points_type').notNull(),
+  pointsAwarded: integer('points_awarded').notNull(),
+});
+
+export const user = pgTable('user', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  name: text('name').notNull(),
+  email: text('email').notNull().unique(),
+  emailVerified: boolean('email_verified').default(false).notNull(),
+  image: text('image'),
   ...timestamps,
 });
 
@@ -85,9 +100,9 @@ export const event = pgTable('event', {
   startDate: timestamp('start_date', { withTimezone: true, mode: 'date' }),
   endDate: timestamp('end_date', { withTimezone: true, mode: 'date' }),
   platform: varchar({ length: 20 }),
+  venue: varchar({ length: 50 }),
   signupUrl: varchar('signup_url', { length: 255 }),
   feedbackUrl: varchar('feedback_url', { length: 255 }),
-  helpersUrl: varchar('helpers_url', { length: 255 }),
   createdBy: uuid('created_by').references(() => user.id, {
     onDelete: 'set null',
     onUpdate: 'cascade',
@@ -118,16 +133,49 @@ export const eventParticipation = pgTable('event_participation', {
       onUpdate: 'cascade',
     }),
   attended: boolean().default(false),
-  eventRole: eventRole('event_role').default('PARTICIPANT'),
-  pointsType: eventPointsType('points_type').default('PARTICIPATION'),
-  pointsAwarded: integer('points_awarded').default(0),
+  eventRoleId: integer('event_role_id')
+    .references(() => eventRole.eventRoleId, {
+      onDelete: 'set null',
+      onUpdate: 'cascade',
+    })
+    .default(EventRolesConfig.PARTICIPANT),
   ...timestamps,
 });
+
+// Event Helper Table
+export const userEventRole = pgTable(
+  'user_event_role',
+  {
+    eventId: uuid('event_id')
+      .notNull()
+      .references(() => event.eventId, {
+        onDelete: 'cascade',
+        onUpdate: 'cascade',
+      }),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => user.id, {
+        onDelete: 'cascade',
+        onUpdate: 'cascade',
+      }),
+    eventRoleId: integer('event_role_id')
+      .notNull()
+      .references(() => eventRole.eventRoleId, {
+        onDelete: 'set null',
+        onUpdate: 'cascade',
+      }),
+    ...timestamps,
+  },
+  // Composite primary key to prevent duplicate entries for the same user and event
+  // Assuming 1 user can only be granted 1 role per event
+  (table) => [primaryKey({ columns: [table.eventId, table.userId] })],
+);
 
 // Event Points Report Table
 export const eventReport = pgTable('event_report', {
   eventReportId: uuid('event_report_id').primaryKey().defaultRandom(),
   eventId: uuid('event_id')
+    .unique()
     .notNull()
     .references(() => event.eventId, {
       onDelete: 'cascade',
@@ -208,7 +256,7 @@ export const userRole = pgTable(
       }),
     roleId: integer('role_id')
       .notNull()
-      .default(Roles.USER)
+      .default(RolesConfig.USER)
       .references(() => role.roleId, {
         onDelete: 'cascade',
         onUpdate: 'cascade',
@@ -222,3 +270,84 @@ export const userRole = pgTable(
     }),
   ],
 );
+
+export const department = pgTable('department', {
+  departmentId: integer('department_id').primaryKey().unique(),
+  name: varchar({ length: 50 }).notNull().unique(),
+  ...timestamps,
+});
+
+export const userDepartment = pgTable(
+  'user_department',
+  {
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => user.id, {
+        onDelete: 'cascade',
+        onUpdate: 'cascade',
+      }),
+    departmentId: integer('department_id')
+      .notNull()
+      .references(() => department.departmentId, {
+        onDelete: 'cascade',
+        onUpdate: 'cascade',
+      }),
+    ...timestamps,
+  },
+  (table) => [
+    primaryKey({
+      columns: [table.userId, table.departmentId],
+    }),
+  ],
+);
+
+export const task = pgTable('task', {
+  taskId: uuid('task_id').primaryKey().defaultRandom().unique(),
+  eventId: uuid('event_id')
+    .notNull()
+    .references(() => event.eventId, {
+      onDelete: 'cascade',
+      onUpdate: 'cascade',
+    }),
+  assigneeId: uuid('assignee_id').references(() => user.id, {
+    onDelete: 'set null',
+    onUpdate: 'cascade',
+  }),
+  createdBy: uuid('created_by')
+    .notNull()
+    .references(() => user.id, {
+      onDelete: 'cascade',
+      onUpdate: 'cascade',
+    }),
+  title: varchar({ length: 100 }).notNull(),
+  description: varchar('description', { length: 250 }),
+  status: taskStatus('status').notNull().default('Not started'),
+  priority: taskPriority('priority').notNull().default('High'),
+  departmentId: integer('department_id').references(
+    () => department.departmentId,
+    {
+      onDelete: 'set null',
+      onUpdate: 'cascade',
+    },
+  ),
+  deadline: date('deadline', { mode: 'date' }),
+  ...timestamps,
+});
+
+export const taskComment = pgTable('task_comment', {
+  taskCommentId: uuid('task_comment_id').primaryKey().defaultRandom().unique(),
+  taskId: uuid('task_id')
+    .notNull()
+    .references(() => task.taskId, {
+      onDelete: 'cascade',
+      onUpdate: 'cascade',
+    }),
+  text: text('text').notNull(),
+  createdBy: uuid('created_by')
+    .notNull()
+    .references(() => user.id, {
+      onDelete: 'cascade',
+      onUpdate: 'cascade',
+    }),
+  ...timestamps,
+});

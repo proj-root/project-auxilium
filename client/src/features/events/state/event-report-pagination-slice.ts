@@ -1,8 +1,10 @@
+// DEPRECATED
+
 import type { RootState } from '@/state/store';
 import type { PaginationOptions } from '@auxilium/types/pagination';
 import { createSlice } from '@reduxjs/toolkit';
 
-interface EventReportPaginationState extends PaginationOptions {
+export interface EventReportPaginationState extends PaginationOptions {
   eventReportId?: string;
 }
 
@@ -12,7 +14,6 @@ const initialState: EventReportPaginationState = {
   sortBy: 'createdAt',
   sortOrder: 'desc',
   search: '',
-  eventReportId: '',
 };
 
 const eventReportPaginationSlice = createSlice({
@@ -44,9 +45,6 @@ const eventReportPaginationSlice = createSlice({
     setSearch: (state, action) => {
       state.search = action.payload;
     },
-    setEventReportId: (state, action) => {
-      state.eventReportId = action.payload;
-    },
   },
 });
 
@@ -58,7 +56,6 @@ export const {
   setSortBy,
   setSortOrder,
   setSearch,
-  setEventReportId,
 } = eventReportPaginationSlice.actions;
 
 export const selectEventReportPaginationState = (state: RootState) =>

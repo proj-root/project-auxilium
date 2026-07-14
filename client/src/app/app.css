@@ -4,11 +4,13 @@
 
 @custom-variant dark (&:is(.dark *));
 
-@theme {
+/* @theme {
   --font-sans:
     'Outfit', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
     'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
-}
+  --font-mono:
+    'Ubuntu Mono', ui-mono, system-ui, mono, 'monospace';
+} */
 
 html,
 body {
@@ -52,9 +54,9 @@ body {
   --sidebar-accent-foreground: oklch(0.9850 0 0);
   --sidebar-border: oklch(0.2750 0 0);
   --sidebar-ring: oklch(0.4390 0 0);
-  --font-sans: Outfit, ui-sans-serif, sans-serif, system-ui;
+  --font-sans: "DM Sans", ui-sans-serif, sans-serif, system-ui;
   --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --font-mono: "Ubuntu Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   --radius: 0.4rem;
   --shadow-x: 0;
   --shadow-y: 1px;
@@ -107,9 +109,9 @@ body {
   --sidebar-accent-foreground: oklch(0.9850 0 0);
   --sidebar-border: oklch(0.2750 0 0);
   --sidebar-ring: oklch(0.4390 0 0);
-  --font-sans: Outfit, ui-sans-serif, sans-serif, system-ui;
+  --font-sans: "DM Sans", ui-sans-serif, sans-serif, system-ui;
   --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --font-mono: "Ubuntu Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   --radius: 0.4rem;
   --shadow-x: 0;
   --shadow-y: 1px;

@@ -2,6 +2,13 @@ import type { BaseResponseDTO } from '@/types/dto.types';
 import type { PaginationOptions } from '@auxilium/types/pagination';
 import type { UserDTO, UserProfileDTO } from '../user/user.dto';
 
+export enum CCAPointsType {
+  PARTICIPATION = 'PARTICIPATION',
+  LEADERSHIP = 'LEADERSHIP',
+  SERVICE = 'SERVICE',
+  COMMUNITY_SERVICE = 'COMMUNITY SERVICE',
+}
+
 export interface EventReport {
   eventReportId: string;
   signupCount: number;
@@ -16,16 +23,37 @@ export interface EventType {
   name: string;
 }
 
+export interface EventRole {
+  eventRoleId: number;
+  name: string;
+  pointsType: CCAPointsType;
+  pointsAwarded: number;
+}
+
+export interface UserEventRole {
+  eventId: string;
+  eventRole: EventRole;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    image: string;
+    userProfile: UserProfileDTO;
+  };
+}
+
 export interface Event {
   eventId: string;
   name: string;
   description: string;
-  startDate: string;
-  endDate: string;
-  platform: string;
-  signupUrl: string;
-  feedbackUrl: string;
-  helpersUrl: string;
+  startDate: string | null;
+  endDate: string | null;
+  platform: string | null;
+  venue: string | null;
+  signupUrl: string | null;
+  feedbackUrl: string | null;
+
+  eventReport: EventReport | null;
 
   eventType: EventType;
 
@@ -35,7 +63,9 @@ export interface Event {
     email: string;
   };
 
-  eventReports: EventReport[];
+  userEventRoles: UserEventRole[];
+
+  // eventReports: EventReport[];
 
   createdAt: string;
   updatedAt: string;
@@ -46,9 +76,7 @@ export interface EventParticipation {
   eventReportId: string;
   profileId: string;
   attended: boolean;
-  eventRole: string;
-  pointsType: string;
-  pointsAwarded: number;
+  eventRole: EventRole;
 
   userProfile: UserProfileDTO;
 
@@ -65,10 +93,23 @@ export type CreateEventRequest = {
   platform?: string;
   signupUrl?: string;
   feedbackUrl?: string;
-  helpersUrl?: string;
 };
 
 export type CreateEventResponse = BaseResponseDTO<void>;
+
+export type UpdateEventRequest = {
+  eventId: string;
+  name?: string;
+  description?: string;
+  eventTypeId?: string;
+  startDate?: Date;
+  endDate?: Date;
+  platform?: string;
+  signupUrl?: string;
+  feedbackUrl?: string;
+};
+
+export type UpdateEventResponse = BaseResponseDTO<void>;
 
 export type GetEventByIdResponse = BaseResponseDTO<Event>;
 
@@ -82,11 +123,15 @@ export interface GetAllEventsRequest extends PaginationOptions {
   search?: string;
 }
 
-export type GetAllEventsResponse = BaseResponseDTO<
-  Omit<Event, 'eventReports'>[]
->;
+export type GetAllEventsResponse = BaseResponseDTO<{
+  total: number;
+  pageCount: number;
+  events: Omit<Event, 'eventReport'>[];
+}>;
 
 export type GetAllEventTypesResponse = BaseResponseDTO<EventType[]>;
+
+export type GetAllEventRolesResponse = BaseResponseDTO<EventRole[]>;
 
 export type GenerateEventReportResponse = BaseResponseDTO<void>;
 
@@ -106,3 +151,17 @@ export type GetParticipationsByReportIdResponse = BaseResponseDTO<{
   pageCount: number;
   participations: EventParticipation[];
 }>;
+
+export interface AssignUserToEventRequest {
+  eventId: string;
+  eventRoleId: string;
+  userId: string;
+}
+
+export type AssignUserToEventResponse = BaseResponseDTO<void>;
+
+export interface CheckUserEventRoleRequest {
+  eventId: string;
+}
+
+export type CheckUserEventRoleResponse = BaseResponseDTO<UserEventRole>;

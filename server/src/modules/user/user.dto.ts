@@ -1,0 +1,71 @@
+import * as schema from '@/db/schema';
+import { PaginationOptions } from '@auxilium/types/pagination';
+import { z } from 'zod';
+
+// User DTO
+export type UserDTO = typeof schema.user.$inferSelect;
+export type UserProfileDTO = typeof schema.userProfile.$inferSelect;
+
+export const VerifyIdentitySchema = z.object({
+  ichat: z.email(),
+});
+
+export type VerifyIdentityDTO = z.infer<typeof VerifyIdentitySchema>;
+
+export const ProfileLinkSchema = z.object({
+  firstName: z.string(),
+  lastName: z.string(),
+  course: z.string(),
+  studentClass: z.string(),
+  adminNumber: z.string(),
+});
+
+export type ProfileLinkDTO = z.infer<typeof ProfileLinkSchema>;
+
+export const CreateUserProfileSchema = z.object({
+  firstName: z.string(),
+  lastName: z.string(),
+  course: z.string(),
+  ichat: z.string(),
+  studentClass: z.string(),
+  adminNumber: z.string(),
+});
+
+export type CreateUserProfileDTO = z.infer<typeof CreateUserProfileSchema> & {
+  userId?: string;
+}
+
+export type GetAllUsersQueryDTO = PaginationOptions & {
+  sortBy?: 'name' | 'createdAt';
+  roleIds?: string | (number | string)[];
+  statusId?: number;
+  eventId?: string;
+};
+
+export type GetAllUserProfilesQueryDTO = PaginationOptions & {
+  sortBy?: 'name' | 'createdAt';
+  statusId?: number;
+};
+
+export const UpdateUserSchema = z
+  .object({
+    email: z.email().optional(),
+    firstName: z.string().trim().optional(),
+    lastName: z.string().trim().optional(),
+    course: z.string().trim().optional(),
+    ichat: z.email().optional(),
+    studentClass: z.string().trim().optional(),
+    adminNumber: z.string().trim().optional(),
+    // Restricted edits
+    roleId: z.coerce.number().optional(),
+    departmentIds: z.array(z.coerce.number()).optional(),
+  })
+  .refine(
+    (data) =>
+      Object.values(data).some((value) => value !== undefined && value !== ''),
+    { message: 'At least one field must be provided for update' },
+  );
+
+export type UpdateUserDTO = z.infer<typeof UpdateUserSchema> & {
+  userId: string;
+};

@@ -1,7 +1,7 @@
 {
   "version": "8",
   "dialect": "postgres",
-  "id": "2b017568-63c5-46b9-b493-ef8ab1e6fb78",
+  "id": "474f2d3e-cd08-4027-8da7-9316134c6b08",
   "prevIds": [
     "00000000-0000-0000-0000-000000000000"
   ],
@@ -14,16 +14,6 @@
         "COMMUNITY SERVICE"
       ],
       "name": "event_points_type",
-      "entityType": "enums",
-      "schema": "public"
-    },
-    {
-      "values": [
-        "ORGANIZER",
-        "HELPER",
-        "PARTICIPANT"
-      ],
-      "name": "event_role",
       "entityType": "enums",
       "schema": "public"
     },
@@ -54,6 +44,12 @@
     {
       "isRlsEnabled": false,
       "name": "event_report",
+      "entityType": "tables",
+      "schema": "public"
+    },
+    {
+      "isRlsEnabled": false,
+      "name": "event_role",
       "entityType": "tables",
       "schema": "public"
     },
@@ -106,11 +102,11 @@
       "schema": "public"
     },
     {
-      "type": "text",
+      "type": "uuid",
       "typeSchema": null,
       "notNull": true,
       "dimensions": 0,
-      "default": null,
+      "default": "gen_random_uuid()",
       "generated": null,
       "identity": null,
       "name": "id",
@@ -145,7 +141,7 @@
       "table": "account"
     },
     {
-      "type": "text",
+      "type": "uuid",
       "typeSchema": null,
       "notNull": true,
       "dimensions": 0,
@@ -561,40 +557,14 @@
       "table": "event_participation"
     },
     {
-      "type": "event_role",
-      "typeSchema": "public",
-      "notNull": false,
-      "dimensions": 0,
-      "default": "'PARTICIPANT'",
-      "generated": null,
-      "identity": null,
-      "name": "event_role",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "event_participation"
-    },
-    {
-      "type": "event_points_type",
-      "typeSchema": "public",
-      "notNull": false,
-      "dimensions": 0,
-      "default": "'PARTICIPATION'",
-      "generated": null,
-      "identity": null,
-      "name": "points_type",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "event_participation"
-    },
-    {
       "type": "integer",
       "typeSchema": null,
       "notNull": false,
       "dimensions": 0,
-      "default": "0",
+      "default": "1",
       "generated": null,
       "identity": null,
-      "name": "points_awarded",
+      "name": "event_role_id",
       "entityType": "columns",
       "schema": "public",
       "table": "event_participation"
@@ -724,6 +694,58 @@
       "default": null,
       "generated": null,
       "identity": null,
+      "name": "event_role_id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "event_role"
+    },
+    {
+      "type": "varchar(20)",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "name",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "event_role"
+    },
+    {
+      "type": "event_points_type",
+      "typeSchema": "public",
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "points_type",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "event_role"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "points_awarded",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "event_role"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
       "name": "event_type_id",
       "entityType": "columns",
       "schema": "public",
@@ -795,11 +817,11 @@
       "table": "role"
     },
     {
-      "type": "text",
+      "type": "uuid",
       "typeSchema": null,
       "notNull": true,
       "dimensions": 0,
-      "default": null,
+      "default": "gen_random_uuid()",
       "generated": null,
       "identity": null,
       "name": "id",
@@ -860,7 +882,7 @@
       "table": "session"
     },
     {
-      "type": "text",
+      "type": "uuid",
       "typeSchema": null,
       "notNull": true,
       "dimensions": 0,
@@ -925,11 +947,11 @@
       "table": "status"
     },
     {
-      "type": "text",
+      "type": "uuid",
       "typeSchema": null,
       "notNull": true,
       "dimensions": 0,
-      "default": null,
+      "default": "gen_random_uuid()",
       "generated": null,
       "identity": null,
       "name": "id",
@@ -1198,11 +1220,11 @@
       "table": "user_role"
     },
     {
-      "type": "text",
+      "type": "uuid",
       "typeSchema": null,
       "notNull": true,
       "dimensions": 0,
-      "default": null,
+      "default": "gen_random_uuid()",
       "generated": null,
       "identity": null,
       "name": "id",
@@ -1443,6 +1465,23 @@
     {
       "nameExplicit": false,
       "columns": [
+        "event_role_id"
+      ],
+      "schemaTo": "public",
+      "tableTo": "event_role",
+      "columnsTo": [
+        "event_role_id"
+      ],
+      "onUpdate": "CASCADE",
+      "onDelete": "SET NULL",
+      "name": "event_participation_event_role_id_event_role_event_role_id_fkey",
+      "entityType": "fks",
+      "schema": "public",
+      "table": "event_participation"
+    },
+    {
+      "nameExplicit": false,
+      "columns": [
         "event_id"
       ],
       "schemaTo": "public",
@@ -1622,6 +1661,16 @@
     },
     {
       "columns": [
+        "event_role_id"
+      ],
+      "nameExplicit": false,
+      "name": "event_role_pkey",
+      "schema": "public",
+      "table": "event_role",
+      "entityType": "pks"
+    },
+    {
+      "columns": [
         "event_type_id"
       ],
       "nameExplicit": false,
@@ -1710,6 +1759,28 @@
       "name": "event_event_id_key",
       "schema": "public",
       "table": "event",
+      "entityType": "uniques"
+    },
+    {
+      "nameExplicit": false,
+      "columns": [
+        "event_role_id"
+      ],
+      "nullsNotDistinct": false,
+      "name": "event_role_event_role_id_key",
+      "schema": "public",
+      "table": "event_role",
+      "entityType": "uniques"
+    },
+    {
+      "nameExplicit": false,
+      "columns": [
+        "name"
+      ],
+      "nullsNotDistinct": false,
+      "name": "event_role_name_key",
+      "schema": "public",
+      "table": "event_role",
       "entityType": "uniques"
     },
     {

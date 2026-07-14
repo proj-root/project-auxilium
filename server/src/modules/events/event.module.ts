@@ -13,6 +13,6 @@ import { UserService } from '@/modules/user/user.service';
     SheetsService,
     UserService,
   ],
-  exports: [EventsService, UserService],
+  exports: [EventsService],
 })
 export class EventsModule {}

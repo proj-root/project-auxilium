@@ -14,14 +14,22 @@ import {
   TableRow,
 } from '@/components/ui/table';
 
+export interface DataTableContextMenuProps<T> {
+  trigger: React.ReactNode;
+  row: T;
+  className?: string;
+}
+
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  ContextMenu?: React.ComponentType<DataTableContextMenuProps<TData>>;
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
+  ContextMenu,
 }: DataTableProps<TData, TValue>) {
   const table = useReactTable({
     data,
@@ -58,8 +66,24 @@ export function DataTable<TData, TValue>({
                 data-state={row.getIsSelected() && 'selected'}
               >
                 {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id}>
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  <TableCell key={cell.id} className='p-0'>
+                    {ContextMenu ? (
+                      <ContextMenu
+                        row={row.original}
+                        trigger={flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext(),
+                        )}
+                        className='flex h-full w-full p-2'
+                      />
+                    ) : (
+                      <div className='p-2'>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext(),
+                        )}
+                      </div>
+                    )}
                   </TableCell>
                 ))}
               </TableRow>
@@ -67,7 +91,7 @@ export function DataTable<TData, TValue>({
           ) : (
             <TableRow>
               <TableCell colSpan={columns.length} className='h-24 text-center'>
-                No results.
+                No results found.
               </TableCell>
             </TableRow>
           )}

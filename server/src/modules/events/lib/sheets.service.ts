@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { googleConfig } from '@/config/google.config';
-import { JWT } from 'google-auth-library';
+import { JWT, OAuth2Client } from 'google-auth-library';
 import { sheets } from '@googleapis/sheets';
 import { APIError } from '@auxilium/types/errors';
 
@@ -25,7 +25,7 @@ export class SheetsService {
     range?: string;
   }): Promise<string[][]> {
     try {
-      const GoogleSheets = sheets({ version: 'v4', auth: this.auth });
+      const GoogleSheets = sheets({ version: 'v4', auth: this.auth as any });
       const response = await GoogleSheets.spreadsheets.values.get({
         spreadsheetId,
         range,
@@ -42,10 +42,7 @@ export class SheetsService {
       );
       return rows;
     } catch (error) {
-      this.logger.error(
-        `Error accessing spreadsheet ${spreadsheetId}:`,
-        error,
-      );
+      this.logger.error(`Error accessing spreadsheet ${spreadsheetId}:`, error);
       throw new APIError('Failed to access Google Sheets', 500);
     }
   }
@@ -60,7 +57,7 @@ export class SheetsService {
     values: string[][];
   }): Promise<void> {
     try {
-      const GoogleSheets = sheets({ version: 'v4', auth: this.auth });
+      const GoogleSheets = sheets({ version: 'v4', auth: this.auth as any });
       await GoogleSheets.spreadsheets.values.update({
         spreadsheetId,
         range,
@@ -79,6 +76,26 @@ export class SheetsService {
         error,
       );
       throw new APIError('Failed to insert data into Google Sheets', 500);
+    }
+  }
+
+  async clearSheet({
+    spreadsheetId,
+    range = 'A:Z',
+  }: {
+    spreadsheetId: string;
+    range?: string;
+  }): Promise<void> {
+    try {
+      const GoogleSheets = sheets({ version: 'v4', auth: this.auth as any });
+      await GoogleSheets.spreadsheets.values.clear({
+        spreadsheetId,
+        range,
+      });
+      this.logger.debug(`Cleared data from sheet: ${spreadsheetId}`);
+    } catch (error) {
+      this.logger.error(`Error clearing sheet ${spreadsheetId}:`, error);
+      throw new APIError('Failed to clear Google Sheets', 500);
     }
   }
 

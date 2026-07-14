@@ -1,19 +1,27 @@
-import { useAppDispatch } from '@/hooks/redux-hooks';
-import { useLogoutMutation } from '../state/auth-api-slice';
-import { logout } from '../state/auth-slice';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { LogOut } from 'lucide-react';
+import { authClient } from '@/lib/auth-client';
+import { useNavigate } from 'react-router';
 
 export function LogoutButton() {
-  const [logoutApi] = useLogoutMutation();
-
-  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
 
   const handleLogout = async () => {
     try {
-      await logoutApi().unwrap();
-      dispatch(logout());
+      const { error } = await authClient.signOut({
+        fetchOptions: {
+          onSuccess: () => {
+            // Bring user back to homepage
+            navigate('/');
+          }
+        }
+      });
+
+      if (error) {
+        toast.error(error.message)
+        console.error("UserSignoutError:", error);
+      }
     } catch (error: any) {
       console.error(error);
       toast.error(error.data?.message);

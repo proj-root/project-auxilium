@@ -1,5 +1,10 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Separator } from '@/components/ui/separator';
 import { LoginForm } from '@/features/auth/components/login-form';
+import {
+  GitHubSSOButton,
+  GoogleSSOButton,
+} from '@/features/auth/components/sso-buttons';
 import { Link } from 'react-router';
 
 export default function LoginPage() {
@@ -9,14 +14,20 @@ export default function LoginPage() {
         {/* Header */}
         <Link to={'/'} className='flex flex-row items-center gap-2'>
           <Avatar>
-            <AvatarImage src='/logo.png' alt='seed logo'/>
+            <AvatarImage src='/logo.png' alt='seed logo' />
           </Avatar>
-          <h1 className='text-lg font-semibold'>GARDEN Terminal</h1>
+          <h1 className='text-lg font-semibold'>The GARDEN Terminal</h1>
         </Link>
         <h1 className='text-3xl font-semibold'>Welcome back!</h1>
 
-        {/* Main Form */}
-        <LoginForm />
+        <div className='flex flex-col gap-4'>
+          {/* Main Form */}
+          <LoginForm />
+          <Separator />
+          <GoogleSSOButton />
+          <GitHubSSOButton />
+        </div>
+
         <div className='text-muted-foreground flex flex-row text-sm'>
           <p>Don&apos;t have an account?&nbsp;</p>
           <Link to={'/auth/register'} className='underline'>

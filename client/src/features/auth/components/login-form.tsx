@@ -31,38 +31,13 @@ export function LoginForm({ className }: { className?: string }) {
     mode: 'all',
   });
 
-  // const onSubmit = async (data: LoginFormValues) => {
-  //   // console.log('LoginForm:onSubmit - starting login with email=', data.email);
-  //   try {
-  //     const responseData = await login(data).unwrap();
-  //     const accessToken = responseData.data.accessToken ?? null;
-      
-  //     dispatch(setAuthLoading(true));
-  //     dispatch(setAccessToken(accessToken));
-  
-  //     const payload: { userId: string; roleId: number } =
-  //       await jwtDecode(accessToken);
-  
-  //     dispatch(setRoleId(payload.roleId));
-  //     dispatch(setUserId(payload.userId));
-
-  //     navigate('/admin', { flushSync: true });
-  //   } catch (error) {
-  //     console.error('LoginForm Error:', error);
-  //     toast.error('Invalid login credentials');
-  //   } finally {
-  //     dispatch(setAuthLoading(false));
-  //     return;
-  //   }
-  // };
-
   const onSubmit = async (data: LoginFormValues) => {
     setIsLoading(true);
     try {
       const { error } = await authClient.signIn.email({
         email: data.email,
         password: data.password,
-        callbackURL: "/admin",
+        callbackURL: "/",
         rememberMe: true,
       });
 

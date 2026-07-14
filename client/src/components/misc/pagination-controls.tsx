@@ -11,7 +11,12 @@ import { Input } from '@/components/ui/input';
 import { useAppDispatch } from '@/hooks/redux-hooks';
 import { cn } from '@/lib/utils';
 import type { PaginationOptions } from '@auxilium/types/pagination';
-import type { ActionCreatorWithoutPayload, ActionCreatorWithPayload } from '@reduxjs/toolkit';
+import type {
+  ActionCreatorWithoutPayload,
+  ActionCreatorWithPayload,
+} from '@reduxjs/toolkit';
+import { Button } from '../ui/button';
+import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react';
 
 export interface PaginationControlDef {
   state: PaginationOptions;
@@ -44,7 +49,7 @@ export function PaginationControls({
         // Accept first and last pages
         i === 1 ||
         i === paginationControls.pageCount ||
-        page && (i >= page - delta && i <= page + delta)
+        (page && i >= page - delta && i <= page + delta)
       ) {
         range.push(i);
       }
@@ -75,7 +80,7 @@ export function PaginationControls({
     dispatch(paginationControls.handleNext(paginationControls.pageCount));
     // Update the data in the table
     updateCb();
-    console.log('Clicked', paginationControls.state.page);
+    // console.log('Clicked', paginationControls.state.page);
   };
 
   const handleShowPage = (page: number) => {
@@ -90,12 +95,22 @@ export function PaginationControls({
 
   return (
     <Pagination className={cn('', className)}>
-      <PaginationContent className='flex flex-row md:w-full md:justify-end'>
+      <PaginationContent className='flex flex-row gap-2 md:w-full md:justify-end'>
         <PaginationItem>
-          <PaginationPrevious onClick={handlePrevious} data-testid={'pagination-previous'} />
+          {/* <PaginationPrevious onClick={handlePrevious} data-testid={'pagination-previous'} /> */}
+          <Button
+            variant='ghost'
+            size='sm'
+            disabled={paginationControls.state.page === 1}
+            onClick={handlePrevious}
+            data-testid={'pagination-previous'}
+          >
+            <ChevronLeftIcon />
+            <span className='hidden sm:block'>Previous</span>
+          </Button>
         </PaginationItem>
 
-        <div className='mx-2 flex flex-row gap-1'>
+        <div className='flex flex-row gap-1'>
           {visiblePages.map((page, idx) =>
             page === '...' ? (
               <PaginationItem key={`dots-${idx}`}>
@@ -129,13 +144,26 @@ export function PaginationControls({
                 handlePageSizeChange(10);
               }
             }}
-            className='w-20'
-            data-testid="pagination-page-size" // Added: For test assertion
+            className='w-15'
+            data-testid='pagination-page-size' // Added: For test assertion
           />
         </PaginationItem>
 
         <PaginationItem>
-          <PaginationNext onClick={handleNext} data-testid={'pagination-next'} />
+          {/* <PaginationNext
+            onClick={handleNext}
+            data-testid={'pagination-next'}
+          /> */}
+          <Button
+            variant='ghost'
+            size='sm'
+            disabled={paginationControls.state.page === paginationControls.pageCount}
+            onClick={handleNext}
+            data-testid={'pagination-next'}
+          >
+            <span className='hidden sm:block'>Next</span>
+            <ChevronRightIcon />
+          </Button>
         </PaginationItem>
       </PaginationContent>
     </Pagination>

@@ -5,14 +5,20 @@ import {
 } from '@reduxjs/toolkit';
 import { listenerMiddleware } from './listener-middleware';
 import { apiSlice } from './api-slice';
-import authSlice from '@/features/auth/state/auth-slice';
 import eventReportPaginationSlice from '@/features/events/state/event-report-pagination-slice';
+import userPaginationSlice from '@/features/user/components/user-pagination-table/user-pagination-slice';
+import userProfilePaginationSlice from '@/features/user/components/user-profile-pagination-table/user-profile-pagination-slice';
+import linkProfileSlice from '@/features/auth/state/link-profile-slice';
+import eventPaginationSlice from '@/features/events/state/event-pagination-slice';
 
 export const makeStore = () => {
   return configureStore({
     reducer: {
-      authSlice,
       eventReportPaginationSlice,
+      eventPaginationSlice,
+      userPaginationSlice,
+      userProfilePaginationSlice,
+      linkProfileSlice,
       [apiSlice.reducerPath]: apiSlice.reducer,
     },
     middleware: (getDefaultMiddleware) =>

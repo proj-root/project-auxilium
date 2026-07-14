@@ -1,4 +1,5 @@
 import type { CookieOptions as CookieOptionsType } from "express"
+import { SystemConfig } from "./system.config";
 
 export const AuthConfig = {
   jwtSecret: process.env.JWT_SECRET || 'auxilium_secret',
@@ -16,3 +17,7 @@ export const CookieConfig = {
   sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
   maxAge: parseInt(process.env.COOKIE_MAXAGE || '2592000000'), // default 30 days
 } satisfies CookieOptionsType;
+
+export const OTPConfig = {
+  expiry: SystemConfig.isProduction ? 300 : 180 // 5 minutes in seconds : 3 minute in dev
+}

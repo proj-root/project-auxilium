@@ -16,6 +16,11 @@ export const SideBarNavItems: NavItem[] = [
     url: '/admin/events',
     icon: 'calendar',
   },
+  {
+    title: 'Users',
+    url: '/admin/users',
+    icon: 'users',
+  },
 ];
 
 export const SideBarNavFooterItems: NavItem[] = [
@@ -26,7 +31,12 @@ export const SideBarNavFooterItems: NavItem[] = [
   },
   {
     title: 'Feedback',
-    url: '/feedback',
+    url: 'https://forms.gle/8RYR5G9XzgkzeNHD7',
     icon: 'feedback',
+  },
+  {
+    title: 'Report a Bug',
+    url: 'https://forms.gle/M4mgnc5xQX7hfx9x5',
+    icon: 'bug',
   },
 ];
