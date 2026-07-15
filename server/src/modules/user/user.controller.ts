@@ -366,7 +366,7 @@ export class UserController {
 
   // Update self
   @Put()
-  async updateUser(
+  async updateSelf(
     @Session() session: UserSession,
     @Body(new ZodValidationPipe(UpdateUserSchema)) body: Partial<UpdateUserDTO>,
   ) {
@@ -381,6 +381,7 @@ export class UserController {
   }
 
   // Updates another user's information
+  // ONLY SUPERADMIN can do this
   @Put(':userId')
   @UseGuards(RoleGuard)
   @Roles(RolesConfig.SUPERADMIN)

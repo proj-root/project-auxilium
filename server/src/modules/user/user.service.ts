@@ -397,9 +397,7 @@ export class UserService {
   }
 
   async updateUser(args: UpdateUserDTO, adminRoleId?: number) {
-    const authorized =
-      adminRoleId === RolesConfig.ADMIN ||
-      adminRoleId === RolesConfig.SUPERADMIN;
+    const authorized = adminRoleId === RolesConfig.SUPERADMIN;
 
     try {
       const { userId, departmentIds, roleId, ...updateData } = args;
@@ -481,6 +479,7 @@ export class UserService {
           authorized &&
           currentUserRole?.roleId !== RolesConfig.USER
         ) {
+          this.logger.debug(`Department IDs: ${departmentIds}`)
           // Clear all user departments and re-insert
           await tx
             .delete(schema.userDepartment)

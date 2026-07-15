@@ -22,7 +22,7 @@ export function PriorityPopover({
   const handleUpdate = async (value: TaskPriorityEnum) => {
     if (priority === value) return;
     try {
-      await updateTask({ taskId, priority: value });
+      await updateTask({ taskId, priority: value }).unwrap();
     } catch (error: any) {
       console.error(error);
       toast.error(error.data.message);

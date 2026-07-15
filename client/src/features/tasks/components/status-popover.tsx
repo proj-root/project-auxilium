@@ -26,7 +26,7 @@ export function StatusPopover({
   const handleUpdate = async (value: TaskStatusEnum) => {
     if (status === value) return;
     try {
-      await updateTask({ taskId, status: value });
+      await updateTask({ taskId, status: value }).unwrap();
       if (value === TaskStatusEnum.COMPLETED) {
         toast.success('Task completed!');
       }

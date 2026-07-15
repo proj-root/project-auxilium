@@ -1,12 +1,12 @@
 import type { ColumnDef } from '@tanstack/react-table';
 import type { UserDTO } from '../../user.dto';
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
-import { BadgeCheck } from 'lucide-react';
+import { BadgeCheck, Plus } from 'lucide-react';
 import { UserRoleBadge } from '../role-badge';
 import { Link } from 'react-router';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
-import { SelectUserRole } from './cell-helpers';
+import { DepartmentPopover, SelectUserRole } from './cell-helpers';
 import { RolesConfig } from '@auxilium/configs/roles';
 
 export const columns: ColumnDef<UserDTO>[] = [
@@ -73,7 +73,7 @@ export const columns: ColumnDef<UserDTO>[] = [
       if (row.original.role.roleId === RolesConfig.SUPERADMIN) {
         return <UserRoleBadge role={row.original.role} />;
       }
-      
+
       return (
         <SelectUserRole
           userId={row.original.id}
@@ -89,16 +89,26 @@ export const columns: ColumnDef<UserDTO>[] = [
     ),
     cell: ({ row }) => {
       return (
-        <div className='flex flex-wrap gap-1'>
-          {row.original.departments.map((dept) => (
-            <Badge key={dept.departmentId} variant='secondary'>
-              {dept.name}
-            </Badge>
-          ))}
-          {row.original.departments.length === 0 && (
-            <Badge variant='outline'>NA</Badge>
-          )}
-        </div>
+        <DepartmentPopover
+          userId={row.original.id}
+          departments={row.original.departments}
+        >
+          <div className='flex flex-wrap gap-1'>
+            {row.original.departments.map((dept) => (
+              <Badge key={dept.departmentId} variant='secondary'>
+                {dept.name}
+              </Badge>
+            ))}
+            {row.original.departments.length === 0 && (
+              <Badge
+                variant='outline'
+                className='text-muted-foreground border-dashed'
+              >
+                <Plus /> Assign
+              </Badge>
+            )}
+          </div>
+        </DepartmentPopover>
       );
     },
   },
@@ -108,7 +118,7 @@ export const columns: ColumnDef<UserDTO>[] = [
       <DataTableColumnHeader title='Created At' column={column} />
     ),
     cell: ({ row }) => {
-      return <p>{format(row.original.createdAt, 'PPP hh:mm a')}</p>;
+      return <p>{format(row.original.createdAt, 'do MMM yyyy hh:mm a')}</p>;
     },
   },
 ];
