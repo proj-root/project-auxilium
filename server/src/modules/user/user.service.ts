@@ -464,6 +464,12 @@ export class UserService {
             .update(schema.userRole)
             .set({ roleId })
             .where(eq(schema.userRole.userId, userId));
+          
+          // Reset user's departments if they became a USER
+          await tx
+            .delete(schema.userDepartment)
+            .where(eq(schema.userDepartment.userId, userId));
+
           this.logger.debug(`Updated user role for user ID ${userId}`);
         }
 
@@ -479,7 +485,6 @@ export class UserService {
           authorized &&
           currentUserRole?.roleId !== RolesConfig.USER
         ) {
-          this.logger.debug(`Department IDs: ${departmentIds}`)
           // Clear all user departments and re-insert
           await tx
             .delete(schema.userDepartment)

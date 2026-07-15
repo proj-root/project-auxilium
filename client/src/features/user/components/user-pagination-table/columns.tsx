@@ -88,6 +88,11 @@ export const columns: ColumnDef<UserDTO>[] = [
       <DataTableColumnHeader title='Departments' column={column} />
     ),
     cell: ({ row }) => {
+      if (row.original.role.roleId === RolesConfig.USER) {
+        return (
+          <p>-</p>
+        );
+      }
       return (
         <DepartmentPopover
           userId={row.original.id}
