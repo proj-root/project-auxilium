@@ -6,19 +6,93 @@ import { Link } from 'react-router';
 import { UserProfileDropdown } from '@/features/user/components/profile-dropdown';
 import { authClient } from '@/lib/auth-client';
 import { useTheme } from 'next-themes';
+import { motion, stagger, type Variants } from 'motion/react';
 
-export function NavBar() {
+interface NavBarProps {
+  isParentLoading: boolean;
+}
+
+export function NavBar({ isParentLoading }: NavBarProps) {
   const { resolvedTheme } = useTheme();
   const { data, isPending, error } = authClient.useSession();
 
+  const navVariants: Variants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        delayChildren: stagger(0.1, { startDelay: 0.2 }),
+      },
+    },
+  };
+
+  const navItemVariants: Variants = {
+    hidden: { y: -40, opacity: 0 },
+    visible: { y: 0, opacity: 1, transition: { duration: 0.3 } },
+  };
+
   return (
-    <div className='bg-background flex flex-row items-center   justify-between px-6 py-3'>
-      <img src={resolvedTheme === 'dark' ? '/logo-dark.png' : '/logo-light.png'} className='w-45 h-15 object-cover'/>
-      <nav className='flex flex-row gap-4'>
-        {/* TODO: Put navigation links here */}
-      </nav>
-      <div className='flex flex-row items-center gap-3'>
-        {/* TODO: QoL updates */}
+    <div className='bg-background flex flex-row items-center justify-between px-6 py-3 sticky top-0'>
+      <motion.div
+        animate={!isParentLoading && { x: 0, opacity: 1 }}
+        initial={{ x: -50, opacity: 0 }}
+        transition={{ delay: 0.2, duration: 0.5 }}
+      >
+        <Link to='/'>
+          <img
+            src={
+              resolvedTheme === 'dark' ? '/logo-dark.png' : '/logo-light.png'
+            }
+            className='h-15 w-45 object-cover'
+          />
+        </Link>
+      </motion.div>
+
+      <motion.nav
+        initial={'hidden'}
+        animate={isParentLoading ? 'hidden' : 'visible'}
+        variants={navVariants}
+        className='text-muted-foreground flex flex-row justify-evenly gap-16 font-mono text-lg'
+      >
+        <motion.div variants={navItemVariants}>
+          <Link
+            to={'/events'}
+            className='hover:text-foreground transition-colors duration-100 ease-in'
+          >
+            / events
+          </Link>
+        </motion.div>
+        <motion.div variants={navItemVariants}>
+          <Link
+            to={'/events'}
+            className='hover:text-foreground transition-colors duration-100 ease-in'
+          >
+            / resources
+          </Link>
+        </motion.div>
+        <motion.div variants={navItemVariants}>
+          <Link
+            to={'/events'}
+            className='hover:text-foreground transition-colors duration-100 ease-in'
+          >
+            / forum
+          </Link>
+        </motion.div>
+        <motion.div variants={navItemVariants}>
+          <Link
+            to={'/events'}
+            className='hover:text-foreground transition-colors duration-100 ease-in'
+          >
+            / about
+          </Link>
+        </motion.div>
+      </motion.nav>
+      <motion.div
+        animate={!isParentLoading && { x: 0, opacity: 1 }}
+        initial={{ x: 50, opacity: 0 }}
+        transition={{ delay: 0.2, duration: 0.5 }}
+        className='flex flex-row items-center gap-3'
+      >
         <ThemeToggler />
         {/* <NotificationButton /> */}
 
@@ -39,7 +113,7 @@ export function NavBar() {
         ) : (
           <UserProfileDropdown />
         )}
-      </div>
+      </motion.div>
     </div>
   );
 }

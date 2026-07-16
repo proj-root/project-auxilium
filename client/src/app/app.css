@@ -54,7 +54,7 @@ body {
   --sidebar-accent-foreground: oklch(0.9850 0 0);
   --sidebar-border: oklch(0.2750 0 0);
   --sidebar-ring: oklch(0.4390 0 0);
-  --font-sans: "DM Sans", ui-sans-serif, sans-serif, system-ui;
+  --font-sans: "Outfit", ui-sans-serif, sans-serif, system-ui;
   --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
   --font-mono: "Ubuntu Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   --radius: 0.4rem;
@@ -109,7 +109,7 @@ body {
   --sidebar-accent-foreground: oklch(0.9850 0 0);
   --sidebar-border: oklch(0.2750 0 0);
   --sidebar-ring: oklch(0.4390 0 0);
-  --font-sans: "DM Sans", ui-sans-serif, sans-serif, system-ui;
+  --font-sans: "Outfit", ui-sans-serif, sans-serif, system-ui;
   --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
   --font-mono: "Ubuntu Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   --radius: 0.4rem;
@@ -189,4 +189,8 @@ body {
   body {
     @apply bg-background text-foreground;
   }
+}
+
+.font-headline {
+  font-family: "Audiowide", sans-serif;
 }
