@@ -56,7 +56,7 @@ export function UserPaginationContextMenu({
           >
             <Copy /> Copy ID
           </ContextMenuItem>
-          <ContextMenuItem className='cursor-pointer gap-2'>
+          <ContextMenuItem className='cursor-pointer gap-2' disabled>
             <Edit2 /> Edit
           </ContextMenuItem>
           <ContextMenuItem

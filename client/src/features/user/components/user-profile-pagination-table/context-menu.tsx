@@ -21,6 +21,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { useState } from 'react';
+import { EditUserProfileModal } from '../edit-user-form';
 
 export function UserProfilePaginationContextMenu({
   row,
@@ -56,7 +57,10 @@ export function UserProfilePaginationContextMenu({
           >
             <Copy /> Copy ID
           </ContextMenuItem>
-          <ContextMenuItem className='cursor-pointer gap-2'>
+          <ContextMenuItem
+            className='cursor-pointer gap-2'
+            onSelect={() => setActiveDialog('edit')}
+          >
             <Edit2 /> Edit
           </ContextMenuItem>
           <ContextMenuItem
@@ -68,6 +72,14 @@ export function UserProfilePaginationContextMenu({
           </ContextMenuItem>
         </ContextMenuContent>
       </ContextMenu>
+
+      {/* Edit Dialog */}
+      <EditUserProfileModal
+        profileId={row.profileId}
+        onSubmitCb={() => setActiveDialog(null)}
+        open={activeDialog === 'edit'}
+        onOpenChange={(open) => !open && setActiveDialog(null)}
+      />
 
       {/* Delete Dialog */}
       <AlertDialog

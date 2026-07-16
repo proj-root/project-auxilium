@@ -31,6 +31,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { useGetAllCoursesQuery } from '@/features/user/state/user-api-slice';
 
 export function VerifyIdentityForm({ className }: { className?: string }) {
   const dispatch = useAppDispatch();
@@ -117,6 +118,7 @@ export function CompleteProfileLinkForm({ className }: { className?: string }) {
   const { profileExists, ichat } = useAppSelector(selectLinkProfileState);
   const dispatch = useAppDispatch();
   const [completeProfileLink, { isLoading }] = useCompleteProfileLinkMutation();
+  const { data: courseData } = useGetAllCoursesQuery();
 
   const baseFormSchema = z.object({
     hasProfile: z.literal(true),
@@ -171,9 +173,7 @@ export function CompleteProfileLinkForm({ className }: { className?: string }) {
 
   // TODO
   // Implement retry logic in case otp expires
-  const retryOTP = async () => {
-    
-  }
+  const retryOTP = async () => {};
 
   return (
     <form
@@ -305,11 +305,15 @@ export function CompleteProfileLinkForm({ className }: { className?: string }) {
                     </SelectTrigger>
                     {/* TODO: Make a route to fetch this data */}
                     <SelectContent position='item-aligned'>
-                      <SelectItem value='DIT'>DIT</SelectItem>
-                      <SelectItem value='DCS'>DCS</SelectItem>
-                      <SelectItem value='DCDF'>DCDF</SelectItem>
-                      <SelectItem value='DAAA'>DAAA</SelectItem>
-                      <SelectItem value='DCITP'>DCITP</SelectItem>
+                      {courseData?.data.map((course) => (
+                        <SelectItem
+                          key={course.code}
+                          value={course.code}
+                          title={course.name}
+                        >
+                          {course.code}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </Field>

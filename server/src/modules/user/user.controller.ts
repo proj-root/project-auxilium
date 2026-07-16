@@ -24,10 +24,9 @@ import { RolesConfig } from '@auxilium/configs/roles';
 import { Roles } from '@/common/decorators/roles.decorator';
 import {
   type CreateUserProfileDTO,
+  CreateUserProfileSchema,
   type GetAllUserProfilesQueryDTO,
   type GetAllUsersQueryDTO,
-  type ProfileLinkDTO,
-  ProfileLinkSchema,
   UpdateUserDTO,
   UpdateUserSchema,
   type VerifyIdentityDTO,
@@ -79,14 +78,6 @@ export class UserController {
 
     if (userProfile) profileExists = true;
     else profileExists = false;
-
-    // If no user profile found
-    // if (!userProfile) {
-    //   return {
-    //     message: 'Unable to find a matching profile.',
-    //     status: 'success',
-    //   };
-    // }
 
     // If user profile is found:
     // Check if user already has a pending OTP:
@@ -155,7 +146,7 @@ export class UserController {
   async verifyIdentityOTP(
     @Session() session: UserSession,
     @Param('otp') otp: string,
-    @Body() body: ProfileLinkDTO,
+    @Body() body: Omit<CreateUserProfileDTO, 'userId'>,
   ) {
     const key = `otp:auth:profile-link:user_${session.user.id}`;
     const profileLinkSession = await this.redisClient
@@ -185,7 +176,7 @@ export class UserController {
       });
     } else {
       // Check that all fields are accounted for
-      const result = ProfileLinkSchema.safeParse(body);
+      const result = CreateUserProfileSchema.safeParse(body);
       if (!result.success)
         throw new HttpException('Missing fields in request', 400);
 
@@ -410,6 +401,35 @@ export class UserController {
     };
   }
 
+  // Endpoint only for updating profiles
+  @Put('/profile/:profileId')
+  @UseGuards(RoleGuard)
+  @Roles(RolesConfig.SUPERADMIN)
+  async updateUserProfileById(
+    @Session() session: UserSession,
+    @Param('profileId') profileId: string,
+    @Body(new ZodValidationPipe(UpdateUserSchema)) body: Partial<UpdateUserDTO>,
+  ) {
+    const currentUser = await this.userService.getUserProfileByUserId({ userId: session.user.id });
+
+    if (profileId === currentUser?.profileId) {
+      throw new ForbiddenException(
+        'Use the /api/user endpoint to update your own profile',
+      );
+    }
+
+    const user = await this.userService.updateUserProfile({
+      profileId,
+      ...body
+    })
+
+    return {
+      message: 'User profile updated successfully',
+      status: 'success',
+      data: user,
+    };
+  }
+
   @Delete()
   async deleteSelf(@Session() session: UserSession) {
     const userId = session.user.id;
@@ -487,8 +507,8 @@ export class UserController {
     };
   }
 
-  @Get('/departments')
-  async getAllCoursess() {
+  @Get('/courses')
+  async getAllCourses() {
     const courses = await this.userService.getAllCourses();
 
     return {

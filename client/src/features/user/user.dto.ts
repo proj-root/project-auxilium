@@ -25,6 +25,11 @@ export interface DepartmentDTO {
   name: string;
 }
 
+export interface CourseDTO {
+  code: string;
+  name: string;
+}
+
 export interface UserDTO {
   id: string;
   name: string;
@@ -78,15 +83,33 @@ export interface GetSingleUserRequest {
 
 export interface UpdateUserByIdRequest {
   userId: string;
-  course?: string;
+  
+  firstName?: string;
+  lastName?: string;
+  ichat?: string;
+  adminNumber?: string;
   studentClass?: string;
+  course?: string;
+
   roleId?: number;
   departmentIds?: number[];
+}
+
+export interface UpdateUserProfileByIdRequest {
+  profileId: string;
+  firstName?: string;
+  lastName?: string;
+  ichat?: string;
+  adminNumber?: string;
+  studentClass?: string;
+  course?: string;
 }
 
 export type GetAllRolesResponse = BaseResponseDTO<RoleDTO[]>;
 
 export type GetAllDepartmentsResponse = BaseResponseDTO<DepartmentDTO[]>;
+
+export type GetAllCoursesResponse = BaseResponseDTO<CourseDTO[]>;
 
 export interface DeleteUserByIdRequest {
   userId: string;

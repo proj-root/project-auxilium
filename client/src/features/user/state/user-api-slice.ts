@@ -2,6 +2,7 @@ import { apiSlice } from '@/state/api-slice';
 import type {
   DeleteUserByIdRequest,
   DeleteUserProfileByIdRequest,
+  GetAllCoursesResponse,
   GetAllDepartmentsResponse,
   GetAllRolesResponse,
   GetAllUserProfilesResponse,
@@ -11,6 +12,7 @@ import type {
   GetSingleUserRequest,
   GetSingleUserResponse,
   UpdateUserByIdRequest,
+  UpdateUserProfileByIdRequest,
 } from '../user.dto';
 import type { PaginationOptions } from '@auxilium/types/pagination';
 
@@ -57,6 +59,14 @@ export const userApiSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ['User', 'User-Pagination', 'User-Profile-Pagination'],
     }),
+    updateUserProfileById: builder.mutation<void, UpdateUserProfileByIdRequest>({
+      query: ({ profileId, ...data }) => ({
+        url: `/user/profile/${profileId}`,
+        method: 'PUT',
+        body: data,
+      }),
+      invalidatesTags: ['User', 'User-Pagination', 'User-Profile-Pagination'],
+    }),
     deleteSelf: builder.mutation<void, void>({
       query: () => ({
         url: `/user`,
@@ -94,6 +104,13 @@ export const userApiSlice = apiSlice.injectEndpoints({
       }),
       providesTags: ['Departments'],
     }),
+    getAllCourses: builder.query<GetAllCoursesResponse, void>({
+      query: () => ({
+        url: `/user/courses`,
+        method: 'GET',
+      }),
+      providesTags: ['Courses'],
+    }),
   }),
 });
 
@@ -103,9 +120,11 @@ export const {
   useGetAllUserProfilesQuery,
   useGetSingleUserQuery,
   useUpdateUserByIdMutation,
+  useUpdateUserProfileByIdMutation,
   useGetAllRolesQuery,
   useGetAllDepartmentsQuery,
   useDeleteSelfMutation,
   useDeleteUserByIdMutation,
   useDeleteUserProfileByIdMutation,
+  useGetAllCoursesQuery,
 } = userApiSlice;
