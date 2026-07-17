@@ -2,10 +2,11 @@ import HolographicLotus from '@/components/decorative/holographic-lotus-flower';
 import { InitialisingScreen } from '@/components/decorative/initialising-screen';
 import TypewriterEffect from '@/components/decorative/typewriter';
 import { NavBar } from '@/components/navigation/navbar';
+import { useInitAnimPreference } from '@/hooks/use-initialise-anim-settings';
 import { cn } from '@/lib/utils';
 import { Dot, Sparkle } from 'lucide-react';
 import { AnimatePresence } from 'motion/react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 function StripedSeparator() {
   return (
@@ -51,12 +52,28 @@ function UpcomingEventsSection() {
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
+  const { shouldPlay, markAsSeenToday, isLoaded } = useInitAnimPreference();
+
+  useEffect(() => {
+    if (isLoaded && !shouldPlay) {
+      setIsLoading(false);
+    }
+  }, [shouldPlay]);
+
+  if (!isLoaded) {
+    return <div className='min-h-screen' />;
+  }
 
   return (
     <div className='relative h-screen max-h-screen w-full overflow-hidden'>
       <AnimatePresence mode='wait'>
-        {isLoading && (
-          <InitialisingScreen onAnimationComplete={() => setIsLoading(false)} />
+        {shouldPlay && isLoading && (
+          <InitialisingScreen
+            onAnimationComplete={() => {
+              markAsSeenToday();
+              setIsLoading(false);
+            }}
+          />
         )}
       </AnimatePresence>
 
