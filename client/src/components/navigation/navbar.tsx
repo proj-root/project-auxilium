@@ -32,7 +32,7 @@ export function NavBar({ isParentLoading }: NavBarProps) {
   };
 
   return (
-    <div className='bg-background flex flex-row items-center justify-between px-6 py-3 sticky top-0'>
+    <div className='z-11 bg-background flex flex-row items-center justify-between px-6 py-3 sticky top-0'>
       <motion.div
         animate={!isParentLoading && { x: 0, opacity: 1 }}
         initial={{ x: -50, opacity: 0 }}

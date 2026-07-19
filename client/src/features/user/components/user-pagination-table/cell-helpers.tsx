@@ -12,7 +12,7 @@ import {
   useGetAllRolesQuery,
   useUpdateUserByIdMutation,
 } from '../../state/user-api-slice';
-import { Check } from 'lucide-react';
+import { Check, TriangleAlert } from 'lucide-react';
 import { toast } from 'sonner';
 import { useState } from 'react';
 import { RolesConfig } from '@auxilium/configs/roles';
@@ -82,10 +82,12 @@ export function SelectUserRole({
 
 export function DepartmentPopover({
   userId,
+  profileId,
   departments,
   children,
 }: {
   userId: string;
+  profileId: string | undefined;
   departments: DepartmentDTO[];
   children: React.ReactNode;
 }) {
@@ -119,7 +121,7 @@ export function DepartmentPopover({
       toast.success('Updated user department(s) successfully');
     } catch (error: any) {
       console.error(error);
-      toast.error(error.data.message);
+      toast.error('Failed to assign user department');
     } finally {
       // setIsOpen(false);
     }
@@ -127,7 +129,15 @@ export function DepartmentPopover({
 
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
-      <PopoverTrigger className='cursor-pointer'>{children}</PopoverTrigger>
+      <PopoverTrigger disabled={!profileId} className='cursor-pointer'>
+        {profileId ? (
+          <>{children}</>
+        ) : (
+          <Badge variant={'outline'} className='text-amber-500 border-amber-500 border-dashed bg-amber-500/10'>
+            <TriangleAlert /> Profile not linked
+          </Badge>
+        )}
+      </PopoverTrigger>
       <PopoverContent className='me-4 max-w-45 px-1 py-2' align='start'>
         <ul className='flex flex-col gap-1'>
           {data?.data &&

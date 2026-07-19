@@ -12,6 +12,7 @@ import { Link } from 'react-router';
 import { motion } from 'motion/react';
 import { Barcode } from '@/components/decorative/deco-elements';
 import { SiteFooter } from '@/components/navigation/footer';
+import { GridBackground } from '@/components/decorative/grid-background';
 
 function StripedSeparator() {
   return (
@@ -34,8 +35,11 @@ function StripedSeparator() {
 
 function HeroSection() {
   return (
-    <div className='flex h-[92vh] min-h-[92vh] flex-row items-center justify-center px-16 py-10'>
-      <div className='flex h-full w-full flex-col justify-between'>
+    <div className='relative flex h-[92vh] min-h-[92vh] flex-row items-center justify-center px-16 py-10'>
+      {/* Grid Background */}
+      <GridBackground className='z-0'/>
+
+      <div className='relative z-10 flex h-full w-full flex-col justify-between'>
         <div className='bg-foreground h-4 w-60' />
         <div className='flex flex-col'>
           {/* <div>
@@ -62,13 +66,13 @@ function HeroSection() {
           >
             <Link
               to={'/#events'}
-              className='hover:bg-muted/80 border px-6 py-2'
+              className='bg-foreground text-background hover:bg-muted/80 border px-6 py-2'
             >
               Events
             </Link>
             <Link
               to={'/resources'}
-              className='hover:bg-muted/80 border px-6 py-2'
+              className='bg-foreground text-background hover:bg-muted/80 border px-6 py-2'
             >
               Resources
             </Link>

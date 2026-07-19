@@ -96,6 +96,7 @@ export const columns: ColumnDef<UserDTO>[] = [
       return (
         <DepartmentPopover
           userId={row.original.id}
+          profileId={row.original.userProfile?.profileId}
           departments={row.original.departments}
         >
           <div className='flex flex-wrap gap-1'>

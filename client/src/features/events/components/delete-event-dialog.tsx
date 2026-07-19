@@ -17,6 +17,7 @@ import {
 import { toast } from 'sonner';
 import { Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router';
 
 export function DeleteEventDialog({
   eventId,
@@ -30,11 +31,13 @@ export function DeleteEventDialog({
   children?: React.ReactNode;
 }) {
   const [deleteEvent] = useDeleteEventByIdMutation();
+  const navigate = useNavigate();
 
   const handleDelete = async () => {
     try {
       await deleteEvent({ eventId }).unwrap();
       toast.success('Successfully moved event to trash.');
+      navigate('/admin/events');
     } catch (error: any) {
       console.error(error);
       toast.error(error.data.message);
@@ -74,6 +77,7 @@ export function HardDeleteEventDialog({
 }) {
   const [deleteEvent] = useHardDeleteEventByIdMutation();
   const [isOpen, setIsOpen] = useState(false);
+  const navigate = useNavigate();
 
   const [countdown, setCountdown] = useState(5);
 
@@ -99,6 +103,7 @@ export function HardDeleteEventDialog({
     try {
       await deleteEvent({ eventId }).unwrap();
       toast.success('Deleted event successfully.');
+      navigate('/admin/events');
     } catch (error: any) {
       console.error(error);
       toast.error(error.data.message);
