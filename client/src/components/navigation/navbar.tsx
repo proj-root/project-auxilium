@@ -9,7 +9,7 @@ import { useTheme } from 'next-themes';
 import { motion, stagger, type Variants } from 'motion/react';
 
 interface NavBarProps {
-  isParentLoading: boolean;
+  isParentLoading?: boolean;
 }
 
 export function NavBar({ isParentLoading }: NavBarProps) {
@@ -32,7 +32,7 @@ export function NavBar({ isParentLoading }: NavBarProps) {
   };
 
   return (
-    <div className='z-11 bg-background flex flex-row items-center justify-between px-6 py-3 sticky top-0'>
+    <div className='z-11 border-b border-muted bg-background flex flex-row items-center justify-between px-6 py-3 sticky top-0'>
       <motion.div
         animate={!isParentLoading && { x: 0, opacity: 1 }}
         initial={{ x: -50, opacity: 0 }}
@@ -64,7 +64,7 @@ export function NavBar({ isParentLoading }: NavBarProps) {
         </motion.div>
         <motion.div variants={navItemVariants}>
           <Link
-            to={'/events'}
+            to={'/resources'}
             className='hover:text-foreground transition-colors duration-100 ease-in'
           >
             / resources
@@ -72,7 +72,7 @@ export function NavBar({ isParentLoading }: NavBarProps) {
         </motion.div>
         <motion.div variants={navItemVariants}>
           <Link
-            to={'/events'}
+            to={'/forum'}
             className='hover:text-foreground transition-colors duration-100 ease-in'
           >
             / forum
@@ -80,7 +80,7 @@ export function NavBar({ isParentLoading }: NavBarProps) {
         </motion.div>
         <motion.div variants={navItemVariants}>
           <Link
-            to={'/events'}
+            to={'/about'}
             className='hover:text-foreground transition-colors duration-100 ease-in'
           >
             / about

@@ -80,11 +80,11 @@ export function RegisterForm({ className }: { className?: string }) {
                 placeholder='John'
                 autoComplete='on'
                 aria-invalid={fieldState.invalid}
-                data-testid='login-firstName'
+                data-testid='register-firstName'
               />
               {fieldState.invalid && (
                 <FieldError
-                  data-testid='login-firstname-errors'
+                  data-testid='register-firstname-errors'
                   errors={[fieldState.error]}
                 />
               )}
