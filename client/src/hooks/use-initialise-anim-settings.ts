@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import Cookies from 'js-cookie';
 
-type AnimationPreference = 'always' | 'daily' | 'never';
+export type AnimationPreference = 'always' | 'daily' | 'never';
 
 const PREF_COOKIE = 'initAnimPref';
 const LAST_SEEN_COOKIE = 'initAnimLastSeen';

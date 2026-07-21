@@ -12,6 +12,7 @@ import './app.css';
 import StoreProvider from '@/context/store-provider';
 import { ThemeProvider } from 'next-themes';
 import { Toaster } from 'sonner';
+import GlitchOverlay from '@/components/decorative/chromatic-glitch';
 
 export const links: Route.LinksFunction = () => [
   { rel: 'preconnect', href: 'https://fonts.googleapis.com' },

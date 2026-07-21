@@ -95,6 +95,15 @@ export interface UpdateUserByIdRequest {
   departmentIds?: number[];
 }
 
+export interface UpdateSelfRequest {
+  firstName?: string;
+  lastName?: string;
+  course?: string;
+  // ichat?: string;
+  studentClass?: string;
+  adminNumber?: string;
+}
+
 export interface UpdateUserProfileByIdRequest {
   profileId: string;
   firstName?: string;

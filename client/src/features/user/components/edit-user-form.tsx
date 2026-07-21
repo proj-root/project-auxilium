@@ -283,8 +283,8 @@ export function EditUserProfileModal({
                   value={field.value}
                   onValueChange={field.onChange}
                 >
-                  <SelectTrigger id='eventTypeId'>
-                    <SelectValue placeholder='Select an event type' />
+                  <SelectTrigger id='course'>
+                    <SelectValue placeholder='Select a course' />
                   </SelectTrigger>
                   <SelectContent position='item-aligned'>
                     {courseData?.data.map((course) => (

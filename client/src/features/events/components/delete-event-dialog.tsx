@@ -120,8 +120,7 @@ export function HardDeleteEventDialog({
           </AlertDialogMedia>
           <AlertDialogTitle>Permanently delete this event?</AlertDialogTitle>
           <AlertDialogDescription>
-            Once you go screaming over the edge, it's all over. Ain't no coming
-            back, choom. PERMANENTLY delete this event?
+            There's no turning back. PERMANENTLY delete this event?
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

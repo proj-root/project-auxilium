@@ -15,7 +15,7 @@ export default function SettingsPage() {
     <div className='flex min-h-screen flex-col items-center justify-center w-full md:w-3xl xl:w-5xl'>
       <div className="min-h-full w-full flex flex-col py-8">
         {/* Header */}
-        <div className="w-full flex flex-row justify-between items-center mb-8">
+        <div className="w-full flex flex-row justify-between items-center mb-6">
           <h1 className="text-3xl font-semibold">Settings</h1>
           <Button asChild size={'sm'} variant={'outline'}>
             <Link to={'/profile/'}>Go to public profile</Link>

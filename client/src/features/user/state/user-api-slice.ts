@@ -11,6 +11,7 @@ import type {
   GetPersonalDetailsResponse,
   GetSingleUserRequest,
   GetSingleUserResponse,
+  UpdateSelfRequest,
   UpdateUserByIdRequest,
   UpdateUserProfileByIdRequest,
 } from '../user.dto';
@@ -59,14 +60,24 @@ export const userApiSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ['User', 'User-Pagination', 'User-Profile-Pagination'],
     }),
-    updateUserProfileById: builder.mutation<void, UpdateUserProfileByIdRequest>({
-      query: ({ profileId, ...data }) => ({
-        url: `/user/profile/${profileId}`,
+    updateSelf: builder.mutation<void, UpdateSelfRequest>({
+      query: (data) => ({
+        url: `/user`,
         method: 'PUT',
         body: data,
       }),
-      invalidatesTags: ['User', 'User-Pagination', 'User-Profile-Pagination'],
+      invalidatesTags: ['User'],
     }),
+    updateUserProfileById: builder.mutation<void, UpdateUserProfileByIdRequest>(
+      {
+        query: ({ profileId, ...data }) => ({
+          url: `/user/profile/${profileId}`,
+          method: 'PUT',
+          body: data,
+        }),
+        invalidatesTags: ['User', 'User-Pagination', 'User-Profile-Pagination'],
+      },
+    ),
     deleteSelf: builder.mutation<void, void>({
       query: () => ({
         url: `/user`,
@@ -127,4 +138,5 @@ export const {
   useDeleteUserByIdMutation,
   useDeleteUserProfileByIdMutation,
   useGetAllCoursesQuery,
+  useUpdateSelfMutation,
 } = userApiSlice;
