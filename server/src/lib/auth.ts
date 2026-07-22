@@ -3,6 +3,7 @@ import db from '@/db';
 import { createAuthMiddleware } from 'better-auth/api';
 import {
   enrichSessionUserDetails,
+  sendResetPassword,
   setupUserDetails,
 } from '@/modules/auth/lib/auth-hooks';
 import { betterAuth } from 'better-auth';
@@ -31,6 +32,8 @@ export const auth = betterAuth({
   secret: process.env.AUTH_SECRET!,
   emailAndPassword: {
     enabled: true,
+    sendResetPassword: sendResetPassword
+
   },
   socialProviders: {
     github: {

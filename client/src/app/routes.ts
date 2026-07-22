@@ -15,6 +15,7 @@ export default [
       route('/unauthorized', 'routes/unauthorized.tsx'),
       route('/about', 'routes/about.tsx'),
       route('/link-profile', 'routes/link-profile.tsx'),
+      route('/settings', 'routes/settings.tsx'),
     ]),
   ]),
 
@@ -41,5 +42,6 @@ export default [
       route('/login', 'routes/auth/login.tsx'),
       route('/register', 'routes/auth/register.tsx'),
     ]),
+    route('/reset-password', 'routes/auth/reset-password.tsx'),
   ]),
 ] satisfies RouteConfig;

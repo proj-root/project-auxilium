@@ -12,6 +12,7 @@ import './app.css';
 import StoreProvider from '@/context/store-provider';
 import { ThemeProvider } from 'next-themes';
 import { Toaster } from 'sonner';
+import GlitchOverlay from '@/components/decorative/chromatic-glitch';
 
 export const links: Route.LinksFunction = () => [
   { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
@@ -22,7 +23,7 @@ export const links: Route.LinksFunction = () => [
   },
   {
     rel: 'stylesheet',
-    href: 'https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Ubuntu+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap',
+    href: 'https://fonts.googleapis.com/css2?family=Audiowide&family=Outfit:wght@100..900&family=Ubuntu+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap',
   },
 ];
 
@@ -44,7 +45,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             enableSystem
             enableColorScheme
           >
-            <main className='bg-background flex max-h-screen max-w-screen flex-col items-center justify-center overflow-hidden'>
+            <main className='bg-background flex h-screen max-h-screen max-w-screen flex-col items-center justify-center overflow-hidden'>
               {children}
               <ScrollRestoration />
             </main>

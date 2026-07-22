@@ -8,7 +8,7 @@ interface SendMailOptions {
   textContent?: string;
 }
 
-const MailConfig = {
+export const MailConfig = {
   host: process.env.MAIL_HOST,
   port: parseInt(process.env.MAIL_PORT || '587', 10),
   secure: process.env.MAIL_SECURE === 'true', // true for port 465, false for other ports

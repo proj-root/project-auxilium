@@ -157,7 +157,7 @@ export function UserProfileDropdown() {
               onClick={() => setIsOpen(false)}
             >
               <Settings className='size-4' />
-              Settings (WIP)
+              Settings
             </Link>
           </Button>
         </div>

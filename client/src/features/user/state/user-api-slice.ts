@@ -1,5 +1,8 @@
 import { apiSlice } from '@/state/api-slice';
 import type {
+  DeleteUserByIdRequest,
+  DeleteUserProfileByIdRequest,
+  GetAllCoursesResponse,
   GetAllDepartmentsResponse,
   GetAllRolesResponse,
   GetAllUserProfilesResponse,
@@ -8,7 +11,9 @@ import type {
   GetPersonalDetailsResponse,
   GetSingleUserRequest,
   GetSingleUserResponse,
+  UpdateSelfRequest,
   UpdateUserByIdRequest,
+  UpdateUserProfileByIdRequest,
 } from '../user.dto';
 import type { PaginationOptions } from '@auxilium/types/pagination';
 
@@ -55,20 +60,68 @@ export const userApiSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ['User', 'User-Pagination', 'User-Profile-Pagination'],
     }),
+    updateSelf: builder.mutation<void, UpdateSelfRequest>({
+      query: (data) => ({
+        url: `/user`,
+        method: 'PUT',
+        body: data,
+      }),
+      invalidatesTags: ['User'],
+    }),
+    updateUserProfileById: builder.mutation<void, UpdateUserProfileByIdRequest>(
+      {
+        query: ({ profileId, ...data }) => ({
+          url: `/user/profile/${profileId}`,
+          method: 'PUT',
+          body: data,
+        }),
+        invalidatesTags: ['User', 'User-Pagination', 'User-Profile-Pagination'],
+      },
+    ),
+    deleteSelf: builder.mutation<void, void>({
+      query: () => ({
+        url: `/user`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['User-Pagination', 'User'],
+    }),
+    deleteUserById: builder.mutation<void, DeleteUserByIdRequest>({
+      query: ({ userId }) => ({
+        url: `/user/${userId}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['User-Pagination', 'User'],
+    }),
+    deleteUserProfileById: builder.mutation<void, DeleteUserProfileByIdRequest>(
+      {
+        query: ({ profileId }) => ({
+          url: `/user/profile/${profileId}`,
+          method: 'DELETE',
+        }),
+        invalidatesTags: ['User-Pagination', 'User'],
+      },
+    ),
     getAllRoles: builder.query<GetAllRolesResponse, void>({
       query: () => ({
         url: `/user/roles`,
         method: 'GET',
       }),
-      providesTags: ['Roles']
+      providesTags: ['Roles'],
     }),
     getAllDepartments: builder.query<GetAllDepartmentsResponse, void>({
       query: () => ({
         url: `/user/departments`,
         method: 'GET',
       }),
-      providesTags: ['Departments']
-    })
+      providesTags: ['Departments'],
+    }),
+    getAllCourses: builder.query<GetAllCoursesResponse, void>({
+      query: () => ({
+        url: `/user/courses`,
+        method: 'GET',
+      }),
+      providesTags: ['Courses'],
+    }),
   }),
 });
 
@@ -78,6 +131,12 @@ export const {
   useGetAllUserProfilesQuery,
   useGetSingleUserQuery,
   useUpdateUserByIdMutation,
+  useUpdateUserProfileByIdMutation,
   useGetAllRolesQuery,
-  useGetAllDepartmentsQuery
+  useGetAllDepartmentsQuery,
+  useDeleteSelfMutation,
+  useDeleteUserByIdMutation,
+  useDeleteUserProfileByIdMutation,
+  useGetAllCoursesQuery,
+  useUpdateSelfMutation,
 } = userApiSlice;

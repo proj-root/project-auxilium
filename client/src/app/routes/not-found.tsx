@@ -4,7 +4,7 @@ import { Link } from 'react-router';
 
 export default function NotFoundPage() {
   return (
-    <div className='flex h-full flex-col items-center justify-center gap-6'>
+    <div className='flex min-h-screen flex-col items-center justify-center gap-6'>
       <div className='flex flex-col items-center gap-1'>
         <h1 className='text-8xl font-semibold'>404</h1>
         <img src='/not-found.png' className='max-w-sm' />
