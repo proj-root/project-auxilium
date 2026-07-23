@@ -18,7 +18,7 @@ services:
       - garden-network
 
   server:
-    image: ghcr.io/${GITHUB_REPOSITORY}/server:latest
+    image: ghcr.io/project-auxilium/server:latest
     restart: unless-stopped
     env_file:
       - .env.production
@@ -30,7 +30,7 @@ services:
       - garden-network
 
   client:
-    image: ghcr.io/${GITHUB_REPOSITORY}/client:latest
+    image: ghcr.io/project-auxilium/client:latest
     restart: unless-stopped
     networks:
       - garden-network
