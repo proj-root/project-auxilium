@@ -15,7 +15,7 @@ function ProfileLinkPage() {
 
   if (step === 1) {
     return (
-      <div className='flex h-full flex-col items-center justify-center gap-10'>
+      <div className='flex min-h-screen h-screen flex-col items-center justify-center gap-10'>
         {/* Header */}
         <div className='flex flex-col items-center gap-3'>
           <h1 className='text-3xl'>Let's finish setting up your profile.</h1>
