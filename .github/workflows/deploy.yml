@@ -5,7 +5,7 @@ on:
     branches: [main]
 
 env:
-  REPO_NAME: project-auxilium
+  ORG_NAME: proj-root
 
 jobs:
   build-and-push:
@@ -37,7 +37,7 @@ jobs:
           context: .
           file: ./server/Dockerfile
           push: true
-          tags: ghcr.io/${{ env.REPO_NAME }}/server:latest
+          tags: ghcr.io/${{ env.ORG_NAME }}/garden-server:latest
 
       # 4. Build & Push Client Container
       - name: Build and Push Client
@@ -48,7 +48,7 @@ jobs:
           build-args: |
             VITE_API_BASE_URL=/api
           push: true
-          tags: ghcr.io/${{ env.REPO_NAME }}/client:latest
+          tags: ghcr.io/${{ env.ORG_NAME }}/garden-client:latest
 
   deploy:
     needs: build-and-push
