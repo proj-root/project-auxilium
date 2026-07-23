@@ -44,6 +44,8 @@ RUN npm run build -w client
 
 WORKDIR /app/client
 
+ARG VITE_API_BASE_URL=/api
+ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
 ENV PORT=5173
 EXPOSE 5173
 CMD ["npm", "run", "start"]
