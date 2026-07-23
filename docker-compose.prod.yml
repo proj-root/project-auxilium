@@ -30,8 +30,8 @@ services:
   client:
     image: ghcr.io/proj-root/garden-client:latest
     restart: unless-stopped
-    env_file:
-      - ./client/.env.production
+    environment:
+      - VITE_API_BASE_URL=https://garden.junkaizhang.com/api
     networks:
       - garden-network
 
