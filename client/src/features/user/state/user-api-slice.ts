@@ -90,7 +90,7 @@ export const userApiSlice = apiSlice.injectEndpoints({
         url: `/user/${userId}`,
         method: 'DELETE',
       }),
-      invalidatesTags: ['User-Pagination', 'User'],
+      invalidatesTags: ['User-Pagination', 'User', 'User-Profile-Pagination'],
     }),
     deleteUserProfileById: builder.mutation<void, DeleteUserProfileByIdRequest>(
       {
@@ -98,7 +98,7 @@ export const userApiSlice = apiSlice.injectEndpoints({
           url: `/user/profile/${profileId}`,
           method: 'DELETE',
         }),
-        invalidatesTags: ['User-Pagination', 'User'],
+        invalidatesTags: ['User-Pagination', 'User', 'User-Profile-Pagination'],
       },
     ),
     getAllRoles: builder.query<GetAllRolesResponse, void>({
