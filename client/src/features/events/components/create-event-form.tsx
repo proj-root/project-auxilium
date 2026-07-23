@@ -34,7 +34,7 @@ import {
 } from '@/components/ui/popover';
 import { format } from 'date-fns';
 import { ChevronDownIcon } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 export function DatePickerTime() {
   const [open, setOpen] = useState(false);
@@ -84,9 +84,9 @@ export function DatePickerTime() {
 }
 
 const formSchema = z.object({
-  name: z.string({ error: 'This field is required' }),
-  description: z.string({ error: 'This field is required' }),
-  eventTypeId: z.string({ error: 'This field is required' }),
+  name: z.string({ error: 'This field is required' }).min(1),
+  description: z.string({ error: 'This field is required' }).min(1),
+  eventTypeId: z.string({ error: 'This field is required' }).min(1),
   startDate: z.date().optional(),
   endDate: z.date().optional(),
   platform: z.string().optional(),
@@ -104,10 +104,20 @@ export function CreateEventForm({ className }: { className?: string }) {
   const form = useForm<CreateEventFormValues>({
     resolver: zodResolver(formSchema),
     mode: 'all',
+    defaultValues: {
+      name: '',
+      description: '',
+      eventTypeId: '',
+      startDate: undefined,
+      endDate: undefined,
+      platform: '',
+      venue: '',
+      signupUrl: '',
+      feedbackUrl: '',
+    },
   });
 
   const onSubmit = async (data: CreateEventFormValues) => {
-    console.log('Form Data:', data);
     try {
       await createEvent(data).unwrap();
       toast.success('Event created succesfully!');
@@ -116,6 +126,12 @@ export function CreateEventForm({ className }: { className?: string }) {
       toast.error(error.data.message);
     }
   };
+
+  useEffect(() => {
+    if (form.formState.isSubmitSuccessful) {
+      form.reset();
+    }
+  }, [form.formState.isSubmitSuccessful, form.reset]);
 
   return (
     <form
@@ -132,7 +148,9 @@ export function CreateEventForm({ className }: { className?: string }) {
           control={form.control}
           render={({ field, fieldState }) => (
             <Field>
-              <FieldLabel className='gap-0.5' htmlFor='name'>Event Name<p className='text-red-400'>*</p></FieldLabel>
+              <FieldLabel className='gap-0.5' htmlFor='name'>
+                Event Name<p className='text-red-400'>*</p>
+              </FieldLabel>
               <FieldDescription>A cool event name!</FieldDescription>
               <Input
                 {...field}
@@ -245,7 +263,9 @@ export function CreateEventForm({ className }: { className?: string }) {
           control={form.control}
           render={({ field, fieldState }) => (
             <Field>
-              <FieldLabel className='gap-0.5' htmlFor='venue'>Venue</FieldLabel>
+              <FieldLabel className='gap-0.5' htmlFor='venue'>
+                Venue
+              </FieldLabel>
               <Input
                 {...field}
                 id={field.name}

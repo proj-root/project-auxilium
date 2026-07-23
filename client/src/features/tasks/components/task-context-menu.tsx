@@ -41,7 +41,7 @@ export function TaskContextMenu({
         <div className='text-muted-foreground px-2 py-1 text-xs'>
           {/* TODO: Make name into link to public profile next time */}
           <p>Last edited by {task.creator?.name}</p>
-          <p>{format(task.createdAt, 'MMM do yyyy, hh:mm a')}</p>
+          <p>{format(task.createdAt, 'do MMM yyyy, hh:mm a')}</p>
         </div>
       </ContextMenuContent>
     </ContextMenu>

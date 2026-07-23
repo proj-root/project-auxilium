@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   ForbiddenException,
   Get,
   HttpException,
@@ -23,10 +24,9 @@ import { RolesConfig } from '@auxilium/configs/roles';
 import { Roles } from '@/common/decorators/roles.decorator';
 import {
   type CreateUserProfileDTO,
+  CreateUserProfileSchema,
   type GetAllUserProfilesQueryDTO,
   type GetAllUsersQueryDTO,
-  type ProfileLinkDTO,
-  ProfileLinkSchema,
   UpdateUserDTO,
   UpdateUserSchema,
   type VerifyIdentityDTO,
@@ -78,14 +78,6 @@ export class UserController {
 
     if (userProfile) profileExists = true;
     else profileExists = false;
-
-    // If no user profile found
-    // if (!userProfile) {
-    //   return {
-    //     message: 'Unable to find a matching profile.',
-    //     status: 'success',
-    //   };
-    // }
 
     // If user profile is found:
     // Check if user already has a pending OTP:
@@ -154,7 +146,7 @@ export class UserController {
   async verifyIdentityOTP(
     @Session() session: UserSession,
     @Param('otp') otp: string,
-    @Body() body: ProfileLinkDTO,
+    @Body() body: Omit<CreateUserProfileDTO, 'userId'>,
   ) {
     const key = `otp:auth:profile-link:user_${session.user.id}`;
     const profileLinkSession = await this.redisClient
@@ -184,8 +176,9 @@ export class UserController {
       });
     } else {
       // Check that all fields are accounted for
-      const result = ProfileLinkSchema.safeParse(body);
-      if (!result.success) throw new HttpException('Missing fields in request', 400);
+      const result = CreateUserProfileSchema.safeParse(body);
+      if (!result.success)
+        throw new HttpException('Missing fields in request', 400);
 
       // Create a new account based on the provided body
       userProfile = await this.userService.createUserProfile({
@@ -278,7 +271,7 @@ export class UserController {
       search: search as string,
       statusId: statusId ? Number(statusId) : undefined,
       roleIds: roleIds ? roleIds.map(Number) : undefined,
-      eventId
+      eventId,
     });
 
     return {
@@ -364,7 +357,7 @@ export class UserController {
 
   // Update self
   @Put()
-  async updateUser(
+  async updateSelf(
     @Session() session: UserSession,
     @Body(new ZodValidationPipe(UpdateUserSchema)) body: Partial<UpdateUserDTO>,
   ) {
@@ -379,6 +372,7 @@ export class UserController {
   }
 
   // Updates another user's information
+  // ONLY SUPERADMIN can do this
   @Put(':userId')
   @UseGuards(RoleGuard)
   @Roles(RolesConfig.SUPERADMIN)
@@ -407,6 +401,90 @@ export class UserController {
     };
   }
 
+  // Endpoint only for updating profiles
+  @Put('/profile/:profileId')
+  @UseGuards(RoleGuard)
+  @Roles(RolesConfig.SUPERADMIN)
+  async updateUserProfileById(
+    @Session() session: UserSession,
+    @Param('profileId') profileId: string,
+    @Body(new ZodValidationPipe(UpdateUserSchema)) body: Partial<UpdateUserDTO>,
+  ) {
+    const currentUser = await this.userService.getUserProfileByUserId({ userId: session.user.id });
+
+    if (profileId === currentUser?.profileId) {
+      throw new ForbiddenException(
+        'Use the /api/user endpoint to update your own profile',
+      );
+    }
+
+    const user = await this.userService.updateUserProfile({
+      profileId,
+      ...body
+    })
+
+    return {
+      message: 'User profile updated successfully',
+      status: 'success',
+      data: user,
+    };
+  }
+
+  @Delete()
+  async deleteSelf(@Session() session: UserSession) {
+    const userId = session.user.id;
+
+    await this.userService.deleteUser({ userId });
+
+    return {
+      message: `Successfully deleted user.`,
+      status: 'success',
+    };
+  }
+
+  @Delete('profile/:profileId')
+  @UseGuards(RoleGuard)
+  @Roles(RolesConfig.SUPERADMIN)
+  async deleteUserProfile(
+    @Session() session: UserSession,
+    @Param('profileId') profileId: string,
+  ) {
+    const user = await this.userService.getUserById({
+      userId: session.user.id,
+    });
+
+    if (profileId === user?.userProfile?.profileId) {
+      throw new ForbiddenException(
+        `You can't delete your own profile. (Why would you do that??)`,
+      );
+    }
+
+    await this.userService.deleteUserProfile({ profileId });
+
+    return {
+      message: `Successfully deleted user profile.`,
+      status: 'success',
+    };
+  }
+
+  @Delete(':userId')
+  @UseGuards(RoleGuard)
+  @Roles(RolesConfig.SUPERADMIN)
+  async deleteUser(@Session() session: UserSession, @Param('userId') userId: string) {
+    if (userId === session.user.id) {
+      throw new ForbiddenException(
+        'Use the /api/user endpoint to delete your own account.',
+      );
+    }
+
+    await this.userService.deleteUser({ userId });
+
+    return {
+      message: `Successfully deleted user.`,
+      status: 'success',
+    };
+  }
+
   @Get('/roles')
   async getAllRoles() {
     const roles = await this.userService.getAllRoles();
@@ -414,8 +492,8 @@ export class UserController {
     return {
       message: `Fetched ${roles.length} roles successfully.`,
       status: 'success',
-      data: roles
-    }
+      data: roles,
+    };
   }
 
   @Get('/departments')
@@ -425,18 +503,18 @@ export class UserController {
     return {
       message: `Fetched ${departments.length} departments successfully.`,
       status: 'success',
-      data: departments
-    }
+      data: departments,
+    };
   }
 
-  @Get('/departments')
-  async getAllCoursess() {
+  @Get('/courses')
+  async getAllCourses() {
     const courses = await this.userService.getAllCourses();
 
     return {
       message: `Fetched ${courses.length} courses successfully.`,
       status: 'success',
-      data: courses
-    }
+      data: courses,
+    };
   }
 }
