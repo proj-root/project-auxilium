@@ -67,9 +67,6 @@ jobs:
             git switch main
             git pull
 
-            npm run db:deploy --workspace=server
-            npm run seed:prod --workspace=server
-
             docker compose -f docker-compose.prod.yml pull
             docker compose -f docker-compose.prod.yml up -d --remove-orphans
             docker image prune -f
