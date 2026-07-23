@@ -21,9 +21,7 @@ services:
     image: ghcr.io/proj-root/garden-server:latest
     restart: unless-stopped
     env_file:
-      - .env.production
-    environment:
-      - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379
+      - ./server/.env.production
     depends_on:
       - redis
     networks:
