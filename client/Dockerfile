@@ -34,6 +34,9 @@
 FROM node:20-alpine
 WORKDIR /app
 
+ARG VITE_API_BASE_URL=/api
+ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
+
 COPY package.json package-lock.json tsconfig.base.json ./
 COPY packages/ ./packages/
 COPY client/ ./client/
@@ -44,8 +47,6 @@ RUN npm run build -w client
 
 WORKDIR /app/client
 
-ARG VITE_API_BASE_URL=/api
-ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
 ENV PORT=3000
 EXPOSE 3000
 CMD ["npm", "run", "start"]
