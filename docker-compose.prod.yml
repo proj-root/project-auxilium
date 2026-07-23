@@ -30,6 +30,8 @@ services:
   client:
     image: ghcr.io/proj-root/garden-client:latest
     restart: unless-stopped
+    env_file:
+      - ./client/.env.production
     networks:
       - garden-network
 
