@@ -176,7 +176,10 @@ export class UserController {
       });
     } else {
       // Check that all fields are accounted for
-      const result = CreateUserProfileSchema.safeParse(body);
+      const result = CreateUserProfileSchema.safeParse({
+        ...body,
+        ichat: profileLinkSession.ichat,
+      });
       if (!result.success)
         throw new HttpException('Missing fields in request', 400);
 
@@ -410,7 +413,9 @@ export class UserController {
     @Param('profileId') profileId: string,
     @Body(new ZodValidationPipe(UpdateUserSchema)) body: Partial<UpdateUserDTO>,
   ) {
-    const currentUser = await this.userService.getUserProfileByUserId({ userId: session.user.id });
+    const currentUser = await this.userService.getUserProfileByUserId({
+      userId: session.user.id,
+    });
 
     if (profileId === currentUser?.profileId) {
       throw new ForbiddenException(
@@ -420,8 +425,8 @@ export class UserController {
 
     const user = await this.userService.updateUserProfile({
       profileId,
-      ...body
-    })
+      ...body,
+    });
 
     return {
       message: 'User profile updated successfully',
@@ -470,7 +475,10 @@ export class UserController {
   @Delete(':userId')
   @UseGuards(RoleGuard)
   @Roles(RolesConfig.SUPERADMIN)
-  async deleteUser(@Session() session: UserSession, @Param('userId') userId: string) {
+  async deleteUser(
+    @Session() session: UserSession,
+    @Param('userId') userId: string,
+  ) {
     if (userId === session.user.id) {
       throw new ForbiddenException(
         'Use the /api/user endpoint to delete your own account.',
