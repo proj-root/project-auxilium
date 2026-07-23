@@ -19,7 +19,9 @@ export const auth = betterAuth({
   basePath: '/api/auth',
   trustedOrigins: [
     process.env.CLIENT_URL || '',
+    'https://garden.junkaizhang.com',
     'http://localhost:5173',
+    'http://localhost:3000',
     `http://localhost:${port}`,
   ],
 
