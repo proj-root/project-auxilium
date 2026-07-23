@@ -6,7 +6,7 @@ COPY packages/ ./packages/
 COPY server ./server/
 
 RUN npm ci
-RUN npm i -D tsx
+RUN npm i -D tsx drizzle-kit
 
 # Build
 RUN npm run build --workspace=@auxilium/configs --workspace=@auxilium/types
