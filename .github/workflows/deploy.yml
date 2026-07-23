@@ -46,7 +46,7 @@ jobs:
           context: .
           file: ./client/Dockerfile
           build-args: |
-            VITE_API_BASE_URL=/api
+            VITE_API_BASE_URL=https://garden.junkaizhang.com/api
           push: true
           tags: ghcr.io/${{ env.ORG_NAME }}/garden-client:latest
 
