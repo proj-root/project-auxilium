@@ -22,7 +22,7 @@ services:
     env_file:
       - ./client/.env
     ports:
-      - "5173:5173"
+      - "3000:3000"
     networks:
       - garden-network
 
