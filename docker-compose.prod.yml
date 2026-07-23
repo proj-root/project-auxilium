@@ -24,6 +24,19 @@ services:
       - ./server/.env.production
     depends_on:
       - redis
+    healthcheck:
+      test: [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://localhost:5175/api/health",
+        ] # Or any endpoint
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s # Gives entrypoint time to finish migrations
     networks:
       - garden-network
 
