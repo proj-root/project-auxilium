@@ -14,9 +14,6 @@ RUN npm run build --workspace=server
 
 EXPOSE 5175
 
-RUN npm run db:deploy --workspace=server
-RUN npm run seed:prod --workspace=server
-
 # Copy and set entrypoint
 COPY ./server/docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
