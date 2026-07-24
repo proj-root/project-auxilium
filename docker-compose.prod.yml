@@ -29,15 +29,14 @@ services:
     healthcheck:
       test: [
           "CMD",
-          "wget",
-          "--no-verbose",
-          "--tries=1",
-          "http://localhost:5175/api/health",
+          "node",
+          "-e",
+          "fetch('http://localhost:5175/api/health').then(r => r.ok ? process.exit(0) : process.exit(1)).catch(() => process.exit(1))"
         ]
-      interval: 5s
-      timeout: 3s
+      interval: 10s
+      timeout: 5s
       retries: 5
-      start_period: 10s # Gives entrypoint time to finish migrations
+      start_period: 20s
     networks:
       - garden-network
 
@@ -47,15 +46,14 @@ services:
     healthcheck:
       test: [
           "CMD",
-          "wget",
-          "--no-verbose",
-          "--tries=1",
-          "http://localhost:3000/",
+          "node",
+          "-e",
+          "fetch('http://localhost:3000/').then(r => r.ok ? process.exit(0) : process.exit(1)).catch(() => process.exit(1))"
         ]
-      interval: 5s
-      timeout: 3s
+      interval: 10s
+      timeout: 5s
       retries: 5
-      start_period: 10s # Gives entrypoint time to finish migrations
+      start_period: 20s
     networks:
       - garden-network
 
