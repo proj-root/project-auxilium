@@ -12,8 +12,10 @@ services:
       - /etc/letsencrypt:/etc/letsencrypt:ro
       - certbot_etc:/var/www/certbot
     depends_on:
-      - client
-      - server
+      server:
+        condition: service_healthy
+      client:
+        condition: service_healthy
     networks:
       - garden-network
 
@@ -30,9 +32,8 @@ services:
           "wget",
           "--no-verbose",
           "--tries=1",
-          "--spider",
           "http://localhost:5175/api/health",
-        ] # Or any endpoint
+        ]
       interval: 5s
       timeout: 3s
       retries: 5
@@ -43,8 +44,18 @@ services:
   client:
     image: ghcr.io/proj-root/garden-client:latest
     restart: unless-stopped
-    environment:
-      - VITE_API_BASE_URL=https://garden.junkaizhang.com/api
+    healthcheck:
+      test: [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "http://localhost:3000/",
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s # Gives entrypoint time to finish migrations
     networks:
       - garden-network
 
