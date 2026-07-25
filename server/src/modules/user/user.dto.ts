@@ -33,7 +33,7 @@ export const CreateUserProfileSchema = z.object({
   studentClass: z
     .string()
     .trim()
-    .max(12, 'Student class can have a maximum of 12 characters only'),
+    .max(20, 'Student class can have a maximum of 20 characters only'),
   adminNumber: z
     .string()
     .trim()
@@ -71,7 +71,7 @@ export const UpdateUserSchema = z
     studentClass: z
       .string()
       .trim()
-      .max(12, 'Student class can have a maximum of 12 characters only')
+      .max(20, 'Student class can have a maximum of 20 characters only')
       .optional(),
     adminNumber: z
       .string()

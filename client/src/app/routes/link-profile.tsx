@@ -37,7 +37,7 @@ function ProfileLinkPage() {
 
   if (step === 2) {
     return (
-      <div className='flex h-full flex-col items-center justify-center gap-10'>
+      <div className='flex min-h-screen h-screen flex-col items-center justify-center gap-10'>
         {/* Header */}
         <div className='flex flex-col items-center gap-3'>
           <h1 className='text-3xl'>Enter the OTP sent to your mail</h1>
@@ -58,7 +58,7 @@ function ProfileLinkPage() {
 
   if (step === 3) {
     return (
-      <div className='flex h-full flex-col items-center justify-center gap-6'>
+      <div className='flex min-h-screen h-screen flex-col items-center justify-center gap-6'>
         <h1 className='text-3xl'>Congrats!</h1>
         <h1 className='text-xl'>Your account has been linked successfully!</h1>
         <img src='/success-confetti.png' className='max-w-sm' />
