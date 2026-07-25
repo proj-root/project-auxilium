@@ -82,7 +82,7 @@ export class UserController {
     // If user profile is found:
     // Check if user already has a pending OTP:
     // TODO: Do rate limiting based on IP address or user ID to prevent abuse instead
-    // This might cause bad UX
+    // This might cause bad UX - Fun fact: it did
     const key = `otp:auth:profile-link:user_${session.user.id}`;
     const existingSession = await this.redisClient.get(key);
     if (existingSession) {
@@ -181,7 +181,7 @@ export class UserController {
         ichat: profileLinkSession.ichat,
       });
       if (!result.success)
-        throw new HttpException('Missing fields in request', 400);
+        throw new HttpException('Missing or invalid fields in request', 400);
 
       // Create a new account based on the provided body
       userProfile = await this.userService.createUserProfile({
