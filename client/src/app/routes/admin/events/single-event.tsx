@@ -147,7 +147,7 @@ export default function SingleEventDetailsPage() {
                   className='w-full text-nowrap'
                 />
                 {/* Helpers List */}
-                <EventTeamList className='w-full' />
+                <EventTeamList event={data?.data} />
               </div>
 
               <div className='flex h-full w-full flex-col gap-2'>
