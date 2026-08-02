@@ -182,8 +182,8 @@ export class EventsController {
       sortOrder = 'desc',
       search,
       statusId,
+      pointsType,
     } = query;
-    console.log('Fetching participation records with query:', query);
 
     const result = await this.eventsService.getParticipationRecordsByReportId({
       eventReportId: reportId,
@@ -193,6 +193,7 @@ export class EventsController {
       sortOrder: (sortOrder as 'asc' | 'desc') || 'desc',
       search: search as string,
       statusId: statusId ? Number(statusId) : undefined,
+      pointsType,
     });
 
     return {

@@ -4,6 +4,8 @@ import { DataTableColumnHeader } from '@/components/ui/data-table-column-header'
 import { Link } from 'react-router';
 import { authClient } from '@/lib/auth-client';
 import { RolesConfig } from '@auxilium/configs/roles';
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 
 export const columns: ColumnDef<EventParticipation>[] = [
   // {
@@ -76,5 +78,19 @@ export const columns: ColumnDef<EventParticipation>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader title='iChat Email' column={column} />
     ),
+  },
+  {
+    id: 'attended',
+    accessorFn: (row) => `${row.attended}`,
+    header: ({ column }) => (
+      <DataTableColumnHeader title='Attended?' column={column} />
+    ),
+    cell: ({ row }) => {
+      return (
+        <Badge className={cn(row.original.attended ? 'bg-green-400' : 'bg-red-400')}>
+          {row.original.attended ? 'Yes' : 'No'}
+        </Badge>
+      )
+    }
   },
 ];

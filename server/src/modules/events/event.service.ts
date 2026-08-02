@@ -208,7 +208,7 @@ export class EventsService {
         ...updateData,
         startDate: startDate ? new Date(startDate) : undefined,
         endDate: endDate ? new Date(endDate) : undefined,
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       })
       .where(eq(eventTable.eventId, eventId))
       .returning();
@@ -370,14 +370,33 @@ export class EventsService {
     const {
       page = 1,
       pageSize = 10,
-      sortBy = 'createdAt',
+      sortBy = 'attended',
       sortOrder = 'desc',
       search,
       eventReportId,
+      pointsType,
       statusId,
     } = args;
 
-    // TODO: Add search filtering here
+    const andConditions: object[] = [];
+    if (search && search.trim() !== '') {
+      andConditions.push({
+        userProfile: {
+          OR: [
+            { firstName: { ilike: `%${search.trim()}%` } },
+            { lastName: { ilike: `%${search.trim()}%` } },
+            { adminNumber: { ilike: `${search.trim()}%` } },
+          ],
+        },
+      });
+    }
+    if (pointsType) {
+      andConditions.push({
+        eventRole: {
+          pointsType,
+        },
+      });
+    }
 
     const count = await db.$count(
       eventParticipationTable,
@@ -387,6 +406,7 @@ export class EventsService {
     const participations = await db.query.eventParticipation.findMany({
       where: {
         eventReportId,
+        AND: andConditions,
       },
       with: {
         eventRole: true,
@@ -400,6 +420,7 @@ export class EventsService {
     });
 
     return {
+      total: count,
       pageCount: Math.ceil(count / pageSize),
       participations,
     };
