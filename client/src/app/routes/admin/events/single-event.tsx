@@ -73,8 +73,6 @@ export default function SingleEventDetailsPage() {
         // @ts-expect-error - role is a custom attribute
       ) || authData?.user.role?.roleId === RolesConfig.SUPERADMIN;
 
-    console.log('event roles:', data.data.userEventRoles);
-
     return (
       <div className='flex h-full w-full flex-col gap-4'>
         <BackButton />
