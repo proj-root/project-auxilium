@@ -251,8 +251,6 @@ export class UserController {
 
     let { roleIds } = query;
 
-    console.log('query:', query);
-
     // Convert into array if it's a single value, and validate that all values are numbers
     if (!Array.isArray(roleIds))
       roleIds = roleIds ? roleIds.split(',') : undefined;

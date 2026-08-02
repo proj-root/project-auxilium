@@ -82,6 +82,7 @@ export type GetAllEventsQueryDTO = PaginationOptions & {
 
 export type GetParticipationRecordsQueryDTO = PaginationOptions & {
   eventReportId: string;
+  pointsType?: typeof schema.eventPointsType.enumValues[number];
   sortBy?: 'name' | 'createdAt';
   statusId?: number;
 };

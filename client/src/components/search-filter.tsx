@@ -5,9 +5,11 @@ import type { ActionCreatorWithPayload } from "@reduxjs/toolkit";
 export function SearchFilter({
   setSearchCb,
   className,
+  placeholder
 }: {
   setSearchCb: ActionCreatorWithPayload<any, string>;
   className?: string;
+  placeholder?: string;
 }) {
   const dispatch = useAppDispatch();
 
@@ -18,7 +20,7 @@ export function SearchFilter({
   return (
     <input
       type='text'
-      placeholder='Search...'
+      placeholder={placeholder ?? 'Search...'}
       className={cn('rounded-md border outline-0 p-2 text-sm md:w-1/4', className)}
       onChange={(e) => handleSearchChange(e.target.value)}
     />
