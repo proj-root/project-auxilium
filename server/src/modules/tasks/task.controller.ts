@@ -62,7 +62,7 @@ export class TasksController {
       eventId,
     });
 
-     if (!userEventRole || userRole !== RolesConfig.SUPERADMIN) {
+     if (!userEventRole && userRole !== RolesConfig.SUPERADMIN) {
       throw new ForbiddenException(
         `User with ID ${userId} does not have a role in event ${eventId}`,
       );
@@ -166,7 +166,7 @@ export class TasksController {
       eventId: task.eventId,
     });
 
-    if (!userEventRole || userRole !== RolesConfig.SUPERADMIN) {
+    if (!userEventRole && userRole !== RolesConfig.SUPERADMIN) {
       throw new ForbiddenException(
         `User with ID ${userId} does not have a role in event ${task.eventId}`,
       );

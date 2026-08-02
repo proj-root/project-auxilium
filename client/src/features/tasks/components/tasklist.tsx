@@ -116,13 +116,13 @@ function TaskItem({ task }: { task: TaskDTO }) {
             {task.status}
           </Badge>
         </StatusPopover>
-        <Button
+        {/* <Button
           variant={'ghost'}
           size={'icon-xs'}
           className='hover:bg-transparent'
         >
           <MoreHorizontal className='size-4' />
-        </Button>
+        </Button> */}
       </div>
     </div>
   );
