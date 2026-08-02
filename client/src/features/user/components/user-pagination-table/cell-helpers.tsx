@@ -113,8 +113,6 @@ export function DepartmentPopover({
       deptArr.push(value);
     }
 
-    console.log('Selected Depts:', deptArr);
-
     // Finally update user departments based on the above state
     try {
       await updateUser({ userId, departmentIds: deptArr }).unwrap();

@@ -69,7 +69,6 @@ export function CreateTaskForm({
   });
 
   const onSubmit = async (data: FormValues) => {
-    console.log(data);
     try {
       const { message } = await createTask({ eventId, ...data }).unwrap();
       toast.success(message);

@@ -112,7 +112,6 @@ function TerminalBox({ onComplete }: { onComplete: () => void }) {
   // End this sequence and move on to the next
   useEffect(() => {
     if (isComplete) {
-      console.log('Terminal typing finished');
       setTimeout(onComplete, 1000);
     }
   }, [isComplete]);
