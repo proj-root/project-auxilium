@@ -39,18 +39,18 @@ export function EventTeamList({
     <div className={cn('h-100 max-h-100 w-full', className)}>
       <h1 className='mt-1 mb-4 text-xl font-medium'>Organising Team</h1>
       <div className='flex max-h-full scrollbar-none flex-col gap-2 overflow-y-auto'>
-        {event && event.userEventRoles.length !== 0 && (
+        {event && event.userEventRoles.length === 0 && (
           <div className='flex h-full w-full items-center justify-center self-center rounded-xl border border-dashed py-10'>
             <p className='text-muted-foreground'>No members added... yet.</p>
           </div>
         )}
-        {/* {event &&
+        {event &&
           event.userEventRoles.length > 0 &&
           event.userEventRoles.map((uer) => (
             <>
             <SingleTeamMember userEventRole={uer} key={uer.user.id} />
             </>
-          ))} */}
+          ))}
       </div>
       {/* <Separator className='my-2'/>
       <p className='text-xs text-muted-foreground font-mono'>Total members: {event.userEventRoles.length}</p> */}
