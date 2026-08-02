@@ -10,6 +10,8 @@ import {
   selectEventReportPaginationState,
   setPage,
   setPageSize,
+  setPointsType,
+  setSearch,
 } from '../state/event-report-pagination-slice';
 import { cn } from '@/lib/utils';
 import { DataTable } from '@/components/ui/data-table';
@@ -19,65 +21,55 @@ import {
   type PaginationControlDef,
 } from '@/components/misc/pagination-controls';
 import { Input } from '@/components/ui/input';
+import { SearchFilter } from '@/components/search-filter';
+import { format } from 'date-fns';
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { X } from 'lucide-react';
 
-// function EventReportItem({ report }: { report: EventReport }) {
-//   const paginationState = useAppSelector(selectEventReportPaginationState);
-//   const dispatch = useAppDispatch();
+function PointsTypeFilter() {
+  const dispatch = useAppDispatch();
+  const paginationState = useAppSelector(selectEventReportPaginationState);
 
-//   const isActive = paginationState.eventReportId === report.eventReportId;
+  // Set up key state to reset select component
+  const [selectKey, setSelectKey] = useState(+new Date());
 
-//   const handleClick = () => {
-//     dispatch(setEventReportId(report.eventReportId));
-//   };
+  const handleChange = (value: string | undefined) => {
+    dispatch(setPointsType(value));
+    setSelectKey(+new Date()); // Force radix to reset
+  };
 
-//   return (
-//     <div
-//       onClick={handleClick}
-//       className={cn(
-//         'bg-card cursor-pointer rounded-md px-3 py-2',
-//         isActive && 'bg-muted border',
-//       )}
-//     >
-//       <h1 className='truncate text-ellipsis'>Report {report.eventReportId}</h1>
-//       <div className='flex flex-row gap-2'>
-//         <p className='text-xs'>Signups: {report.signupCount}</p>
-//         <p className='text-xs'>Feedback: {report.feedbackCount}</p>
-//       </div>
-//       <p className='text-muted-foreground text-xs'>
-//         {format(report.createdAt, 'do MMM yyyy hh:mm a')}
-//       </p>
-//     </div>
-//   );
-// }
-
-// export function EventReportsList({ eventId }: { eventId: string }) {
-//   const { data } = useGetEventByIdQuery({ eventId });
-
-//   if (!data?.data) return <div>Event data not found.</div>;
-
-//   return (
-//     <div className='scrollbar-none hover:scrollbar-thin hover:pe-1.5 ease-in duration-150 transition-all flex h-full max-h-full flex-col gap-2 overflow-y-scroll'>
-//       {data.data.eventReports.length === 0 && (
-//         <div className='text-muted-foreground flex h-full flex-col items-center justify-center gap-2 rounded-md border border-dashed p-5 text-center'>
-//           <FileWarning className='size-5' />
-//           <h1 className='font-medium'>No event reports found.</h1>
-//           <p className='text-xs'>
-//             Please generate a report first to view participation data.
-//           </p>
-//           <div className='mt-8 flex w-full flex-col gap-2'>
-//             {Array.from({ length: 3 }).map((v, i) => (
-//               <Skeleton className='h-12 w-full' key={i} />
-//             ))}
-//           </div>
-//         </div>
-//       )}
-//       {data?.data.eventReports.length > 0 &&
-//         data.data.eventReports.map((report) => (
-//           <EventReportItem report={report} />
-//         ))}
-//     </div>
-//   );
-// }
+  return (
+    <div className='flex items-center gap-2'>
+      <Select key={selectKey} value={paginationState.pointsType} onValueChange={handleChange}>
+        <SelectTrigger className='w-48'>
+          <SelectValue placeholder='Filter by points type...' />
+        </SelectTrigger>
+        <SelectContent position='popper'>
+          <SelectGroup>
+            <SelectItem value='LEADERSHIP'>Leadership</SelectItem>
+            <SelectItem value='PARTICIPATION'>Participation</SelectItem>
+            <SelectItem value='SERVICE'>Service</SelectItem>
+            <SelectItem value='COMMUNITY SERVICE'>Community Service</SelectItem>
+          </SelectGroup>
+        </SelectContent>
+      </Select>
+      {paginationState.pointsType && (
+        <Button variant={'ghost'} size={'icon-xs'} onClick={() => handleChange(undefined)}>
+          <X />
+        </Button>
+      )}
+    </div>
+  );
+}
 
 export function EventReportDataTable({ event }: { event: Event }) {
   const dispatch = useAppDispatch();
@@ -85,7 +77,7 @@ export function EventReportDataTable({ event }: { event: Event }) {
 
   const { data, isLoading } = useGetParticipationsByReportIdQuery({
     eventReportId: event.eventReport?.eventReportId ?? '',
-    ...paginationState
+    ...paginationState,
   });
 
   const paginationControls: PaginationControlDef = {
@@ -99,10 +91,6 @@ export function EventReportDataTable({ event }: { event: Event }) {
 
   return (
     <div className='flex h-full flex-row gap-4'>
-      {/* <div className='flex w-1/5 flex-row'>
-        <EventReportsList eventId={event.eventId} />
-      </div> */}
-      {/* TODO: Will tidy up again */}
       <div className='flex w-full flex-col gap-2'>
         {isLoading && <div>Loading...</div>}
         {!isLoading && !data?.data && (
@@ -113,22 +101,39 @@ export function EventReportDataTable({ event }: { event: Event }) {
           </div>
         )}
         {!isLoading && data?.data && (
-          <div className='flex flex-col h-full gap-4'>
+          <div className='flex h-full flex-col gap-4'>
             {/* TODO: Placeholder search input */}
-            <Input 
-              type='text'
-              placeholder='Search...'
-              className='w-fit'
-            />
-            <div>
-              <DataTable columns={columns} data={data.data.participations} />
+            <div className='flex items-center justify-between'>
+              <div className='flex gap-4'>
+                <SearchFilter placeholder='Search name or admin number...' className='min-w-100' setSearchCb={setSearch} />
+                <PointsTypeFilter />
+              </div>
+              <p className='text-muted-foreground mr-2 font-mono text-sm antialiased'>
+                Generated on{' '}
+                {format(
+                  event?.eventReport?.updatedAt as Date,
+                  'do MMM yyyy hh:mm a',
+                )}
+              </p>
             </div>
-            <PaginationControls
-              paginationControls={paginationControls}
-              updateCb={() =>
-                dispatch(eventsApiSlice.util.invalidateTags(['EventReports']))
-              }
-            />
+            <DataTable columns={columns} data={data.data.participations} />
+            <div className='flex flex-row justify-between px-2'>
+              <p className='text-muted-foreground w-full font-mono text-sm antialiased'>
+                Showing {paginationState.page} -{' '}
+                {Math.min(
+                  Number(paginationState.page) *
+                    Number(paginationState.pageSize),
+                  data.data.total,
+                )}{' '}
+                of {data.data.total} records
+              </p>
+              <PaginationControls
+                paginationControls={paginationControls}
+                updateCb={() =>
+                  dispatch(eventsApiSlice.util.invalidateTags(['EventReports']))
+                }
+              />
+            </div>
           </div>
         )}
       </div>

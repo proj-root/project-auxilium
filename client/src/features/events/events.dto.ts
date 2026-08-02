@@ -148,6 +148,7 @@ export interface GetParticipationsByReportIdRequest extends PaginationOptions {
 }
 
 export type GetParticipationsByReportIdResponse = BaseResponseDTO<{
+  total: number;
   pageCount: number;
   participations: EventParticipation[];
 }>;

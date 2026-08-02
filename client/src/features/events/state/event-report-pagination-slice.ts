@@ -6,12 +6,13 @@ import { createSlice } from '@reduxjs/toolkit';
 
 export interface EventReportPaginationState extends PaginationOptions {
   eventReportId?: string;
+  pointsType?: string;
 }
 
 const initialState: EventReportPaginationState = {
   page: 1,
   pageSize: 10,
-  sortBy: 'createdAt',
+  sortBy: 'attended',
   sortOrder: 'desc',
   search: '',
 };
@@ -45,6 +46,9 @@ const eventReportPaginationSlice = createSlice({
     setSearch: (state, action) => {
       state.search = action.payload;
     },
+    setPointsType: (state, action) => {
+      state.pointsType = action.payload;
+    },
   },
 });
 
@@ -56,6 +60,7 @@ export const {
   setSortBy,
   setSortOrder,
   setSearch,
+  setPointsType
 } = eventReportPaginationSlice.actions;
 
 export const selectEventReportPaginationState = (state: RootState) =>
