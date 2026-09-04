@@ -3,7 +3,33 @@
   "rootDir": ".",
   "testEnvironment": "node",
   "testRegex": ".e2e-spec.ts$",
+  "moduleNameMapper": {
+    "^@/(.*)$": "<rootDir>/../src/$1",
+    "^@auxilium/configs/(.*)$": "<rootDir>/../../packages/configs/$1",
+    "^@auxilium/types/(.*)$": "<rootDir>/../../packages/types/$1"
+  },
   "transform": {
-    "^.+\\.(t|j)s$": "ts-jest"
-  }
+    "^.+\\.(t|j)s$": [
+      "ts-jest",
+      {
+        "diagnostics": false,
+        "tsconfig": {
+          "module": "commonjs",
+          "moduleResolution": "node",
+          "target": "ES2022",
+          "esModuleInterop": true,
+          "allowSyntheticDefaultImports": true,
+          "experimentalDecorators": true,
+          "emitDecoratorMetadata": true,
+          "skipLibCheck": true,
+          "resolveJsonModule": true
+        }
+      }
+    ]
+  },
+  "setupFiles": ["<rootDir>/setup/load-env.ts"],
+  "globalSetup": "<rootDir>/setup/global-setup.ts",
+  "globalTeardown": "<rootDir>/setup/global-teardown.ts",
+  "testTimeout": 60000,
+  "maxWorkers": 1
 }

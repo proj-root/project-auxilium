@@ -33,6 +33,14 @@ export const relations = defineRelations(schema, (r) => ({
       from: r.user.id,
       to: r.task.assigneeId,
     }),
+    posts: r.many.forumPost({
+      from: r.user.id,
+      to: r.forumPost.createdBy,
+    }),
+    forumComments: r.many.forumComment({
+      from: r.user.id,
+      to: r.forumComment.createdBy,
+    }),
     events: r.many.event(),
     sessions: r.many.session(),
     accounts: r.many.account(),
@@ -169,6 +177,34 @@ export const relations = defineRelations(schema, (r) => ({
       to: r.user.id,
     }),
   },
+  forumPost: {
+    creator: r.one.user({
+      from: r.forumPost.createdBy,
+      to: r.user.id,
+    }),
+    comments: r.many.forumComment({
+      from: r.forumPost.postId,
+      to: r.forumComment.postId,
+    }),
+  },
+  forumComment: {
+    post: r.one.forumPost({
+      from: r.forumComment.postId,
+      to: r.forumPost.postId,
+    }),
+    creator: r.one.user({
+      from: r.forumComment.createdBy,
+      to: r.user.id,
+    }),
+    parent: r.one.forumComment({
+      from: r.forumComment.parentCommentId,
+      to: r.forumComment.commentId,
+    }),
+    replies: r.many.forumComment({
+      from: r.forumComment.commentId,
+      to: r.forumComment.parentCommentId,
+    }),
+  },
   eventType: {
     events: r.many.event(),
   },
@@ -181,6 +217,6 @@ export const relations = defineRelations(schema, (r) => ({
   },
   department: {
     userDepartments: r.many.userDepartment(),
-    department: r.many.task()
+    department: r.many.task(),
   },
 }));

@@ -1,29 +1,21 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication } from '@nestjs/common';
-import request from 'supertest';
-import { App } from 'supertest/types';
-import { AppModule } from './../src/app.module';
+import { api } from './setup/test-helpers';
 
+// Canary: proves the harness brought a real server up before any forum spec
+// runs. `/api/health` is the only @AllowAnonymous route, so it also confirms
+// that anonymous access is permitted where it should be.
 describe('AppController (e2e)', () => {
-  let app: INestApplication<App>;
+  it('GET /api/health reports success without a session', async () => {
+    const res = await api().get('/api/health');
 
-  beforeEach(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
-
-    app = moduleFixture.createNestApplication();
-    await app.init();
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({
+      status: 'success',
+      message: 'All systems operational.',
+    });
   });
 
-  it('/ (GET)', () => {
-    return request(app.getHttpServer())
-      .get('/')
-      .expect(200)
-      .expect('Hello World!');
-  });
-
-  afterEach(async () => {
-    await app.close();
+  it('GET / is not a route', async () => {
+    const res = await api().get('/');
+    expect(res.status).toBe(404);
   });
 });

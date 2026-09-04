@@ -7,6 +7,7 @@ import { UserModule } from './modules/user/user.module';
 import { TasksModule } from './modules/tasks/task.module';
 import { MailModule } from './modules/mail/mail.module';
 import { RedisModule } from './modules/redis/redis.module';
+import { ForumModule } from './modules/forum/forum.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { RedisModule } from './modules/redis/redis.module';
     EventsModule,
     UserModule,
     TasksModule,
+    ForumModule,
     MailModule,
     RedisModule,
   ],

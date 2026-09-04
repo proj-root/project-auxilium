@@ -43,6 +43,10 @@ lerna-debug.log*
 .env.production*
 .env.local
 
+# ...but the integration-test template carries no secrets and is needed to
+# onboard onto the e2e suite
+!.env.test.example
+
 # temp directory
 .temp
 .tmp
