@@ -1,112 +1,351 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Guidance for Claude Code when working in this repository.
 
-## Overview
+## Project overview
 
-Project Auxilium ("SEED GARDEN Terminal", deployed as `garden`) is an npm-workspaces monorepo: a NestJS API server, a React Router v7 SSR client, and two shared config/type packages. It manages events, event participation/reporting, users, and tasks for a student organisation, with role-based access at both the global and per-event level.
+**Project Auxilium** — internally branded **SEED G.A.R.D.E.N. Terminal** — is an
+event- and CCA-points management platform for a student organisation. Admins
+create events, assign helpers to event roles, manage tasks per event, and
+generate participation/points reports by cross-referencing Google Forms
+response sheets (signup vs. feedback) against linked student profiles.
 
-## Workspace layout
+Current version: `0.4.0-alpha` (client and server `package.json`; also hardcoded
+in `client/src/components/misc/version.tsx`).
 
-| Path | Package | Purpose |
-| --- | --- | --- |
-| `server/` | `server` | NestJS 11 API, Drizzle ORM + PostgreSQL, Redis, Better Auth |
-| `client/` | `client` | React Router 7 (SSR), Redux Toolkit + RTK Query, Tailwind 4, shadcn/ui |
-| `packages/configs/` | `@auxilium/configs` | Role/status ID enums shared by both sides (`./roles`, `./status` subpath exports) |
-| `packages/types/` | `@auxilium/types` | `APIError` classes, pagination types (`./errors`, `./pagination`) |
+## Repository layout
 
-The shared packages are consumed through their `exports` map (e.g. `@auxilium/configs/roles`), which resolves to `dist/`. **They must be built before server/client typecheck or build will resolve them.** Run `npm run build -w @auxilium/configs -w @auxilium/types`, or `npm run watch` inside each package during development.
+npm **workspaces** monorepo (`client`, `server`, `packages/*`). Node 20, ESM
+(`"type": "module"` at the root and in the shared packages).
 
-Both `client` and `server` alias `@/*` to their own `src/*`. Root `tsconfig.json` is a project-references solution file over all four workspaces.
+```
+.
+├── client/                  React Router v7 (SSR) + Redux Toolkit frontend
+│   ├── src/app/             appDirectory — root.tsx, routes.ts, routes/, app.css
+│   ├── src/components/      Shared UI (ui/ = shadcn, plus decorative/, misc/, navigation/)
+│   ├── src/features/        Feature modules: auth, events, tasks, user
+│   ├── src/state/           store.ts, api-slice.ts (RTK Query root), listener-middleware.ts
+│   ├── src/lib/             api.ts (axios), auth-client.ts (better-auth), utils, formatters
+│   ├── src/hooks/           redux-hooks.ts and UI hooks
+│   ├── src/config/          nav.config.ts
+│   └── src/types/           dto.types.ts (BaseResponseDTO)
+├── server/                  NestJS 11 + Drizzle ORM + Postgres + Redis backend
+│   ├── src/modules/         events, tasks, user, mail, redis, auth (hooks only)
+│   ├── src/common/          guards/, decorators/, zod-validation.pipe.ts
+│   ├── src/db/              schema.ts, relations.ts, index.ts, seed.ts, test-data.ts
+│   ├── src/lib/             auth.ts (better-auth instance), formatters, otp-generator
+│   ├── src/config/          system.config.ts, auth.config.ts, google.config.ts
+│   └── drizzle/             Generated SQL migrations + snapshots
+├── packages/configs/        @auxilium/configs — roles.ts, status.ts
+├── packages/types/          @auxilium/types — errors.ts, pagination.ts
+├── documentation/           entity-diagram.drawio (ER diagram)
+├── .github/workflows/       deploy.yml (build → GHCR → SSH deploy on push to main)
+├── docker-compose.yml       Local/staging stack (server, client, redis)
+├── docker-compose.prod.yml  Production stack (nginx, server, client, redis)
+└── nginx.conf               TLS termination + reverse proxy for production
+```
+
+`.claude/skills/` and `.agents/skills/` are vendored agent skills (better-auth,
+shadcn) tracked by `skills-lock.json` — do not hand-edit them.
+`.codegraph/` is local tooling state and is gitignored.
 
 ## Commands
 
-Run from the repo root unless noted.
+Run from the repo root unless noted. Workspaces are targeted with `-w`.
 
 ```bash
-# Lint / format (root ESLint config covers the whole monorepo)
-npm run lint
-npm run format
+npm install                      # install all workspaces
 
-# Server (cd server, or use -w server)
-npm run start:dev          # nest start --watch
-npm run build              # nest build
-npm run start:prod         # drizzle-kit migrate && node dist/src/main
-npm run test               # jest, matches *.spec.ts under src/
-npm run test -- path/to/file.spec.ts    # single test file
-npm run test -- -t "test name"          # single test by name
-npm run test:watch
-npm run test:cov
-npm run test:e2e           # jest --config ./test/jest-e2e.json
+# Client (React Router)
+npm run dev   -w client          # dev server on http://localhost:5173
+npm run build -w client
+npm run start -w client          # serve the production build (PORT, default 3000)
+npm run typecheck -w client      # react-router typegen && tsc
+
+# Server (NestJS)
+npm run start:dev -w server      # watch mode
+npm run build     -w server
+npm run start:prod -w server     # drizzle-kit migrate && node dist/src/main
+npm run test      -w server      # jest (*.spec.ts under src/)
+npm run test:e2e  -w server      # jest --config ./test/jest-e2e.json
+
+# Shared packages — build these before building client/server in a clean tree
+npm run build -w @auxilium/configs -w @auxilium/types
 
 # Database (from server/)
-npx drizzle-kit generate   # generate migration from src/db/schema.ts
-npm run db:deploy          # drizzle-kit migrate
-npm run seed               # tsx src/db/seed.ts
-npm run seed:reset         # wipes all tables via drizzle-seed reset, then seeds
-npm run seed:prod
+npx drizzle-kit generate -w server   # create a migration from schema.ts
+npm run db:deploy  -w server         # apply migrations
+npm run seed       -w server         # seed dev data
+npm run seed:prod  -w server         # idempotent prod seed (reference tables)
+npm run seed:reset -w server         # ⚠ drops all data, then seeds
 
-# Client (cd client, or use -w client)
-npm run dev                # react-router dev, port 5173
-npm run build
-npm run typecheck          # react-router typegen && tsc  — run this, not bare tsc
-npm run start              # serve the SSR build
-
-# Local stack (server + client + redis)
-docker compose up --build
+# Repo-wide quality gates
+npm run lint                     # eslint . --ext .js,.jsx,.ts,.tsx
+npm run format                   # prettier --write .
 ```
 
-`server/test/` currently holds only the scaffolded e2e spec; there are no unit specs yet.
+There is **no root test script** (`npm test` at the root intentionally exits 1).
+Tests live in the server workspace only; there is currently no client test setup.
 
-## Architecture
+## Tech stack
 
-### Auth (Better Auth, not NestJS Passport)
+| Layer      | Choice |
+|------------|--------|
+| Frontend   | React 19, React Router 7 (framework mode, SSR on), Vite 7 |
+| State      | Redux Toolkit + RTK Query; `react-hook-form` + `zod` for forms |
+| Styling    | Tailwind CSS v4 (`@tailwindcss/vite`), shadcn/ui (new-york, neutral, lucide) |
+| 3D / motion| `@react-three/fiber` + `drei` + `postprocessing`, `motion` |
+| Backend    | NestJS 11 (Express platform) |
+| ORM / DB   | Drizzle ORM (v1 beta on the server) + PostgreSQL |
+| Auth       | better-auth via `@thallesp/nestjs-better-auth`, Drizzle adapter |
+| Cache      | Redis (OTP storage / rate limiting) |
+| Email      | nodemailer (SMTP) |
+| External   | Google Sheets API via service-account JWT |
 
-`server/src/lib/auth.ts` is the single Better Auth instance, mounted at `/api/auth` via `AuthModule.forRoot({ auth })` from `@thallesp/nestjs-better-auth`. Notes that bite:
+## Architecture and data flow
 
-- `main.ts` creates the Nest app with `bodyParser: false` — required by Better Auth. Do not re-enable it.
-- An `after` hook rewrites two responses: `/sign-up` runs `setupUserDetails` (creates the profile/role rows), and `/get-session` calls `enrichSessionUserDetails` and attaches the result as `user.role`. Guards depend on that enrichment, so changing the hook shape breaks authorization.
-- `advanced.disableOriginCheck` and `disableCSRFCheck` are on in `NODE_ENV=development` only (for Postman).
-- Env names differ from the Better Auth defaults documented in `server/.env.example`: the code reads `AUTH_SECRET`, `AUTH_BASE_URL`, `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, `CLIENT_URL`, `APP_NAME`. Trust the code.
-- Client side is `client/src/lib/auth-client.ts` (`better-auth/react`), pointed at `VITE_API_BASE_URL + "/auth"`.
+### Request path
 
-### Authorization: two role layers
+```
+Browser
+  → RTK Query endpoint (client/src/features/<domain>/state/<domain>-api-slice.ts)
+      baseUrl = VITE_API_BASE_URL, credentials: 'include'
+  → nginx (prod only: / → client:3000, /api/ → server:5175)
+  → NestJS controller  (@Controller('api/<domain>'))
+      guards:  RoleGuard → EventRoleGuard    (@Roles / @EventRoles metadata)
+      body:    new ZodValidationPipe(<Schema>)
+  → Service  (server/src/modules/<domain>/<domain>.service.ts)
+  → Drizzle  (db.query.* relational API, or db.insert/update with transactions)
+  → PostgreSQL
+```
 
-Roles are integer IDs, not enums in the DB — defined once in `packages/configs/roles.ts` and referenced everywhere as `RolesConfig.ADMIN` / `EventRolesConfig.COORDINATOR`.
+Every controller returns the same envelope, which the client types as
+`BaseResponseDTO<T>`:
 
-- **Global role** — `@Roles(RolesConfig.ADMIN, ...)` + `@UseGuards(RoleGuard)`. Reads `session.user.role.roleId` from the enriched session.
-- **Per-event role** — `@EventRoles({ paramKey: 'eventId', roles: [...] })` + `@UseGuards(EventRoleGuard)`. Looks up `userEventRole` through `EventsService.getUserEventRole`. `RolesConfig.SUPERADMIN` bypasses this check.
+```ts
+{ status: 'success' | 'error', message: string, data: T }
+```
 
-Guards attach `session.user` to `request.user` on success.
+### Auth flow
 
-### Server module shape
+- better-auth is configured once in `server/src/lib/auth.ts` and mounted by
+  `AuthModule.forRoot({ auth })` in `app.module.ts`. It owns `/api/auth/*`.
+- `main.ts` creates the Nest app with **`bodyParser: false`** — this is required
+  by better-auth. Don't re-enable it.
+- Sessions/accounts/verification tables live in `db/schema.ts` alongside domain
+  tables (the Drizzle adapter reads them from there).
+- Two `after` hooks in `auth.ts` (implemented in
+  `server/src/modules/auth/lib/auth-hooks.ts`):
+  - `setupUserDetails` on `/sign-up` — inserts the default `RolesConfig.USER` row
+    into `user_role`.
+  - `enrichSessionUserDetails` on `/get-session` — attaches
+    `user.role = { roleId, role }` to the session. **All role checks depend on
+    this enrichment**, both in `RoleGuard` and in the client's `RequireAuth`.
+- Client-side, `authClient` (`client/src/lib/auth-client.ts`) points at
+  `VITE_API_BASE_URL + '/auth'`; `authClient.useSession()` is the source of
+  truth. `RequireAuth` (`features/auth/components/require-auth.tsx`) wraps
+  protected layouts and redirects to `/auth/login` or `/unauthorized`.
+- In development `disableOriginCheck` and `disableCSRFCheck` are on (for
+  Postman). They are off in production — keep it that way.
 
-Each feature under `server/src/modules/<name>/` is `<name>.controller.ts` / `.service.ts` / `.module.ts` / `.dto.ts`, with heavier collaborators in a `lib/` subfolder. Controllers own the route prefix as `api/<name>` (there is no global prefix). Modules: `events` (plus `lib/verification-engine.service.ts` and `lib/sheets.service.ts`), `user`, `tasks`, `mail` (nodemailer), `redis`, and `auth/lib/auth-hooks.ts`. `AppController` serves the unauthenticated `/api/health` used by the prod healthchecks.
+### Authorisation model
 
-Validation is Zod via `ZodValidationPipe` (`server/src/common/zod-validation.pipe.ts`), applied per-route with `@UsePipes`. The pipe also strips `undefined` keys and coerces `''` to `null` before it reaches Drizzle — relevant when writing DTO schemas.
+Two independent role dimensions, both defined in `@auxilium/configs/roles`:
 
-The **verification engine** (`events/lib/verification-engine.service.ts` + `sheets.service.ts`) cross-references Google Sheets signup/feedback/helper exports against user profiles to compute attendance and turnout stats for event reports. It uses `@googleapis/sheets` with `credentials.json` at the repo root.
+- **Global roles** (`RolesConfig`): `USER=1`, `ADMIN=2`, `SUPERADMIN=3`.
+  Enforced by `@UseGuards(RoleGuard)` + `@Roles(...)`.
+- **Per-event roles** (`EventRolesConfig`): `PARTICIPANT=1`, `COORDINATOR=2`,
+  `MENTOR=3`, `FACILITATOR=4`, `POSTER_MAKER=5`, `EMAIL_WRITER=6`,
+  `FORM_MAKER=7`. Enforced by `@UseGuards(RoleGuard, EventRoleGuard)` +
+  `@EventRoles({ paramKey, roles })`, which reads the event id from
+  `request.params[paramKey]` and looks up `user_event_role`. `SUPERADMIN`
+  bypasses event-role checks.
 
-### Database
+`StatusConfig` (`@auxilium/configs/status`): `ACTIVE=1`, `PENDING=2`,
+`SUSPENDED=3`, `DELETED=4`. Events are **soft-deleted** by setting
+`statusId = DELETED`; `DELETE /api/events/:id/hard` (SUPERADMIN only) is the
+only destructive path.
 
-Drizzle over `node-postgres` (`pg`). Schema is one file, `server/src/db/schema.ts`, with relations split into `relations.ts` and shared `createdAt/updatedAt` in `column.helpers.ts`. `db/index.ts` exports the singleton `db`. Better Auth's own tables (`user`, `session`, `account`, `verification`) live in the same schema file alongside the domain tables (`userProfile`, `event`, `eventParticipation`, `userEventRole`, `eventReport`, `role`, `userRole`, `department`, `userDepartment`, `task`, `taskComment`, `course`, `status`, `eventType`, `eventRole`). Lookup tables (`role`, `status`, `eventType`, `eventRole`) use fixed integer IDs matching `@auxilium/configs` — keep the two in sync when adding a value.
+### Profile linking (OTP flow)
 
-Migrations live in `server/drizzle/` and are applied on prod container start via `start:prod`.
+Accounts and student profiles are separate. A signed-in user links their profile
+through `POST /api/user/verify` → `POST /api/user/verify/:otp`:
 
-### Client
+1. Look up `user_profile` by `ichat` (institutional email).
+2. Generate a numeric OTP, store it in Redis under
+   `otp:auth:profile-link:user_<userId>` with `OTPConfig.expiry`
+   (300s prod / 180s dev). The presence of that key doubles as rate limiting.
+3. Email the OTP via `MailService`.
+4. On confirmation, link `user_profile.userId` to the account.
 
-- Routes are declared explicitly in `client/src/app/routes.ts` (React Router config-based routing, `appDirectory: "src/app"`, SSR on). Three trees: public/`layout.tsx`, `admin/*`, and `auth/*`.
-- Feature code lives in `client/src/features/<name>/` with `components/`, `state/`, and a `<name>.dto.ts` that duplicates the server DTO shapes. Server and client DTOs are **not** shared — changing a server DTO means hand-updating the client one.
-- Data fetching is RTK Query. `client/src/state/api-slice.ts` is the single `createApi` root with the full `tagTypes` list; features add endpoints with `apiSlice.injectEndpoints`. New cache tags must be registered in that root list. `client/src/lib/api.ts` is a separate axios instance (`withCredentials`, `qs` repeat-array serialization) for the non-RTK calls.
-- Store is built per-request via `makeStore()` in `client/src/state/store.ts` (SSR-safe), wired through `context/store-provider.tsx`. Pagination table state (events, users, user profiles, event reports) lives in dedicated slices next to the tables.
-- UI is shadcn/ui "new-york", Tailwind v4 via `@tailwindcss/vite`, CSS entry `src/app/app.css`, lucide icons. Add components with the shadcn CLI, per `client/components.json`.
+### Event report / verification engine
+
+`POST /api/events/:id/generate` drives `VerificationEngineService`
+(`server/src/modules/events/lib/verification-engine.service.ts`):
+
+1. `SheetsService.extractSpreadsheetId()` pulls IDs out of the event's
+   `signupUrl` and `feedbackUrl`.
+2. Both sheets are read through the Google Sheets API (service-account JWT from
+   `GOOGLE_SERVICE_ACCOUNT_EMAIL` / `GOOGLE_PRIVATE_KEY`).
+3. Signup rows are cross-referenced with feedback rows and matched against
+   `user_profile` records to determine attendance.
+4. An `event_report` row plus `event_participation` rows are written, and
+   results are pushed to the temp sheet (`TEMP_SHEET_ID`) for review.
+
+### Database schema
+
+`server/src/db/schema.ts` is the single source of truth; `relations.ts` declares
+the relational query graph via `defineRelations`, and `db/index.ts` wires both
+into the Drizzle client. An ER diagram lives at
+`documentation/entity-diagram.drawio`.
+
+Core tables: `user`, `user_profile`, `user_role`, `user_department`,
+`role`, `department`, `course`, `status`, `event`, `event_type`, `event_role`,
+`user_event_role` (composite PK `eventId, userId`), `event_report` (one per
+event), `event_participation`, `task`, `task_comment`, and the better-auth
+tables `session`, `account`, `verification`.
+
+Enums (`pgEnum`): `event_points_type`, `task_status`, `task_priority`.
+
+## Conventions
+
+### General
+
+- **File names are kebab-case** everywhere (`event-pagination-slice.ts`,
+  `single-event-details.tsx`, `role.guard.ts`). Nest files keep their
+  `*.controller.ts` / `*.service.ts` / `*.module.ts` / `*.dto.ts` suffixes.
+- Prettier (root `.prettierrc`): single quotes, JSX single quotes, semicolons,
+  2-space indent, 80-col print width, trailing commas, `proseWrap: always`,
+  plus `prettier-plugin-tailwindcss` for class sorting. Run `npm run format`.
+- ESLint: root `.eslintrc.cjs` for the monorepo; the server has its own flat
+  config (`server/eslint.config.mjs`). `no-explicit-any` and
+  `no-non-null-assertion` are **warnings**, and unused args are allowed when
+  prefixed with `_`.
+- Path alias `@/*` maps to `src/*` in both client and server; shared code is
+  imported as `@auxilium/configs/*` and `@auxilium/types/*`. Prefer these over
+  deep relative paths.
+- Never hardcode role/status numbers — import `RolesConfig`, `EventRolesConfig`,
+  `StatusConfig`.
+- Commit messages use lowercase prefixes: `feat:`, `fix:`, `chore:`, `minor:`.
+  Work happens on `feat/*`, `fix/*`, `devops/*` branches, PR'd into `dev`, then
+  merged to `main` (which triggers deployment).
+
+### Server (NestJS)
+
+- One module per domain under `src/modules/<domain>/`, containing
+  `<domain>.controller.ts`, `<domain>.service.ts`, `<domain>.module.ts`,
+  `<domain>.dto.ts`, and optional `lib/` for supporting services.
+- Controllers declare `const ROUTE_NAME = 'api/<domain>';` and use
+  `@Controller(ROUTE_NAME)`. Note that `TaskController` deliberately shares the
+  `api/events` prefix so task routes nest under events.
+- **Route ordering matters**: literal segments (`@Get('types')`,
+  `@Get('reports/:reportId')`) must be declared before catch-all params
+  (`@Get(':id')`).
+- Controllers stay thin — validate, unpack the session, call the service, wrap
+  the result in the `{ status, message, data }` envelope. Business logic and all
+  DB access belong in services.
+- Validation is Zod via `@Body(new ZodValidationPipe(SomeSchema))`. The pipe also
+  strips `undefined` values and converts `''` to `null`.
+- DTO files export both the Zod schema (`CreateEventSchema`) and the inferred
+  type (`CreateEventDTO`), plus `typeof schema.<table>.$inferSelect` aliases for
+  row types.
+- Each controller/service holds `private readonly logger = new Logger(X.name)`.
+  Use it instead of `console.log`.
+- Errors: throw Nest HTTP exceptions (`NotFoundException`,
+  `BadRequestException`, `ForbiddenException`, `HttpException`) from controllers;
+  services may throw `APIError` from `@auxilium/types/errors`.
+- Multi-write operations use `db.transaction(async (tx) => { ... })`.
+- Reads prefer the Drizzle relational API (`db.query.<table>.findFirst/findMany`
+  with `where` / `with` / `columns` / `orderBy`) over manual joins.
+- Config is read through the objects in `src/config/`, not scattered
+  `process.env` access.
+
+### Client (React Router + Redux)
+
+- Routes are declared explicitly in `client/src/app/routes.ts` (config-based, not
+  file-system routing); route modules live under `src/app/routes/`. `appDirectory`
+  is `src/app`. SSR is enabled.
+- Feature modules under `src/features/<domain>/` hold
+  `components/`, `state/` (RTK Query slice + local slices), and `<domain>.dto.ts`.
+- **One root RTK Query API** (`src/state/api-slice.ts`). Feature slices extend it
+  with `apiSlice.injectEndpoints({ ... })` — never call `createApi` again. Add
+  new cache tags to the root `tagTypes` array and use
+  `providesTags` / `invalidatesTags` consistently.
+- Server-driven pagination state lives in dedicated Redux slices extending
+  `PaginationOptions` from `@auxilium/types/pagination`
+  (`page`, `pageSize`, `sortBy`, `sortOrder`, `search`), each exporting a
+  `select<X>PaginationState` selector.
+- Use the typed hooks from `src/hooks/redux-hooks.ts` (`useAppDispatch`,
+  `useAppSelector`, `useAppStore`) — never the untyped react-redux hooks.
+- New reducers must be registered in `makeStore()` in `src/state/store.ts`.
+- Two HTTP paths exist: RTK Query (`fetchBaseQuery`) for normal data, and an
+  axios instance (`src/lib/api.ts`, `withCredentials`, qs `arrayFormat: 'repeat'`)
+  for anything outside RTK Query. Both rely on cookie auth.
+- shadcn/ui components go in `src/components/ui/` and are added with the shadcn
+  CLI (`components.json`: new-york style, neutral base, lucide icons). Treat
+  them as editable project code.
+- Tailwind v4 — no `tailwind.config`; theme tokens are CSS variables in
+  `src/app/app.css`. Compose classes with `cn()` from `src/lib/utils.ts`.
+- Toasts use `sonner` (`<Toaster>` is mounted in `root.tsx`). Theme handling is
+  `next-themes` with `attribute='class'` and a dark default.
+
+## Environment variables
+
+`server/.env.example` is **out of date** — it still lists `BETTER_AUTH_SECRET`,
+`GOOGLE_OAUTH_ID/SECRET` and `GITHUB_OAUTH_ID/SECRET`, none of which the code
+reads. The variables actually consumed by the server are:
+
+| Variable | Purpose |
+|---|---|
+| `DATABASE_URL` | Postgres connection string (also used by drizzle-kit) |
+| `PORT` | Nest listen port (5175 in Docker; falls back to 3000) |
+| `NODE_ENV`, `LOG_LEVEL` | `SystemConfig` |
+| `CLIENT_URL` | Trusted origin + links in emails |
+| `APP_NAME`, `AUTH_BASE_URL`, `AUTH_SECRET` | better-auth |
+| `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` | GitHub social sign-in |
+| `COOKIE_MAXAGE` | Cookie config |
+| `JWT_SECRET`, `JWT_EXPIRY`, `JWT_REFRESH_SECRET`, `JWT_REFRESH_EXPIRY`, `SALT_ROUNDS` | Legacy `AuthConfig` (kept, but better-auth owns sessions today) |
+| `REDIS_HOST`, `REDIS_PASSWORD` | Redis (port is hardcoded to 6379) |
+| `MAIL_HOST`, `MAIL_PORT`, `MAIL_SECURE`, `MAIL_USER`, `MAIL_PASS` | nodemailer SMTP |
+| `GOOGLE_SERVICE_ACCOUNT_EMAIL`, `GOOGLE_PRIVATE_KEY` | Sheets service account |
+| `TEMP_SHEET_ID` | Scratch spreadsheet for generated reports |
+
+Client (Vite, must be prefixed `VITE_`): `VITE_API_BASE_URL` — the API origin
+including the `/api` path, e.g. `http://localhost:5175/api`. It is baked in at
+**build time** (see the `build-args` in the Dockerfile and CI workflow).
+
+Compose files expect `server/.env.staging` (dev stack), `server/.env.production`
+(prod stack), `client/.env`, and `REDIS_PASSWORD` in the shell environment.
+Never commit real `.env` files or `credentials.json`.
 
 ## Deployment
 
-`.github/workflows/deploy.yml` runs on push to `main`: builds `ghcr.io/proj-root/garden-{server,client}:latest` (build context is the repo root, Dockerfiles are per-workspace), then SSHes to the VPS and re-ups `docker-compose.prod.yml` at `/var/www/garden`. The client's API base URL is baked in at image build time via the `VITE_API_BASE_URL` build arg — it is not runtime-configurable. nginx terminates TLS and proxies to both containers.
+- Push to `main` triggers `.github/workflows/deploy.yml`: build and push
+  `ghcr.io/proj-root/garden-server:latest` and `garden-client:latest`, then SSH
+  to the VPS, `git pull` in `/var/www/garden`, and
+  `docker compose -f docker-compose.prod.yml up -d`.
+- Both Dockerfiles build from the **repo root context** and copy `packages/`,
+  because the workspaces are required at build time.
+- The server image's `docker-entrypoint.sh` runs `db:deploy` (migrations) and
+  `seed:prod` before starting — so migrations must always be committed alongside
+  schema changes.
+- Health check: `GET /api/health` (`AppController`, `@AllowAnonymous`).
 
-Env files: `server/.env`, `server/.env.staging`, `server/.env.production`, `client/.env`, plus a root `.env` holding `REDIS_PASSWORD` for compose.
+## Gotchas
 
-## Bundled skills
-
-`.agents/skills/` (symlinked into `.claude/skills/`) vendors third-party skills pinned by `skills-lock.json`: Better Auth best practices, Better Auth security, email-and-password auth, 2FA, and shadcn. Consult them before changing auth configuration or adding UI components. Do not hand-edit these directories.
+- Do not re-enable Nest's body parser (`bodyParser: false` in `main.ts`) —
+  better-auth needs the raw body.
+- Custom session fields (`user.role`) are added by an `after` hook, so they are
+  typed loosely; existing code uses `as any` / `@ts-expect-error` at those
+  boundaries.
+- `client/README.md` is still the stock React Router template README and does not
+  describe this project.
+- `client/src/features/auth/state/auth-slice.ts` exists but is **not registered**
+  in `makeStore()`; `selectAuthState` would read `undefined`. Auth state comes
+  from `authClient.useSession()`, not Redux. Don't build on the slice without
+  wiring it up first.
+- The client and server pin different TypeScript majors (server `^5.7`, root
+  `^6.0`) and different Drizzle majors (server on `1.0.0-beta`, root on `0.45`).
+  Check the workspace you are in before relying on version-specific APIs.
+- The app version string in `version.tsx` is hardcoded and must be bumped
+  manually alongside the `package.json` versions.
