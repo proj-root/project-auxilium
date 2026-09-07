@@ -44,3 +44,5 @@ playwright-report/
 
 # Google credentials
 credentials.json
+# Integration test server pid
+server/test/.e2e-server.pid

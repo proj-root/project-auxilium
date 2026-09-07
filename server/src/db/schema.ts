@@ -351,3 +351,66 @@ export const taskComment = pgTable('task_comment', {
     }),
   ...timestamps,
 });
+
+// Forum Post Table
+export const forumPost = pgTable('forum_post', {
+  postId: uuid('post_id').primaryKey().defaultRandom().unique(),
+  title: varchar({ length: 150 }).notNull(),
+  content: text('content').notNull(),
+  createdBy: uuid('created_by')
+    .notNull()
+    .references(() => user.id, {
+      onDelete: 'cascade',
+      onUpdate: 'cascade',
+    }),
+  statusId: integer('status_id')
+    .notNull()
+    .default(StatusConfig.ACTIVE)
+    .references(() => status.statusId, {
+      onDelete: 'cascade',
+      onUpdate: 'cascade',
+    }),
+  ...timestamps,
+});
+
+// Forum Comment Table
+// Self-referencing via parentCommentId so a comment can reply to another
+// comment at any depth. A null parentCommentId marks a top-level comment.
+export const forumComment = pgTable(
+  'forum_comment',
+  {
+    commentId: uuid('comment_id').primaryKey().defaultRandom().unique(),
+    postId: uuid('post_id')
+      .notNull()
+      .references(() => forumPost.postId, {
+        onDelete: 'cascade',
+        onUpdate: 'cascade',
+      }),
+    parentCommentId: uuid('parent_comment_id').references(
+      (): AnyPgColumn => forumComment.commentId,
+      {
+        onDelete: 'cascade',
+        onUpdate: 'cascade',
+      },
+    ),
+    text: text('text').notNull(),
+    createdBy: uuid('created_by')
+      .notNull()
+      .references(() => user.id, {
+        onDelete: 'cascade',
+        onUpdate: 'cascade',
+      }),
+    statusId: integer('status_id')
+      .notNull()
+      .default(StatusConfig.ACTIVE)
+      .references(() => status.statusId, {
+        onDelete: 'cascade',
+        onUpdate: 'cascade',
+      }),
+    ...timestamps,
+  },
+  (table) => [
+    index('forum_comment_postId_idx').on(table.postId),
+    index('forum_comment_parentCommentId_idx').on(table.parentCommentId),
+  ],
+);
