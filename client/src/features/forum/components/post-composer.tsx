@@ -65,12 +65,12 @@ export function PostComposer({ className }: { className?: string }) {
           if (requireAuth()) setIsOpen(true);
         }}
         className={cn(
-          'text-muted-foreground hover:border-ring hover:text-foreground flex w-full flex-row items-center gap-2 rounded-md border px-4 py-3 text-left text-sm transition-colors',
+          'text-muted-foreground hover:border-ring hover:text-foreground flex w-full flex-row items-center gap-2 rounded-md border px-4 py-3 text-left text-sm transition-colors cursor-pointer',
           className,
         )}
       >
         <PenLine className='size-4' />
-        Share something with the garden
+        Share something with everyone...
       </button>
     );
   }

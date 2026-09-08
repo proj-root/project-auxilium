@@ -62,12 +62,12 @@ export function PostDetail({ postId }: { postId: string }) {
       <BackButton />
 
       <article className='flex flex-col gap-3'>
-        <h1 className='text-3xl leading-tight font-semibold'>{post.title}</h1>
         <AuthorLine
           creator={post.creator}
           createdAt={post.createdAt}
           updatedAt={post.updatedAt}
         />
+        <h1 className='text-3xl leading-tight font-semibold'>{post.title}</h1>
         <PostBody
           text={post.content}
           className='max-w-[68ch] text-base/relaxed'
@@ -83,22 +83,25 @@ export function PostDetail({ postId }: { postId: string }) {
 
       <CommentComposer postId={postId} />
 
-      <div className='flex flex-row items-center gap-1'>
-        {COMMENT_SORTS.map((sort) => (
-          <Button
-            key={sort}
-            variant='ghost'
-            size='sm'
-            onClick={() => setCommentSort(sort)}
-            aria-pressed={commentSort === sort}
-            className={cn(
-              'text-muted-foreground px-2 font-mono text-xs',
-              commentSort === sort && 'text-foreground',
-            )}
-          >
-            {COMMENT_SORT_LABELS[sort]}
-          </Button>
-        ))}
+      <div className='flex gap-2 items-center'>
+        <h2 className='font-semibold text-xl'>Comments</h2>
+        <div className='flex flex-row items-center gap-1'>
+          {COMMENT_SORTS.map((sort) => (
+            <Button
+              key={sort}
+              variant='ghost'
+              size='sm'
+              onClick={() => setCommentSort(sort)}
+              aria-pressed={commentSort === sort}
+              className={cn(
+                'text-muted-foreground px-2 font-mono text-xs',
+                commentSort === sort && 'text-foreground',
+              )}
+            >
+              {COMMENT_SORT_LABELS[sort]}
+            </Button>
+          ))}
+        </div>
       </div>
 
       <CommentList postId={postId} sort={commentSort} />

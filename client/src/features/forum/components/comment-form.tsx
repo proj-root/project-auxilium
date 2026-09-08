@@ -56,11 +56,11 @@ function CommentForm({
       <textarea
         value={text}
         autoFocus={autoFocus}
-        rows={3}
+        rows={2}
         placeholder={placeholder}
         aria-label={placeholder}
         onChange={(event) => setText(event.target.value)}
-        className='resize-none px-4 text-sm/relaxed outline-0'
+        className='resize-y px-4 text-sm/relaxed outline-0'
       />
       <div className='flex flex-row justify-end gap-2 px-3'>
         {onCancel && (
