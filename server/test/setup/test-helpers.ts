@@ -103,7 +103,7 @@ export async function setUserRole(userId: string, roleId: number) {
 /** Clears forum rows between tests, leaving users and reference data intact. */
 export async function truncateForum() {
   await db().query(
-    'TRUNCATE TABLE forum_comment, forum_post RESTART IDENTITY CASCADE',
+    'TRUNCATE TABLE forum_post_like, forum_comment_like, forum_comment, forum_post RESTART IDENTITY CASCADE',
   );
 }
 
@@ -126,6 +126,63 @@ export async function countComments(postId: string) {
     [postId],
   );
   return Number(rows[0]!.count);
+}
+
+/**
+ * Walks a thread through the level-scoped comments endpoint the way the UI
+ * does — one level per request, following `replyCount` down. Returns
+ * `{ text, depth }` depth-first, so a thread's shape can be asserted whole.
+ */
+export async function readThread(
+  postId: string,
+  cookie?: string[],
+  parentCommentId?: string,
+  depth = 0,
+): Promise<Array<{ text: string; depth: number }>> {
+  const query = new URLSearchParams({
+    postId,
+    sortBy: 'createdAt',
+    sortOrder: 'asc',
+  });
+
+  if (parentCommentId) query.set('parentCommentId', parentCommentId);
+
+  const req = api().get(`/api/comments?${query.toString()}`);
+  const res = await (cookie ? req.set('Cookie', cookie) : req);
+
+  const walked: Array<{ text: string; depth: number }> = [];
+
+  for (const node of res.body.data.comments) {
+    walked.push({ text: node.text, depth });
+
+    if (node.replyCount > 0) {
+      walked.push(
+        ...(await readThread(postId, cookie, node.commentId, depth + 1)),
+      );
+    }
+  }
+
+  return walked;
+}
+
+/** Reads a single level of a thread. */
+export async function readLevel(
+  postId: string,
+  cookie?: string[],
+  parentCommentId?: string,
+) {
+  const query = new URLSearchParams({
+    postId,
+    sortBy: 'createdAt',
+    sortOrder: 'asc',
+  });
+
+  if (parentCommentId) query.set('parentCommentId', parentCommentId);
+
+  const req = api().get(`/api/comments?${query.toString()}`);
+  const res = await (cookie ? req.set('Cookie', cookie) : req);
+
+  return res.body.data.comments as any[];
 }
 
 /** Depth-first walk of a comment tree, collecting `text` values in order. */

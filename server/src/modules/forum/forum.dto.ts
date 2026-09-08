@@ -64,12 +64,72 @@ export type UpdateCommentDTO = z.infer<typeof UpdateCommentSchema> & {
   commentId: string;
 };
 
+// The author summary embedded in every post and comment we return.
+export type CreatorDTO = {
+  id: string;
+  name: string;
+  image: string | null;
+} | null;
+
+// A post as it appears in the feed: the row, its author, and the aggregates the
+// UI needs to render like/comment counts without a second request.
+export type PostListItemDTO = PostDTO & {
+  creator: CreatorDTO;
+  likeCount: number;
+  commentCount: number;
+  likedByMe: boolean;
+};
+
+// The post page returns the same shape — comments are fetched separately, one
+// thread level at a time, so they are no longer embedded here.
+export type PostDetailDTO = PostListItemDTO;
+
+// A comment as it appears in a single level of a thread. `replyCount` tells the
+// client whether to offer "View replies"; the replies themselves are a further
+// request keyed by this comment's id.
+export type CommentListItemDTO = CommentDTO & {
+  creator: CreatorDTO;
+  likeCount: number;
+  likedByMe: boolean;
+  replyCount: number;
+};
+
+// The counts returned by every like/unlike call, so the client can reconcile
+// its optimistic state without refetching the feed.
+export type LikeResultDTO = {
+  likeCount: number;
+  likedByMe: boolean;
+};
+
+export const POST_SORT_FIELDS = [
+  'title',
+  'createdAt',
+  'updatedAt',
+  'hot',
+  'top',
+] as const;
+
+export type PostSortField = (typeof POST_SORT_FIELDS)[number];
+
+export const COMMENT_SORT_FIELDS = ['createdAt', 'updatedAt', 'top'] as const;
+
+export type CommentSortField = (typeof COMMENT_SORT_FIELDS)[number];
+
+// Sentinel accepted in place of a parent id to ask for top-level comments only.
+export const ROOT_COMMENTS = 'root';
+
 export type GetAllPostsQueryDTO = PaginationOptions & {
-  sortBy?: 'title' | 'createdAt' | 'updatedAt';
+  sortBy?: PostSortField;
   statusId?: number;
+  // The viewer, when signed in — drives `likedByMe`. Absent for anonymous reads.
+  userId?: string;
 };
 
 export type GetPostCommentsQueryDTO = PaginationOptions & {
   postId: string;
-  sortBy?: 'createdAt' | 'updatedAt';
+  // Omitted or 'root' asks for top-level comments; a uuid asks for that
+  // comment's direct replies.
+  parentCommentId?: string;
+  sortBy?: CommentSortField;
+  userId?: string;
 };

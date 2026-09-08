@@ -1,3 +1,10 @@
+import { formatDistanceToNowStrict } from 'date-fns';
+
+// "3 hours ago" for feed and comment timestamps.
+export function formatRelativeTime(date: string | Date) {
+  return formatDistanceToNowStrict(new Date(date), { addSuffix: true });
+}
+
 export function capitalizeFirst(str: string) {
   if (str.length === 0) {
     return '';

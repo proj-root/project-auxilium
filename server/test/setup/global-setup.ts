@@ -8,7 +8,7 @@
 // which is exactly how production runs — so booting the compiled server as a
 // subprocess exercises the real auth stack instead of a stub.
 
-import { execFileSync, spawn } from 'node:child_process';
+import { execFileSync, execSync, spawn } from 'node:child_process';
 import { existsSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import {
@@ -20,8 +20,21 @@ import {
   loadTestEnv,
 } from './config';
 
-const run = (command: string, args: string[], cwd: string) =>
-  execFileSync(command, args, { cwd, env: process.env, stdio: 'inherit' });
+const run = (command: string, args: string[], cwd: string) => {
+  const options = { cwd, env: process.env, stdio: 'inherit' as const };
+
+  // npm and npx are batch files on Windows, which execFileSync cannot launch
+  // directly, so they go through a shell there. Everything passed in is a
+  // literal from this file, so joining it into one command is safe.
+  if (
+    process.platform === 'win32' &&
+    (command === 'npm' || command === 'npx')
+  ) {
+    return execSync([command, ...args].join(' '), options);
+  }
+
+  return execFileSync(command, args, options);
+};
 
 async function waitForHealth(timeoutMs = 60_000) {
   const deadline = Date.now() + timeoutMs;
@@ -42,12 +55,20 @@ async function waitForHealth(timeoutMs = 60_000) {
 export default async function globalSetup() {
   loadTestEnv();
 
-  console.log('\n[e2e] starting postgres + redis');
-  run(
-    'bash',
-    [resolve(SERVER_DIR, 'test/scripts/start-test-services.sh')],
-    SERVER_DIR,
-  );
+  // The bundled script provisions a Debian-style postgres cluster and a
+  // local redis, which only exist on CI and Linux dev boxes. Set
+  // E2E_SKIP_SERVICES=1 to run against services brought up some other way
+  // (Docker, a managed instance), pointed at from server/.env.test.
+  if (process.env.E2E_SKIP_SERVICES === '1') {
+    console.log('\n[e2e] using externally provided postgres + redis');
+  } else {
+    console.log('\n[e2e] starting postgres + redis');
+    run(
+      'bash',
+      [resolve(SERVER_DIR, 'test/scripts/start-test-services.sh')],
+      SERVER_DIR,
+    );
+  }
 
   if (process.env.E2E_SKIP_BUILD !== '1') {
     console.log('[e2e] building workspaces');

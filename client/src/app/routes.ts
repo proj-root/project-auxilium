@@ -14,6 +14,10 @@ export default [
       route('*', 'routes/not-found.tsx'),
       route('/unauthorized', 'routes/unauthorized.tsx'),
       route('/about', 'routes/about.tsx'),
+      ...prefix('forum', [
+        index('routes/forum/index.tsx'),
+        route('/:postId', 'routes/forum/single-post.tsx'),
+      ]),
       route('/link-profile', 'routes/link-profile.tsx'),
       route('/settings', 'routes/settings.tsx'),
     ]),

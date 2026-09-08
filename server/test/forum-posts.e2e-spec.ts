@@ -153,6 +153,85 @@ describe('Forum posts (e2e)', () => {
         name: 'Ada Author',
       });
     });
+
+    it('is readable without signing in', async () => {
+      await createPost(author, { title: 'Open to all', content: 'body' });
+
+      const res = await api().get('/api/posts');
+
+      expect(res.status).toBe(200);
+      expect(res.body.data.posts).toHaveLength(1);
+      expect(res.body.data.posts[0].likedByMe).toBe(false);
+    });
+
+    it('carries like and comment counts on each row', async () => {
+      const created = await createPost(author, {
+        title: 'Counted',
+        content: 'body',
+      });
+      const postId = created.body.data.postId as string;
+
+      await api()
+        .post(`/api/posts/${postId}/like`)
+        .set('Cookie', otherStudent.cookie);
+      await api()
+        .post('/api/comments')
+        .set('Cookie', otherStudent.cookie)
+        .send({ postId, text: 'nice' });
+
+      const res = await api().get('/api/posts').set('Cookie', author.cookie);
+
+      expect(res.body.data.posts[0]).toMatchObject({
+        likeCount: 1,
+        commentCount: 1,
+        // The author has not liked their own post.
+        likedByMe: false,
+      });
+    });
+
+    it('orders by likes under sortBy=top, and falls back to newest for an unknown sort', async () => {
+      const quiet = await createPost(author, {
+        title: 'Quiet',
+        content: 'body',
+      });
+      const popular = await createPost(author, {
+        title: 'Popular',
+        content: 'body',
+      });
+
+      await api()
+        .post(`/api/posts/${popular.body.data.postId}/like`)
+        .set('Cookie', otherStudent.cookie);
+      await api()
+        .post(`/api/posts/${popular.body.data.postId}/like`)
+        .set('Cookie', admin.cookie);
+
+      const top = await api()
+        .get('/api/posts?sortBy=top')
+        .set('Cookie', author.cookie);
+      expect(top.body.data.posts.map((post: any) => post.title)).toEqual([
+        'Popular',
+        'Quiet',
+      ]);
+
+      const hot = await api()
+        .get('/api/posts?sortBy=hot')
+        .set('Cookie', author.cookie);
+      expect(hot.status).toBe(200);
+      expect(hot.body.data.posts).toHaveLength(2);
+
+      // An unrecognised sort must not reach the query builder; it falls back
+      // to newest first, which is the post created last.
+      const nonsense = await api()
+        .get('/api/posts?sortBy=drop-table')
+        .set('Cookie', author.cookie);
+      expect(nonsense.status).toBe(200);
+      expect(nonsense.body.data.posts.map((post: any) => post.title)).toEqual([
+        'Popular',
+        'Quiet',
+      ]);
+      expect(quiet.status).toBe(201);
+    });
   });
 
   describe('GET /api/posts/:postId', () => {
@@ -168,7 +247,7 @@ describe('Forum posts (e2e)', () => {
       expect(unknown.status).toBe(404);
     });
 
-    it('returns an empty comments array for a post with no comments', async () => {
+    it('does not embed comments, and reports aggregates instead', async () => {
       const created = await createPost(author, {
         title: 'Lonely post',
         content: 'body',
@@ -179,7 +258,23 @@ describe('Forum posts (e2e)', () => {
         .set('Cookie', author.cookie);
 
       expect(res.status).toBe(200);
-      expect(res.body.data.comments).toEqual([]);
+      expect(res.body.data.comments).toBeUndefined();
+      expect(res.body.data.likeCount).toBe(0);
+      expect(res.body.data.commentCount).toBe(0);
+      expect(res.body.data.likedByMe).toBe(false);
+    });
+
+    it('is readable without signing in', async () => {
+      const created = await createPost(author, {
+        title: 'Shared link',
+        content: 'body',
+      });
+
+      const res = await api().get(`/api/posts/${created.body.data.postId}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.data.title).toBe('Shared link');
+      expect(res.body.data.likedByMe).toBe(false);
     });
   });
 

@@ -6,13 +6,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import { Link } from 'react-router';
+import { Link, useSearchParams } from 'react-router';
 import { Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import { authClient } from '@/lib/auth-client';
-import {
-  ForgotPasswordForm,
-} from './reset-password-forms';
+import { safeRedirectTo } from '../lib/redirect-to';
+import { ForgotPasswordForm } from './reset-password-forms';
 import {
   Dialog,
   DialogContent,
@@ -43,13 +42,17 @@ export function LoginForm({ className }: { className?: string }) {
     mode: 'all',
   });
 
+  const [searchParams] = useSearchParams();
+
   const onSubmit = async (data: LoginFormValues) => {
     setIsLoading(true);
     try {
       const { error } = await authClient.signIn.email({
         email: data.email,
         password: data.password,
-        callbackURL: '/',
+        // Sends a reader who was bounced here from a protected action back to
+        // the page they were on.
+        callbackURL: safeRedirectTo(searchParams),
         rememberMe: true,
       });
 

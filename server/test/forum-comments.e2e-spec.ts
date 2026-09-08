@@ -6,6 +6,8 @@ import {
   closeDb,
   countComments,
   flattenTree,
+  readLevel,
+  readThread,
   setUserRole,
   signUpUser,
   truncateForum,
@@ -158,12 +160,7 @@ describe('Forum comments and replies (e2e)', () => {
       });
       await commentId(responder, { postId, parentCommentId: c, text: 'D' });
 
-      const res = await api()
-        .get(`/api/posts/${postId}`)
-        .set('Cookie', author.cookie);
-
-      expect(res.status).toBe(200);
-      expect(flattenTree(res.body.data.comments)).toEqual([
+      expect(await readThread(postId, author.cookie)).toEqual([
         { text: 'A', depth: 0 },
         { text: 'B', depth: 1 },
         { text: 'C', depth: 2 },
@@ -184,13 +181,9 @@ describe('Forum comments and replies (e2e)', () => {
         text: 'second',
       });
 
-      const res = await api()
-        .get(`/api/posts/${postId}`)
-        .set('Cookie', author.cookie);
+      const replies = await readLevel(postId, author.cookie, parent);
 
-      expect(res.body.data.comments[0].replies.map((r: any) => r.text)).toEqual(
-        ['first', 'second'],
-      );
+      expect(replies.map((reply) => reply.text)).toEqual(['first', 'second']);
     });
 
     it('refuses a parent comment that belongs to a different post', async () => {
@@ -236,19 +229,16 @@ describe('Forum comments and replies (e2e)', () => {
         .set('Cookie', responder.cookie);
       expect(deleted.status).toBe(200);
 
-      const res = await api()
-        .get(`/api/posts/${postId}`)
-        .set('Cookie', author.cookie);
-
-      expect(flattenTree(res.body.data.comments)).toEqual([
+      expect(await readThread(postId, author.cookie)).toEqual([
         { text: 'A', depth: 0 },
         { text: '[deleted]', depth: 1 },
         { text: 'C', depth: 2 },
       ]);
 
-      const tombstone = res.body.data.comments[0].replies[0];
+      const [tombstone] = await readLevel(postId, author.cookie, a);
       expect(tombstone.statusId).toBe(StatusConfig.DELETED);
       expect(tombstone.creator).toBeNull();
+      expect(tombstone.replyCount).toBe(1);
     });
   });
 
@@ -297,7 +287,7 @@ describe('Forum comments and replies (e2e)', () => {
   });
 
   describe('GET /api/comments', () => {
-    it('lists one post’s comments flat, with pagination metadata', async () => {
+    it('lists only the top level by default, with pagination metadata', async () => {
       const otherPostId = await createPost(author, 'Unrelated');
       await commentId(author, { postId: otherPostId, text: 'elsewhere' });
 
@@ -309,12 +299,42 @@ describe('Forum comments and replies (e2e)', () => {
         .set('Cookie', author.cookie);
 
       expect(res.status).toBe(200);
-      expect(res.body.data.total).toBe(2);
+      expect(res.body.data.total).toBe(1);
       expect(res.body.data.pageCount).toBe(1);
-      expect(res.body.data.comments.map((c: any) => c.text).sort()).toEqual([
-        'A',
-        'B',
+      expect(res.body.data.comments.map((c: any) => c.text)).toEqual(['A']);
+      expect(res.body.data.comments[0].replyCount).toBe(1);
+      expect(res.body.data.comments[0].replies).toBeUndefined();
+    });
+
+    it('returns one comment’s direct replies when given a parent', async () => {
+      const a = await commentId(author, { postId, text: 'A' });
+      const b = await commentId(responder, {
+        postId,
+        parentCommentId: a,
+        text: 'B',
+      });
+      await commentId(author, { postId, parentCommentId: b, text: 'C' });
+
+      const res = await api()
+        .get(`/api/comments?postId=${postId}&parentCommentId=${a}`)
+        .set('Cookie', author.cookie);
+
+      expect(res.status).toBe(200);
+      expect(res.body.data.total).toBe(1);
+      expect(res.body.data.comments.map((c: any) => c.text)).toEqual(['B']);
+      expect(res.body.data.comments[0].replyCount).toBe(1);
+    });
+
+    it('is readable without signing in', async () => {
+      await commentId(author, { postId, text: 'public' });
+
+      const res = await api().get(`/api/comments?postId=${postId}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.data.comments.map((c: any) => c.text)).toEqual([
+        'public',
       ]);
+      expect(res.body.data.comments[0].likedByMe).toBe(false);
     });
 
     it('requires a postId', async () => {

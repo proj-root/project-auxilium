@@ -41,6 +41,14 @@ export const relations = defineRelations(schema, (r) => ({
       from: r.user.id,
       to: r.forumComment.createdBy,
     }),
+    forumPostLikes: r.many.forumPostLike({
+      from: r.user.id,
+      to: r.forumPostLike.userId,
+    }),
+    forumCommentLikes: r.many.forumCommentLike({
+      from: r.user.id,
+      to: r.forumCommentLike.userId,
+    }),
     events: r.many.event(),
     sessions: r.many.session(),
     accounts: r.many.account(),
@@ -186,6 +194,10 @@ export const relations = defineRelations(schema, (r) => ({
       from: r.forumPost.postId,
       to: r.forumComment.postId,
     }),
+    likes: r.many.forumPostLike({
+      from: r.forumPost.postId,
+      to: r.forumPostLike.postId,
+    }),
   },
   forumComment: {
     post: r.one.forumPost({
@@ -203,6 +215,30 @@ export const relations = defineRelations(schema, (r) => ({
     replies: r.many.forumComment({
       from: r.forumComment.commentId,
       to: r.forumComment.parentCommentId,
+    }),
+    likes: r.many.forumCommentLike({
+      from: r.forumComment.commentId,
+      to: r.forumCommentLike.commentId,
+    }),
+  },
+  forumPostLike: {
+    post: r.one.forumPost({
+      from: r.forumPostLike.postId,
+      to: r.forumPost.postId,
+    }),
+    user: r.one.user({
+      from: r.forumPostLike.userId,
+      to: r.user.id,
+    }),
+  },
+  forumCommentLike: {
+    comment: r.one.forumComment({
+      from: r.forumCommentLike.commentId,
+      to: r.forumComment.commentId,
+    }),
+    user: r.one.user({
+      from: r.forumCommentLike.userId,
+      to: r.user.id,
     }),
   },
   eventType: {

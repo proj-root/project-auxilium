@@ -15,9 +15,13 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { CommentService } from './comment.service';
+import { LikeService } from './like.service';
 import {
+  COMMENT_SORT_FIELDS,
   CreateCommentSchema,
+  ROOT_COMMENTS,
   UpdateCommentSchema,
+  type CommentSortField,
   type CreateCommentDTO,
   type GetPostCommentsQueryDTO,
   type UpdateCommentDTO,
@@ -26,7 +30,11 @@ import { Roles } from '@/common/decorators/roles.decorator';
 import { RoleGuard } from '@/common/guards/role.guard';
 import { RolesConfig } from '@auxilium/configs/roles';
 import { ZodValidationPipe } from '@/common/zod-validation.pipe';
-import { Session, type UserSession } from '@thallesp/nestjs-better-auth';
+import {
+  AllowAnonymous,
+  Session,
+  type UserSession,
+} from '@thallesp/nestjs-better-auth';
 
 const ROUTE_NAME = 'api/comments';
 
@@ -34,18 +42,25 @@ const ROUTE_NAME = 'api/comments';
 export class CommentsController {
   private readonly logger = new Logger(CommentsController.name);
 
-  constructor(private readonly commentService: CommentService) {}
+  constructor(
+    private readonly commentService: CommentService,
+    private readonly likeService: LikeService,
+  ) {}
 
   /**
-   * GET /api/comments?postId=...
-   * Fetch a flat, paginated list of the comments on one post
+   * GET /api/comments?postId=...&parentCommentId=...
+   * One level of a post's thread: top-level comments by default, or the direct
+   * replies to `parentCommentId`. Readable signed out.
    */
   @Get()
-  @UseGuards(RoleGuard)
-  @Roles(RolesConfig.USER, RolesConfig.ADMIN, RolesConfig.SUPERADMIN)
-  async getPostComments(@Query() query: Partial<GetPostCommentsQueryDTO>) {
+  @AllowAnonymous()
+  async getPostComments(
+    @Session() session: UserSession | null,
+    @Query() query: Partial<GetPostCommentsQueryDTO>,
+  ) {
     const {
       postId,
+      parentCommentId,
       page = 1,
       pageSize = 20,
       sortBy = 'createdAt',
@@ -59,11 +74,13 @@ export class CommentsController {
 
     const result = await this.commentService.getPostComments({
       postId,
+      parentCommentId: parentCommentId || ROOT_COMMENTS,
       page: Number(page),
       pageSize: Number(pageSize),
-      sortBy: (sortBy as 'createdAt' | 'updatedAt') || 'createdAt',
-      sortOrder: (sortOrder as 'asc' | 'desc') || 'desc',
+      sortBy: toCommentSortField(sortBy),
+      sortOrder: sortOrder === 'asc' ? 'asc' : 'desc',
       search: search as string,
+      userId: session?.user?.id,
     });
 
     return {
@@ -107,8 +124,7 @@ export class CommentsController {
    * Fetch a single comment with its reply subtree
    */
   @Get(':commentId')
-  @UseGuards(RoleGuard)
-  @Roles(RolesConfig.USER, RolesConfig.ADMIN, RolesConfig.SUPERADMIN)
+  @AllowAnonymous()
   async getCommentById(@Param('commentId', ParseUUIDPipe) commentId: string) {
     const comment = await this.commentService.getCommentById({ commentId });
 
@@ -155,6 +171,54 @@ export class CommentsController {
   }
 
   /**
+   * POST /api/comments/:commentId/like
+   * Like a comment. Liking twice is a no-op rather than an error.
+   */
+  @Post(':commentId/like')
+  @UseGuards(RoleGuard)
+  @Roles(RolesConfig.USER, RolesConfig.ADMIN, RolesConfig.SUPERADMIN)
+  // Liking is idempotent, so 200 rather than Nest's default 201 for POST.
+  @HttpCode(200)
+  async likeComment(
+    @Session() session: UserSession,
+    @Param('commentId', ParseUUIDPipe) commentId: string,
+  ) {
+    const result = await this.likeService.likeComment({
+      commentId,
+      userId: session.user.id,
+    });
+
+    return {
+      status: 'success',
+      message: 'Comment liked successfully',
+      data: result,
+    };
+  }
+
+  /**
+   * DELETE /api/comments/:commentId/like
+   * Remove your like from a comment.
+   */
+  @Delete(':commentId/like')
+  @UseGuards(RoleGuard)
+  @Roles(RolesConfig.USER, RolesConfig.ADMIN, RolesConfig.SUPERADMIN)
+  async unlikeComment(
+    @Session() session: UserSession,
+    @Param('commentId', ParseUUIDPipe) commentId: string,
+  ) {
+    const result = await this.likeService.unlikeComment({
+      commentId,
+      userId: session.user.id,
+    });
+
+    return {
+      status: 'success',
+      message: 'Comment unliked successfully',
+      data: result,
+    };
+  }
+
+  /**
    * DELETE /api/comments/:commentId/hard
    * Permanently delete a comment and every reply beneath it
    */
@@ -194,4 +258,11 @@ export class CommentsController {
       message: 'Comment deleted successfully',
     };
   }
+}
+
+/** Query params bypass the Zod pipe, so an unknown sortBy falls back to newest. */
+function toCommentSortField(value: unknown): CommentSortField {
+  return COMMENT_SORT_FIELDS.includes(value as CommentSortField)
+    ? (value as CommentSortField)
+    : 'createdAt';
 }

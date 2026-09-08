@@ -1,15 +1,44 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import db from '@/db';
 import * as schema from '@/db/schema';
-import { forumPost as forumPostTable } from '@/db/schema';
-import { eq } from 'drizzle-orm';
+import {
+  forumComment as forumCommentTable,
+  forumPost as forumPostTable,
+  forumPostLike as forumPostLikeTable,
+  user as userTable,
+} from '@/db/schema';
+import {
+  and,
+  asc,
+  countDistinct,
+  desc,
+  eq,
+  ilike,
+  or,
+  sql,
+  type SQL,
+} from 'drizzle-orm';
 import { StatusConfig } from '@auxilium/configs/status';
 import type {
   CreatePostDTO,
   GetAllPostsQueryDTO,
+  PostListItemDTO,
   UpdatePostDTO,
 } from './forum.dto';
-import { assertCanMutate, buildCommentTree } from './lib/forum.helpers';
+import { assertCanMutate, findActivePostOrThrow } from './lib/forum.helpers';
+
+// Reddit-style decay: a like nudges a post up the ranking by a fixed amount,
+// and every post slides down as it ages. 45000 seconds (12.5h) is the scale at
+// which a day-old thread stays competitive with a fresh one.
+const HOT_LIKE_WEIGHT = 2;
+const HOT_AGE_DIVISOR = 45000;
+
+// Both counts must be DISTINCT: joining likes and comments together multiplies
+// the rows, so a plain count() would inflate each by the size of the other.
+const likeCountExpr = countDistinct(forumPostLikeTable.userId);
+const commentCountExpr = countDistinct(forumCommentTable.commentId);
+
+const hotScoreExpr = sql<number>`log(greatest(${likeCountExpr}, 1)::numeric) * ${HOT_LIKE_WEIGHT} + extract(epoch from ${forumPostTable.createdAt}) / ${HOT_AGE_DIVISOR}`;
 
 @Injectable()
 export class PostService {
@@ -23,82 +52,53 @@ export class PostService {
       sortOrder = 'desc',
       search,
       statusId = StatusConfig.ACTIVE,
+      userId,
     } = args;
 
-    // Build AND conditions for all filters
-    const andConditions: object[] = [];
+    const filters: SQL[] = [eq(forumPostTable.statusId, statusId)];
+
     if (search && search.trim() !== '') {
-      andConditions.push({
-        OR: [
-          { title: { ilike: `%${search.trim()}%` } },
-          { content: { ilike: `%${search.trim()}%` } },
-        ],
-      });
-    }
-    if (statusId !== undefined) {
-      andConditions.push({ statusId: { eq: statusId } });
+      const term = `%${search.trim()}%`;
+      filters.push(
+        or(
+          ilike(forumPostTable.title, term),
+          ilike(forumPostTable.content, term),
+        ) as SQL,
+      );
     }
 
-    const where = andConditions.length > 0 ? { AND: andConditions } : undefined;
+    const where = and(...filters);
 
-    const count = await db.query.forumPost
-      .findMany({ where, columns: { postId: true } })
-      .then((posts) => posts.length);
+    const total = await db.$count(forumPostTable, where);
 
-    const posts = await db.query.forumPost.findMany({
-      where,
-      with: {
-        creator: {
-          columns: { id: true, name: true, image: true },
-        },
-      },
-      limit: pageSize,
-      offset: (page - 1) * pageSize,
-      orderBy: {
-        [sortBy]: sortOrder,
-      },
-    });
+    const rows = await this.postQuery(userId)
+      .where(where)
+      .groupBy(forumPostTable.postId, userTable.id)
+      .orderBy(...this.orderFor(sortBy, sortOrder))
+      .limit(pageSize)
+      .offset((page - 1) * pageSize);
 
     return {
-      total: count,
-      pageCount: Math.ceil(count / pageSize),
-      posts,
+      total,
+      pageCount: Math.ceil(total / pageSize),
+      posts: rows.map(toPostListItem),
     };
   }
 
-  async getPostById({ postId }: { postId: string }) {
-    const post = await db.query.forumPost.findFirst({
-      where: {
-        postId,
-        statusId: { eq: StatusConfig.ACTIVE },
-      },
-      with: {
-        creator: {
-          columns: { id: true, name: true, image: true },
-        },
-      },
-    });
+  async getPostById({ postId, userId }: { postId: string; userId?: string }) {
+    const [row] = await this.postQuery(userId)
+      .where(
+        and(
+          eq(forumPostTable.postId, postId),
+          eq(forumPostTable.statusId, StatusConfig.ACTIVE),
+        ),
+      )
+      .groupBy(forumPostTable.postId, userTable.id)
+      .limit(1);
 
-    if (!post) return undefined;
+    if (!row) return undefined;
 
-    // Fetch the whole thread flat and assemble it in memory — this supports
-    // replies at any depth without a recursive query.
-    const comments = await db.query.forumComment.findMany({
-      where: { postId },
-      with: {
-        creator: {
-          columns: { id: true, name: true, image: true },
-        },
-      },
-      orderBy: {
-        createdAt: 'asc',
-      },
-    });
-
-    return {
-      ...post,
-      comments: buildCommentTree(comments),
-    };
+    return toPostListItem(row);
   }
 
   async createPost(args: CreatePostDTO) {
@@ -116,7 +116,7 @@ export class PostService {
   ) {
     const { postId, userId, userRoleId, ...updateData } = args;
 
-    const post = await this.findActivePostOrThrow({ postId });
+    const post = await findActivePostOrThrow(postId);
 
     // Editing is author-only; admins may remove a post but not rewrite it.
     assertCanMutate({
@@ -145,7 +145,7 @@ export class PostService {
     userId: string;
     userRoleId?: number;
   }) {
-    const post = await this.findActivePostOrThrow({ postId });
+    const post = await findActivePostOrThrow(postId);
 
     assertCanMutate({
       row: post,
@@ -193,18 +193,97 @@ export class PostService {
     return deletedPost;
   }
 
-  private async findActivePostOrThrow({ postId }: { postId: string }) {
-    const post = await db.query.forumPost.findFirst({
-      where: {
-        postId,
-        statusId: { eq: StatusConfig.ACTIVE },
-      },
-    });
+  /**
+   * The post row plus its author and aggregates. Built with left joins rather
+   * than the relational API because `hot` and `top` order by computed columns,
+   * which the object-shaped `orderBy` of db.query cannot express.
+   */
+  private postQuery(userId?: string) {
+    return db
+      .select({
+        postId: forumPostTable.postId,
+        title: forumPostTable.title,
+        content: forumPostTable.content,
+        createdBy: forumPostTable.createdBy,
+        statusId: forumPostTable.statusId,
+        createdAt: forumPostTable.createdAt,
+        updatedAt: forumPostTable.updatedAt,
+        creatorId: userTable.id,
+        creatorName: userTable.name,
+        creatorImage: userTable.image,
+        likeCount: likeCountExpr,
+        commentCount: commentCountExpr,
+        likedByMe: likedByMeExpr(userId),
+      })
+      .from(forumPostTable)
+      .leftJoin(userTable, eq(userTable.id, forumPostTable.createdBy))
+      .leftJoin(
+        forumPostLikeTable,
+        eq(forumPostLikeTable.postId, forumPostTable.postId),
+      )
+      .leftJoin(
+        forumCommentTable,
+        and(
+          eq(forumCommentTable.postId, forumPostTable.postId),
+          eq(forumCommentTable.statusId, StatusConfig.ACTIVE),
+        ),
+      );
+  }
 
-    if (!post) {
-      throw new NotFoundException(`Post with ID ${postId} not found`);
+  private orderFor(
+    sortBy: NonNullable<GetAllPostsQueryDTO['sortBy']>,
+    sortOrder: 'asc' | 'desc',
+  ) {
+    if (sortBy === 'hot') {
+      return [desc(hotScoreExpr), desc(forumPostTable.createdAt)];
     }
 
-    return post;
+    if (sortBy === 'top') {
+      return [desc(likeCountExpr), desc(forumPostTable.createdAt)];
+    }
+
+    const column = {
+      title: forumPostTable.title,
+      createdAt: forumPostTable.createdAt,
+      updatedAt: forumPostTable.updatedAt,
+    }[sortBy];
+
+    return [sortOrder === 'asc' ? asc(column) : desc(column)];
   }
+}
+
+/**
+ * Whether the viewer has liked the post. An EXISTS subquery rather than another
+ * join, so it stays out of the GROUP BY and cannot skew the counts.
+ */
+function likedByMeExpr(userId?: string) {
+  if (!userId) return sql<boolean>`false`;
+
+  return sql<boolean>`exists (select 1 from forum_post_like pl where pl.post_id = ${forumPostTable.postId} and pl.user_id = ${userId})`;
+}
+
+type PostRow = Omit<
+  PostListItemDTO,
+  'creator' | 'likeCount' | 'commentCount' | 'likedByMe'
+> & {
+  creatorId: string | null;
+  creatorName: string | null;
+  creatorImage: string | null;
+  likeCount: number;
+  commentCount: number;
+  likedByMe: boolean;
+};
+
+function toPostListItem(row: PostRow): PostListItemDTO {
+  const { creatorId, creatorName, creatorImage, ...post } = row;
+
+  return {
+    ...post,
+    creator: creatorId
+      ? { id: creatorId, name: creatorName ?? '', image: creatorImage }
+      : null,
+    likeCount: Number(post.likeCount),
+    commentCount: Number(post.commentCount),
+    likedByMe: Boolean(post.likedByMe),
+  };
 }

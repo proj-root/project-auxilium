@@ -1,4 +1,5 @@
-import { ForbiddenException } from '@nestjs/common';
+import { ForbiddenException, NotFoundException } from '@nestjs/common';
+import db from '@/db';
 import { RolesConfig } from '@auxilium/configs/roles';
 import { StatusConfig } from '@auxilium/configs/status';
 import type { CommentDTO, CommentTreeNode } from '../forum.dto';
@@ -41,7 +42,7 @@ export function assertCanMutate({
  * Blanks out the body and author of a soft-deleted comment, leaving the node
  * itself in place so its replies stay reachable.
  */
-function tombstone(comment: CommentRow): CommentRow {
+export function tombstone(comment: CommentRow): CommentRow {
   if (comment.statusId !== StatusConfig.DELETED) return comment;
 
   return {
@@ -101,4 +102,30 @@ export function findCommentNode(
   }
 
   return undefined;
+}
+
+/** Loads an active post, or 404s. Deleted posts are invisible to every route. */
+export async function findActivePostOrThrow(postId: string) {
+  const post = await db.query.forumPost.findFirst({
+    where: { postId, statusId: { eq: StatusConfig.ACTIVE } },
+  });
+
+  if (!post) {
+    throw new NotFoundException(`Post with ID ${postId} not found`);
+  }
+
+  return post;
+}
+
+/** Loads an active comment, or 404s. */
+export async function findActiveCommentOrThrow(commentId: string) {
+  const comment = await db.query.forumComment.findFirst({
+    where: { commentId, statusId: { eq: StatusConfig.ACTIVE } },
+  });
+
+  if (!comment) {
+    throw new NotFoundException(`Comment with ID ${commentId} not found`);
+  }
+
+  return comment;
 }

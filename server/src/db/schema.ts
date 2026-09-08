@@ -414,3 +414,49 @@ export const forumComment = pgTable(
     index('forum_comment_parentCommentId_idx').on(table.parentCommentId),
   ],
 );
+
+// Forum Post Like Table
+// Composite primary key so a user can like a post at most once; the row's
+// existence is the like, and removing it is the unlike.
+export const forumPostLike = pgTable(
+  'forum_post_like',
+  {
+    postId: uuid('post_id')
+      .notNull()
+      .references(() => forumPost.postId, {
+        onDelete: 'cascade',
+        onUpdate: 'cascade',
+      }),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => user.id, {
+        onDelete: 'cascade',
+        onUpdate: 'cascade',
+      }),
+    ...timestamps,
+  },
+  (table) => [primaryKey({ columns: [table.postId, table.userId] })],
+);
+
+// Forum Comment Like Table
+// Kept separate from forumPostLike rather than being one polymorphic table:
+// Postgres cannot include a nullable column in a composite primary key.
+export const forumCommentLike = pgTable(
+  'forum_comment_like',
+  {
+    commentId: uuid('comment_id')
+      .notNull()
+      .references(() => forumComment.commentId, {
+        onDelete: 'cascade',
+        onUpdate: 'cascade',
+      }),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => user.id, {
+        onDelete: 'cascade',
+        onUpdate: 'cascade',
+      }),
+    ...timestamps,
+  },
+  (table) => [primaryKey({ columns: [table.commentId, table.userId] })],
+);

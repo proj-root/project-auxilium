@@ -26,5 +26,7 @@ export const apiSlice = createApi({
     'EventReports',
     'EventTypes',
     'Tasks',
+    'Posts',
+    'Comments',
   ],
 });
