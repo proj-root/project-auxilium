@@ -11,6 +11,7 @@ import {
   Logger,
   NotFoundException,
   Param,
+  ParseUUIDPipe,
   Post,
   Put,
   Query,
@@ -18,7 +19,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import { type UserSession } from '@thallesp/nestjs-better-auth';
+import { AllowAnonymous, type UserSession } from '@thallesp/nestjs-better-auth';
 import { RoleGuard } from '@/common/guards/role.guard';
 import { RolesConfig } from '@auxilium/configs/roles';
 import { Roles } from '@/common/decorators/roles.decorator';
@@ -27,6 +28,8 @@ import {
   CreateUserProfileSchema,
   type GetAllUserProfilesQueryDTO,
   type GetAllUsersQueryDTO,
+  type UpdatePrivacyDTO,
+  UpdatePrivacySchema,
   UpdateUserDTO,
   UpdateUserSchema,
   type VerifyIdentityDTO,
@@ -357,6 +360,30 @@ export class UserController {
   }
 
   // Update self
+  // Visibility is the owner's alone: no :userId param, so it cannot be aimed at
+  // anyone else the way the shared UpdateUserSchema routes can.
+  //
+  // Declared above @Put(':userId') — that param route would otherwise match
+  // 'privacy' and hand this off to the SUPERADMIN-only handler. PUT rather
+  // than PATCH because the CORS layer only advertises GET/POST/PUT/DELETE, so
+  // a browser will not send a PATCH at all.
+  @Put('privacy')
+  async updatePrivacy(
+    @Session() session: UserSession,
+    @Body(new ZodValidationPipe(UpdatePrivacySchema)) body: UpdatePrivacyDTO,
+  ) {
+    const updated = await this.userService.updatePrivacy({
+      userId: session.user.id,
+      isPrivate: body.isPrivate,
+    });
+
+    return {
+      message: `Profile is now ${body.isPrivate ? 'private' : 'public'}`,
+      status: 'success',
+      data: updated,
+    };
+  }
+
   @Put()
   async updateSelf(
     @Session() session: UserSession,
@@ -488,6 +515,31 @@ export class UserController {
     return {
       message: `Successfully deleted user.`,
       status: 'success',
+    };
+  }
+
+  // The only user route an anonymous caller can reach. `public/` keeps it from
+  // shadowing /all, /roles, /departments and /courses — never add a bare
+  // @Get(':userId') to this controller, it would swallow all four.
+  @Get('public/:userId')
+  @AllowAnonymous()
+  async getPublicProfile(
+    @Param('userId', ParseUUIDPipe) userId: string,
+    @Session() session: UserSession | null,
+  ) {
+    const profile = await this.userService.getPublicProfile({
+      userId,
+      viewerId: session?.user?.id,
+    });
+
+    if (!profile) {
+      throw new NotFoundException(`User with ID ${userId} not found`);
+    }
+
+    return {
+      message: 'Public profile retrieved successfully',
+      status: 'success',
+      data: profile,
     };
   }
 

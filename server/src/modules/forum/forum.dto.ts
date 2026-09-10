@@ -123,6 +123,9 @@ export type GetAllPostsQueryDTO = PaginationOptions & {
   statusId?: number;
   // The viewer, when signed in — drives `likedByMe`. Absent for anonymous reads.
   userId?: string;
+  // The author to filter by, for a profile page's post list. Distinct from
+  // `userId` above: that one is who is looking, this one is who wrote.
+  createdBy?: string;
 };
 
 export type GetPostCommentsQueryDTO = PaginationOptions & {

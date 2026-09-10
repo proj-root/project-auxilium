@@ -28,5 +28,6 @@ export const apiSlice = createApi({
     'Tasks',
     'Posts',
     'Comments',
+    'PublicProfile',
   ],
 });

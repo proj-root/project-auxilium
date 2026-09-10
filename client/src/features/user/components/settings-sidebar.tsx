@@ -1,6 +1,6 @@
 import type { SettingsCategories } from '@/app/routes/settings';
 import { cn } from '@/lib/utils';
-import { Settings, SquareMenu, UserCircle2 } from 'lucide-react';
+import { Lock, Settings, SquareMenu, UserCircle2 } from 'lucide-react';
 
 // interface SettingsSidebarItemProps {
 //   label: string;
@@ -44,6 +44,15 @@ export function SettingsSidebar({
         )}
       >
         <Settings className='size-5' /> Account
+      </div>
+      <div
+        onClick={() => setCategory('privacy')}
+        className={cn(
+          'hover:bg-muted flex cursor-pointer items-center gap-2 rounded-md px-2 py-1',
+          category === 'privacy' && 'bg-muted',
+        )}
+      >
+        <Lock className='size-5' /> Privacy
       </div>
       <div
         onClick={() => setCategory('preferences')}

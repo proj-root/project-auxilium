@@ -18,6 +18,11 @@ export default [
         index('routes/forum/index.tsx'),
         route('/:postId', 'routes/forum/single-post.tsx'),
       ]),
+      // Public profiles sit in the unguarded layout on purpose — an anonymous
+      // visitor following an author's name from the forum has to land here.
+      ...prefix('users', [
+        route('/:userId', 'routes/users/public-profile.tsx'),
+      ]),
       route('/link-profile', 'routes/link-profile.tsx'),
       route('/settings', 'routes/settings.tsx'),
     ]),

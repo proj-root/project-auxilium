@@ -53,9 +53,24 @@ export class PostService {
       search,
       statusId = StatusConfig.ACTIVE,
       userId,
+      createdBy,
     } = args;
 
     const filters: SQL[] = [eq(forumPostTable.statusId, statusId)];
+
+    if (createdBy) {
+      filters.push(eq(forumPostTable.createdBy, createdBy));
+
+      // A locked profile hides its owner's post list, so the endpoint that
+      // backs that list has to hide it too — otherwise the page is a lock on an
+      // unlocked door. Only ever narrows a request that already named an
+      // author, so the main feed still carries their posts as normal.
+      if (createdBy !== userId) {
+        filters.push(
+          sql`exists (select 1 from "user" u where u.id = ${createdBy} and u.is_private = false)`,
+        );
+      }
+    }
 
     if (search && search.trim() !== '') {
       const term = `%${search.trim()}%`;

@@ -63,6 +63,7 @@ export class PostsController {
       sortOrder = 'desc',
       search,
       statusId,
+      createdBy,
     } = query;
 
     const result = await this.postService.getAllPosts({
@@ -73,6 +74,7 @@ export class PostsController {
       search: search as string,
       statusId: statusId ? Number(statusId) : undefined,
       userId: session?.user?.id,
+      createdBy: toAuthorId(createdBy),
     });
 
     this.logger.verbose(`Retrieved ${result.posts.length} posts successfully.`);
@@ -283,4 +285,17 @@ function toPostSortField(value: unknown): PostSortField {
   return POST_SORT_FIELDS.includes(value as PostSortField)
     ? (value as PostSortField)
     : 'createdAt';
+}
+
+const UUID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/**
+ * Same reasoning as `toPostSortField` — this one reaches a raw SQL comparison,
+ * so anything that is not a uuid is dropped rather than passed along.
+ */
+function toAuthorId(value: unknown): string | undefined {
+  return typeof value === 'string' && UUID_PATTERN.test(value)
+    ? value
+    : undefined;
 }

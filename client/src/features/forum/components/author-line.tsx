@@ -1,6 +1,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { createUserInitials, formatRelativeTime } from '@/lib/formatters';
 import { cn } from '@/lib/utils';
+import { Link } from 'react-router';
 import type { Creator } from '../forum.dto';
 
 // $onUpdate stamps updatedAt on insert too, so a second of slack keeps freshly
@@ -27,8 +28,8 @@ export function AuthorLine({
     new Date(updatedAt).getTime() - new Date(createdAt).getTime() >
     EDIT_THRESHOLD_MS;
 
-  return (
-    <div className={cn('flex flex-row items-center gap-2', className)}>
+  const identity = (
+    <>
       <Avatar className='size-6'>
         {creator?.image && <AvatarImage src={creator.image} alt={name} />}
         <AvatarFallback className='text-xs'>
@@ -36,6 +37,23 @@ export function AuthorLine({
         </AvatarFallback>
       </Avatar>
       <span className='text-sm font-medium'>{name}</span>
+    </>
+  );
+
+  return (
+    <div className={cn('flex flex-row items-center gap-2', className)}>
+      {/* Avatar and name are one link, so the whole identity is the hit target.
+          A deleted author has no profile to reach, so it stays plain text. */}
+      {creator ? (
+        <Link
+          to={`/users/${creator.id}`}
+          className='flex flex-row items-center gap-2 hover:[&>span]:underline'
+        >
+          {identity}
+        </Link>
+      ) : (
+        identity
+      )}
       <span className='text-muted-foreground font-mono text-xs'>
         {formatRelativeTime(createdAt)}
       </span>

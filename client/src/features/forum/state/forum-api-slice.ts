@@ -26,9 +26,11 @@ export const forumApiSlice = apiSlice.injectEndpoints({
         params,
       }),
       // The feed accumulates instead of replacing: every page after the first
-      // is appended to the cache entry for the same sort and search.
+      // is appended to the cache entry for the same sort, search and author.
+      // `createdBy` has to be part of the key — without it a profile's filtered
+      // list and the main feed share one entry and merge into each other.
       serializeQueryArgs: ({ endpointName, queryArgs }) =>
-        `${endpointName}(${queryArgs.sortBy ?? ''}|${queryArgs.search ?? ''})`,
+        `${endpointName}(${queryArgs.sortBy ?? ''}|${queryArgs.search ?? ''}|${queryArgs.createdBy ?? ''})`,
       merge: (cache, incoming, { arg }) => {
         // Page one is the authoritative head of the list. A refetch of it —
         // after a new post, an edit, or a delete — has to replace what was

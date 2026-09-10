@@ -63,6 +63,10 @@ export const user = pgTable('user', {
   email: text('email').notNull().unique(),
   emailVerified: boolean('email_verified').default(false).notNull(),
   image: text('image'),
+  // Hides the public profile at /users/:id from everyone but the owner.
+  // Public by default: the profile page only ever shows what the forum
+  // already exposes, so opting out is the exception rather than the rule.
+  isPrivate: boolean('is_private').default(false).notNull(),
   ...timestamps,
 });
 

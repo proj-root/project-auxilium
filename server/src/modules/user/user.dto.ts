@@ -91,3 +91,30 @@ export const UpdateUserSchema = z
 export type UpdateUserDTO = z.infer<typeof UpdateUserSchema> & {
   userId: string;
 };
+
+export const UpdatePrivacySchema = z.object({
+  isPrivate: z.boolean(),
+});
+
+export type UpdatePrivacyDTO = z.infer<typeof UpdatePrivacySchema>;
+
+/**
+ * A user as an anonymous visitor sees them at /users/:userId.
+ *
+ * `details` is null exactly when the profile is private and the viewer is not
+ * its owner. Keeping every hidden field behind one nullable object means the
+ * private response cannot structurally carry the data it is meant to withhold.
+ */
+export type PublicProfileDTO = {
+  userId: string;
+  name: string;
+  image: string | null;
+  isPrivate: boolean;
+  isSelf: boolean;
+  details: {
+    course: { code: string; name: string } | null;
+    joinedAt: string;
+    postCount: number;
+    commentCount: number;
+  } | null;
+};

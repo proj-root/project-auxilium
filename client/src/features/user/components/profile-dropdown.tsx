@@ -18,6 +18,7 @@ import {
   Home,
   Settings,
   Shield,
+  UserRound,
 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
@@ -125,6 +126,24 @@ export function UserProfileDropdown() {
               Home
             </Link>
           </Button>
+          {data?.data.id && (
+            <Button
+              asChild
+              type='button'
+              size={'sm'}
+              variant={'ghost'}
+              className='justify-baseline px-1!'
+            >
+              <Link
+                to={`/users/${data.data.id}`}
+                className='flex flex-row items-center gap-2 text-sm'
+                onClick={() => setIsOpen(false)}
+              >
+                <UserRound className='size-4' />
+                View my profile
+              </Link>
+            </Button>
+          )}
           {(data?.data.role.roleId === RolesConfig.ADMIN ||
             data?.data.role.roleId === RolesConfig.SUPERADMIN) && (
             <Button

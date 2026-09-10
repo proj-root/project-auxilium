@@ -2,14 +2,16 @@ import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import db from '@/db';
 import * as schema from '@/db/schema';
 import { APIError } from '@auxilium/types/errors';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import {
   CreateUserProfileDTO,
   GetAllUserProfilesQueryDTO,
   GetAllUsersQueryDTO,
+  PublicProfileDTO,
   UpdateUserDTO,
 } from './user.dto';
 import { RolesConfig } from '@auxilium/configs/roles';
+import { StatusConfig } from '@auxilium/configs/status';
 import { SystemConfig } from '@/config/system.config';
 
 // export interface CreateUserProfileInput {
@@ -464,7 +466,7 @@ export class UserService {
             .update(schema.userRole)
             .set({ roleId })
             .where(eq(schema.userRole.userId, userId));
-          
+
           // Reset user's departments if they became a USER
           await tx
             .delete(schema.userDepartment)
@@ -611,6 +613,130 @@ export class UserService {
     } catch (error) {
       this.logger.error('Error reading all courses:', error);
       throw new APIError('Failed to fetch all courses', 500);
+    }
+  }
+
+  /**
+   * The profile as shown at /users/:userId, to anyone at all.
+   *
+   * Columns are allowlisted rather than spread: this row is the one user record
+   * that reaches unauthenticated callers, and `user` carries an email. A private
+   * profile returns before the counts are even run, so it costs two fewer
+   * queries and cannot leak what it is hiding.
+   */
+  async getPublicProfile({
+    userId,
+    viewerId,
+  }: {
+    userId: string;
+    viewerId?: string;
+  }): Promise<PublicProfileDTO | undefined> {
+    try {
+      const user = await db.query.user.findFirst({
+        where: { id: userId },
+        columns: {
+          id: true,
+          name: true,
+          image: true,
+          isPrivate: true,
+          createdAt: true,
+        },
+        with: {
+          userProfile: {
+            columns: {},
+            with: { userCourse: { columns: { code: true, name: true } } },
+          },
+        },
+      });
+
+      if (!user) return undefined;
+
+      const isSelf = !!viewerId && viewerId === userId;
+
+      const summary = {
+        userId: user.id,
+        name: user.name,
+        image: user.image,
+        isPrivate: user.isPrivate,
+        isSelf,
+      };
+
+      if (user.isPrivate && !isSelf) {
+        return { ...summary, details: null };
+      }
+
+      // Soft-deleted posts and comments are nobody's business, including their
+      // author's — the counts have to agree with the list rendered underneath.
+      const [postCount, commentCount] = await Promise.all([
+        db.$count(
+          schema.forumPost,
+          and(
+            eq(schema.forumPost.createdBy, userId),
+            eq(schema.forumPost.statusId, StatusConfig.ACTIVE),
+          ),
+        ),
+        db.$count(
+          schema.forumComment,
+          and(
+            eq(schema.forumComment.createdBy, userId),
+            eq(schema.forumComment.statusId, StatusConfig.ACTIVE),
+          ),
+        ),
+      ]);
+
+      return {
+        ...summary,
+        details: {
+          course: user.userProfile?.userCourse ?? null,
+          joinedAt: user.createdAt,
+          postCount: Number(postCount),
+          commentCount: Number(commentCount),
+        },
+      };
+    } catch (error) {
+      this.logger.error(`Error reading public profile for ${userId}:`, error);
+      throw new APIError('Failed to fetch public profile', 500);
+    }
+  }
+
+  /**
+   * Flips the owner's profile visibility.
+   *
+   * Deliberately not folded into `updateUser`: that method throws 404 when the
+   * account has no linked user_profile, and an unlinked account still has a
+   * public profile page to hide.
+   */
+  async updatePrivacy({
+    userId,
+    isPrivate,
+  }: {
+    userId: string;
+    isPrivate: boolean;
+  }) {
+    try {
+      const [updated] = await db
+        .update(schema.user)
+        .set({ isPrivate })
+        .where(eq(schema.user.id, userId))
+        .returning({
+          userId: schema.user.id,
+          isPrivate: schema.user.isPrivate,
+        });
+
+      if (!updated) {
+        throw new NotFoundException(`User with ID ${userId} not found`);
+      }
+
+      this.logger.debug(
+        `Set profile visibility for user ${userId} to ${isPrivate ? 'private' : 'public'}`,
+      );
+
+      return updated;
+    } catch (error) {
+      if (error instanceof NotFoundException) throw error;
+
+      this.logger.error(`Error updating privacy for ${userId}:`, error);
+      throw new APIError('Failed to update profile visibility', 500);
     }
   }
 }

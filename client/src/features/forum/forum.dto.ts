@@ -52,6 +52,8 @@ export const ROOT_COMMENTS = 'root';
 
 export interface GetAllPostsRequest extends PaginationOptions {
   sortBy?: 'title' | 'createdAt' | 'updatedAt' | 'hot' | 'top';
+  // Narrows the feed to one author, for their profile page.
+  createdBy?: string;
 }
 
 export type GetAllPostsResponse = BaseResponseDTO<{
